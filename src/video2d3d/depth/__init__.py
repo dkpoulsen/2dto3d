@@ -33,6 +33,17 @@ from video2d3d.utils.logger import (
     log_exception,
     log_model_inference,
 )
+from video2d3d.utils.gpu import (
+    GPUConfig,
+    GPUError,
+    OutOfMemoryError,
+    clear_gpu_memory,
+    compute_optimal_batch_size,
+    get_memory_usage,
+    select_device,
+    setup_device,
+    with_oom_retry,
+)
 
 
 # ---------------------------------------------------------------------------
@@ -128,6 +139,15 @@ class MiDaSConfig:
     output_resolution: Optional[int] = None
     use_fp16: bool = False
     optimize: bool = True
+    
+    # GPU acceleration settings
+    gpu_config: Optional[GPUConfig] = None
+    auto_batch_size: bool = True
+    min_batch_size: int = 1
+    max_batch_size: int = 32
+    memory_fraction: float = 0.8
+    fallback_to_cpu: bool = True
+    pinned_memory: bool = True
 
     def __post_init__(self) -> None:
         """Validate and normalize configuration."""
@@ -135,9 +155,25 @@ class MiDaSConfig:
         if isinstance(self.model_type, str):
             self.model_type = MiDaSModelType.from_string(self.model_type)
 
-        # Auto-detect device
+        # Initialize GPU config if not provided
+        if self.gpu_config is None:
+            self.gpu_config = GPUConfig(
+                enabled=True,
+                device=self.device,
+                memory_fraction=self.memory_fraction,
+                fallback_to_cpu=self.fallback_to_cpu,
+                batch_size_auto=self.auto_batch_size,
+                min_batch_size=self.min_batch_size,
+                max_batch_size=self.max_batch_size,
+                pinned_memory=self.pinned_memory,
+                fp16_enabled=self.use_fp16,
+            )
+
+        # Auto-detect device using GPU utilities
         if self.device == "auto":
-            self.device = "cuda" if torch.cuda.is_available() else "cpu"
+            selection = select_device(self.gpu_config)
+            self.device = selection.device
+            self._device_selection = selection
 
         # Normalize cache_dir to Path
         if self.cache_dir is not None and isinstance(self.cache_dir, str):
@@ -539,6 +575,18 @@ class DepthEstimator:
             logger.debug(f"Depth estimation completed in {elapsed_ms:.2f}ms")
             return depth_map
 
+        except RuntimeError as e:
+            error_str = str(e).lower()
+            if "out of memory" in error_str and self.config.fallback_to_cpu:
+                logger.warning("GPU out of memory, falling back to CPU")
+                self._fallback_to_cpu()
+                return self.estimate_depth(frame)
+            raise InferenceError(
+                f"Depth estimation failed: {e}",
+                model_type=self.config.model_type.value,
+                device=self.config.device,
+                original_exception=e,
+            ) from e
         except Exception as e:
             log_exception("Depth estimation failed", exception=e)
             raise InferenceError(
@@ -548,18 +596,33 @@ class DepthEstimator:
                 original_exception=e,
             ) from e
 
+    def _fallback_to_cpu(self) -> None:
+        """Fall back to CPU processing when GPU fails."""
+        logger = _get_depth_logger()
+        logger.warning("Falling back to CPU processing")
+        
+        # Move model to CPU
+        if self._model is not None:
+            self._model = self._model.to("cpu")
+            self.config.device = "cpu"
+            
+            # Clear GPU memory
+            clear_gpu_memory()
     def estimate_depth_batch(
         self,
         frames: list[np.ndarray],
         batch_size: int = 4,
     ) -> list[np.ndarray]:
-        """Estimate depth for a batch of frames.
+        """Estimate depth for a batch of frames with GPU memory management.
 
         This method processes frames in batches for efficient GPU utilization.
+        It automatically adjusts batch size based on available GPU memory and
+        handles out-of-memory errors with retry logic.
 
         Args:
             frames: List of input frames as numpy arrays (H, W, C) in RGB format.
-            batch_size: Number of frames to process at once.
+            batch_size: Initial number of frames to process at once. Will be
+                       adjusted automatically if auto_batch_size is enabled.
 
         Returns:
             List of depth maps as numpy arrays (H, W) with float32 values in [0, 1].
@@ -577,7 +640,6 @@ class DepthEstimator:
                 device=None,
             )
 
-        logger.info(f"Processing batch of {len(frames)} frames with batch_size={batch_size}")
         # Ensure model is loaded
         if not self._is_loaded:
             self.load_model()
@@ -589,37 +651,110 @@ class DepthEstimator:
                 device=self.config.device,
             )
 
+        # Get frame dimensions for memory calculation
+        first_frame = frames[0]
+        image_height, image_width = first_frame.shape[0], first_frame.shape[1]
+
+        # Compute optimal batch size if auto-adjustment is enabled
+        effective_batch_size = batch_size
+        if self.config.auto_batch_size and self.config.gpu_config is not None:
+            effective_batch_size = compute_optimal_batch_size(
+                config=self.config.gpu_config,
+                image_height=image_height,
+                image_width=image_width,
+                use_fp16=self.config.use_fp16,
+            )
+            logger.info(
+                f"Auto-adjusted batch size: {effective_batch_size} "
+                f"(requested: {batch_size})"
+            )
+        else:
+            effective_batch_size = min(
+                max(batch_size, self.config.min_batch_size),
+                self.config.max_batch_size,
+            )
+
+        logger.info(
+            f"Processing batch of {len(frames)} frames with batch_size={effective_batch_size}"
+        )
+
         depth_maps: list[np.ndarray] = []
+        current_batch_size = effective_batch_size
 
         try:
-            for i in range(0, len(frames), batch_size):
-                batch = frames[i : i + batch_size]
+            i = 0
+            while i < len(frames):
+                batch = frames[i : i + current_batch_size]
                 batch_start_time = time.time()
 
-                # Preprocess all frames in batch
-                original_shapes = [(f.shape[0], f.shape[1]) for f in batch]
-                input_tensors = [self._preprocess_image(f) for f in batch]
-                batch_tensor = torch.cat(input_tensors, dim=0)
+                try:
+                    # Preprocess all frames in batch
+                    original_shapes = [(f.shape[0], f.shape[1]) for f in batch]
+                    input_tensors = [self._preprocess_image(f) for f in batch]
+                    batch_tensor = torch.cat(input_tensors, dim=0)
 
-                # Inference
-                with torch.no_grad():
-                    predictions = self._model(batch_tensor)
+                    # Inference
+                    with torch.no_grad():
+                        predictions = self._model(batch_tensor)
 
-                # Postprocess each frame
-                for _, (pred, shape) in enumerate(zip(predictions, original_shapes)):
-                    depth_map = self._postprocess_depth(pred.unsqueeze(0), shape)
-                    depth_maps.append(depth_map)
+                    # Postprocess each frame
+                    for _, (pred, shape) in enumerate(zip(predictions, original_shapes)):
+                        depth_map = self._postprocess_depth(pred.unsqueeze(0), shape)
+                        depth_maps.append(depth_map)
 
-                elapsed_ms = (time.time() - batch_start_time) * 1000
-                logger.debug(
-                    f"Processed batch {i // batch_size + 1}: "
-                    f"{len(batch)} frames in {elapsed_ms:.2f}ms"
-                )
+                    elapsed_ms = (time.time() - batch_start_time) * 1000
+                    logger.debug(
+                        f"Processed batch {i // effective_batch_size + 1}: "
+                        f"{len(batch)} frames in {elapsed_ms:.2f}ms"
+                    )
+
+                    # Move to next batch
+                    i += current_batch_size
+                    
+                    # Reset batch size after successful processing (in case of previous OOM)
+                    if current_batch_size < effective_batch_size:
+                        current_batch_size = min(current_batch_size * 2, effective_batch_size)
+
+                except RuntimeError as e:
+                    error_str = str(e).lower()
+                    if "out of memory" in error_str:
+                        # Handle OOM by reducing batch size
+                        logger.warning(
+                            f"GPU OOM with batch_size={current_batch_size}, "
+                            f"reducing to {current_batch_size // 2}"
+                        )
+                        
+                        # Clear GPU memory
+                        clear_gpu_memory(self.config.device)
+                        
+                        # Reduce batch size
+                        new_batch_size = max(current_batch_size // 2, 1)
+                        if new_batch_size < current_batch_size:
+                            current_batch_size = new_batch_size
+                            continue  # Retry same batch with smaller size
+                        
+                        # If we can't reduce further, try CPU fallback
+                        if self.config.fallback_to_cpu:
+                            logger.warning("Falling back to CPU processing")
+                            self._fallback_to_cpu()
+                            # Continue processing remaining frames on CPU
+                            remaining_frames = frames[i:]
+                            return depth_maps + self.estimate_depth_batch(
+                                remaining_frames, batch_size=min(batch_size, 4)
+                            )
+                        
+                        raise InferenceError(
+                            f"GPU out of memory and CPU fallback disabled",
+                            model_type=self.config.model_type.value,
+                            device=self.config.device,
+                            original_exception=e,
+                        ) from e
+                    raise
 
             total_frames = len(frames)
             log_model_inference(
                 model_name=self.config.model_type.value,
-                batch_size=batch_size,
+                batch_size=effective_batch_size,
                 inference_time_ms=0,  # Total time varies
                 total_frames=total_frames,
             )
@@ -627,7 +762,11 @@ class DepthEstimator:
             return depth_maps
 
         except Exception as e:
-            log_exception("Batch depth estimation failed", exception=e, batch_size=batch_size)
+            log_exception(
+                "Batch depth estimation failed", 
+                exception=e, 
+                batch_size=effective_batch_size
+            )
             raise InferenceError(
                 f"Batch depth estimation failed: {e}",
                 model_type=self.config.model_type.value,
@@ -671,9 +810,8 @@ class DepthEstimator:
         self._is_loaded = False
 
         # Clear GPU cache if using CUDA
-        if self.config.device == "cuda" and torch.cuda.is_available():
-            torch.cuda.empty_cache()
-
+        if self.config.device.startswith("cuda") or self.config.device == "auto":
+            clear_gpu_memory(self.config.device)
         logger.debug("DepthEstimator resources released")
 
 
@@ -720,6 +858,18 @@ def estimate_depth_single(
         return estimator.estimate_depth(image)
 
 
+# Import depth processor components
+from video2d3d.depth.processor import (
+    DepthMapProcessor,
+    DepthProcessorConfig,
+    DepthProcessingError,
+    NormalizationMethod,
+    HoleFillingMethod,
+    ColorMapType,
+    create_processor,
+    process_depth_map,
+)
+
 # Module-level logger for backward compatibility
 logger = _get_depth_logger()
 
@@ -728,12 +878,21 @@ __all__ = [
     "DepthEstimator",
     "MiDaSConfig",
     "MiDaSModelType",
+    "DepthMapProcessor",
+    "DepthProcessorConfig",
+    # Enums
+    "NormalizationMethod",
+    "HoleFillingMethod",
+    "ColorMapType",
     # Exceptions
     "DepthEstimationError",
     "ModelLoadError",
     "InferenceError",
+    "DepthProcessingError",
     # Functions
     "create_estimator",
     "estimate_depth_single",
+    "create_processor",
+    "process_depth_map",
     "_get_depth_logger",
 ]
