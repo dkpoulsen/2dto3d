@@ -936,3 +936,40 @@ Input: {
 Input: {
   "filePath": "/home/dkp/Documents/Automaker/2dto3d/.gitignore"
 }
+Now I'll stage the changes and create the commit. Since all files are untracked after the initial commit, I'll stage the CLI framework feature files and create a conventional commit:
+
+🔧 Tool: bash
+Input: {
+  "command": "export CI=true DEBIAN_FRONTEND=noninteractive GIT_TERMINAL_PROMPT=0 GCM_INTERACTIVE=never HOMEBREW_NO_AUTO_UPDATE=1 GIT_EDITOR=: EDITOR=: VISUAL='' GIT_SEQUENCE_EDITOR=: GIT_MERGE_AUTOEDIT=no GIT_PAGER=cat PAGER=cat npm_config_yes=true PIP_NO_INPUT=1 YARN_ENABLE_IMMUTABLE_INSTALLS=false; git add -A && git status",
+  "description": "Stage all changes"
+}
+
+🔧 Tool: bash
+Input: {
+  "command": "export CI=true DEBIAN_FRONTEND=noninteractive GIT_TERMINAL_PROMPT=0 GCM_INTERACTIVE=never HOMEBREW_NO_AUTO_UPDATE=1 GIT_EDITOR=: EDITOR=: VISUAL='' GIT_SEQUENCE_EDITOR=: GIT_MERGE_AUTOEDIT=no GIT_PAGER=cat PAGER=cat npm_config_yes=true PIP_NO_INPUT=1 YARN_ENABLE_IMMUTABLE_INSTALLS=false; git commit -m \"$(cat <<'EOF'\nfeat(cli): implement foundational CLI framework with typer\n\nAdd a complete CLI framework for the 2dto3d video converter using typer\n(built on click) with the following features:\n\nCLI Structure:\n- Main entry point via `video2d3d` command or `python -m video2d3d`\n- Global options: --version, --verbose, --log-level, --log-file\n- Subcommands: convert, info, list-models, list-formats\n\nCommands:\n- convert: 2D to 3D video conversion with model/format validation\n- info: Display system and configuration information\n- list-models: Show available depth estimation models\n- list-formats: Show available 3D output formats\n\nImprovements:\n- Add validation for input files, models, and output formats\n- Define constants for DEPTH_MODELS and OUTPUT_FORMATS\n- Rename callback function to avoid naming conflict with main()\n- Use output_format instead of format to avoid shadowing built-in\n- Modern type hints using str | None syntax\n\nInfrastructure:\n- Configuration system with YAML files (default, development, production)\n- Structured logging with loguru\n- Video input/output handlers with FFmpeg integration\n- Project structure with src/ layout\n\nEntry Points:\n- video2d3d.cli:main (primary)\n- v2d3d.cli:main (alias)\n- Module execution: python -m video2d3d\n\nCloses: cli-framework\nEOF\n)\"",
+  "description": "Commit CLI framework changes"
+}
+
+🔧 Tool: bash
+Input: {
+  "command": "export CI=true DEBIAN_FRONTEND=noninteractive GIT_TERMINAL_PROMPT=0 GCM_INTERACTIVE=never HOMEBREW_NO_AUTO_UPDATE=1 GIT_EDITOR=: EDITOR=: VISUAL='' GIT_SEQUENCE_EDITOR=: GIT_MERGE_AUTOEDIT=no GIT_PAGER=cat PAGER=cat npm_config_yes=true PIP_NO_INPUT=1 YARN_ENABLE_IMMUTABLE_INSTALLS=false; git log -1 --stat",
+  "description": "Verify the commit"
+}
+
+🔧 Tool: bash
+Input: {
+  "command": "export CI=true DEBIAN_FRONTEND=noninteractive GIT_TERMINAL_PROMPT=0 GCM_INTERACTIVE=never HOMEBREW_NO_AUTO_UPDATE=1 GIT_EDITOR=: EDITOR=: VISUAL='' GIT_SEQUENCE_EDITOR=: GIT_MERGE_AUTOEDIT=no GIT_PAGER=cat PAGER=cat npm_config_yes=true PIP_NO_INPUT=1 YARN_ENABLE_IMMUTABLE_INSTALLS=false; git status",
+  "description": "Check clean working tree"
+}
+
+🔧 Tool: bash
+Input: {
+  "command": "export CI=true DEBIAN_FRONTEND=noninteractive GIT_TERMINAL_PROMPT=0 GCM_INTERACTIVE=never HOMEBREW_NO_AUTO_UPDATE=1 GIT_EDITOR=: EDITOR=: VISUAL='' GIT_SEQUENCE_EDITOR=: GIT_MERGE_AUTOEDIT=no GIT_PAGER=cat PAGER=cat npm_config_yes=true PIP_NO_INPUT=1 YARN_ENABLE_IMMUTABLE_INSTALLS=false; git diff --stat",
+  "description": "Check what changed after commit"
+}
+
+🔧 Tool: bash
+Input: {
+  "command": "export CI=true DEBIAN_FRONTEND=noninteractive GIT_TERMINAL_PROMPT=0 GCM_INTERACTIVE=never HOMEBREW_NO_AUTO_UPDATE=1 GIT_EDITOR=: EDITOR=: VISUAL='' GIT_SEQUENCE_EDITOR=: GIT_MERGE_AUTOEDIT=no GIT_PAGER=cat PAGER=cat npm_config_yes=true PIP_NO_INPUT=1 YARN_ENABLE_IMMUTABLE_INSTALLS=false; git diff src/video2d3d/utils/logger.py src/video2d3d/video/handler.py",
+  "description": "Check code changes"
+}

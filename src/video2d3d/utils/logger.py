@@ -12,8 +12,12 @@ This module provides a centralized logging system built on loguru that supports:
 from __future__ import annotations
 
 import sys
+import threading
 from pathlib import Path
-from typing import Any, Dict, Optional, Union
+from typing import TYPE_CHECKING, Any, Optional, Union
+
+if TYPE_CHECKING:
+    from loguru import Logger
 
 from loguru import logger
 
@@ -22,8 +26,9 @@ from video2d3d.utils.config import LoggingConfig, get_config
 # Remove default handler
 logger.remove()
 
-# Global flag to track if logging has been configured
+# Global flag to track if logging has been configured (thread-safe)
 _logging_configured: bool = False
+_logging_lock = threading.Lock()
 
 
 class LogLevel:
@@ -172,7 +177,7 @@ def configure_logging(
     logger.debug(f"Logging configured: level={level}, file={file_path}")
 
 
-def get_logger(name: Optional[str] = None) -> Any:
+def get_logger(name: Optional[str] = None) -> "Logger":
     """Get a logger instance with optional name binding.
 
     Args:
@@ -181,8 +186,9 @@ def get_logger(name: Optional[str] = None) -> Any:
     Returns:
         Logger instance with optional name binding.
     """
-    if not _logging_configured:
-        configure_logging()
+    with _logging_lock:
+        if not _logging_configured:
+            configure_logging()
 
     if name:
         return logger.bind(name=name)
@@ -219,7 +225,7 @@ def log_exception(
 
     Args:
         message: Error message.
-        exception: Exception instance. If None, uses current exception.
+        exception: Exception instance. If None, uses current exception context.
         **kwargs: Additional context to log.
     """
     if not _logging_configured:
@@ -227,10 +233,13 @@ def log_exception(
 
     context_logger = logger.bind(**kwargs) if kwargs else logger
 
-    # Use opt() to ensure exception info is captured properly
-    if exception:
-        context_logger.opt(exception=exception).error(message)
+    if exception is not None:
+        # Log the provided exception with full traceback
+        context_logger.opt(exception=True).error(
+            f"{message}: {type(exception).__name__}: {exception}"
+        )
     else:
+        # Use the current exception context (must be called from within except block)
         context_logger.exception(message)
 
 

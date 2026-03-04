@@ -1154,3 +1154,138 @@ Input: {
     }
   ]
 }
+
+🔧 Tool: edit
+Input: {
+  "filePath": "/home/dkp/Documents/Automaker/2dto3d/src/video2d3d/utils/logger.py",
+  "edits": [
+    {
+      "op": "replace",
+      "pos": "12#ZQ|",
+      "lines": [
+        "from __future__ import annotations\n\nimport sys\nimport threading\nfrom pathlib import Path\nfrom typing import TYPE_CHECKING, Any, Dict, Optional, Union\n\nfrom loguru import logger\n\nfrom video2d3d.utils.config import LoggingConfig, get_config\n\nif TYPE_CHECKING:\n    from loguru import Logger"
+      ]
+    },
+    {
+      "op": "replace",
+      "pos": "22#MZ|",
+      "lines": [
+        "# Remove default handler\nlogger.remove()\n\n# Global flag to track if logging has been configured (thread-safe)\n_logging_configured: bool = False\n_logging_lock = threading.Lock()"
+      ]
+    },
+    {
+      "op": "replace",
+      "pos": "213#MH|",
+      "end": "235#WJ|",
+      "lines": [
+        "def log_exception(\n    message: str,\n    exception: Optional[Exception] = None,\n    **kwargs: Any,\n) -> None:\n    \"\"\"Log an exception with detailed context.\n\n    Args:\n        message: Error message.\n        exception: Exception instance. If None, uses current exception context.\n        **kwargs: Additional context to log.\n    \"\"\"\n    if not _logging_configured:\n        configure_logging()\n\n    context_logger = logger.bind(**kwargs) if kwargs else logger\n\n    if exception is not None:\n        # Log the provided exception with full traceback\n        context_logger.opt(exception=True).error(f\"{message}: {type(exception).__name__}: {exception}\")\n    else:\n        # Use the current exception context (must be called from within except block)\n        context_logger.exception(message)\n"
+      ]
+    },
+    {
+      "op": "replace",
+      "pos": "175#ZJ|",
+      "end": "190#JM|",
+      "lines": [
+        "def get_logger(name: Optional[str] = None) -> \"Logger\":\n    \"\"\"Get a logger instance with optional name binding.\n\n    Args:\n        name: Logger name. If provided, binds it to the logger context.\n\n    Returns:\n        Logger instance with optional name binding.\n    \"\"\"\n    with _logging_lock:\n        if not _logging_configured:\n            configure_logging()\n\n    if name:\n        return logger.bind(name=name)\n    return logger"
+      ]
+    },
+    {
+      "op": "replace",
+      "pos": "81#BY|",
+      "end": "130#WP|",
+      "lines": [
+        "def configure_logging(\n    config: Optional[LoggingConfig] = None,\n    *,\n    log_level: Optional[str] = None,\n    log_file: Optional[Union[str, Path]] = None,\n    rotation: Optional[str] = None,\n    retention: Optional[str] = None,\n    colorize: Optional[bool] = None,\n    console_output: bool = True,\n    json_format: bool = False,\n) -> None:\n    \"\"\"Configure the logging system with the given settings.\n\n    This function should be called once at application startup. Subsequent\n    calls will reset the logging configuration.\n\n    Args:\n        config: LoggingConfig object. If None, loads from global config.\n        log_level: Override log level from config.\n        log_file: Override log file path from config.\n        rotation: Override rotation setting from config.\n        retention: Override retention setting from config.\n        colorize: Override colorize setting from config.\n        console_output: Whether to output to console. Default True.\n        json_format: Use JSON structured logging format. Default False.\n    \"\"\"\n    global _logging_configured\n\n    with _logging_lock:\n        # Load config if not provided\n        if config is None:\n            try:\n                app_config = get_config()\n                config = app_config.logging\n            except Exception:\n                # Fallback to defaults\n                config = LoggingConfig()\n\n        # Apply overrides\n        level = log_level or config.level\n        file_path = Path(log_file) if log_file else Path(config.file)\n        rot = rotation or config.rotation\n        ret = retention or config.retention\n        color = colorize if colorize is not None else config.colorize\n\n        # Reset logging configuration\n        logger.remove()\n\n        # Create log directory if it doesn't exist\n        file_path.parent.mkdir(parents=True, exist_ok=True)"
+      ]
+    }
+  ]
+}
+
+🔧 Tool: read
+Input: {
+  "filePath": "/home/dkp/Documents/Automaker/2dto3d/src/video2d3d/utils/logger.py"
+}
+
+🔧 Tool: edit
+Input: {
+  "edits": [
+    {
+      "end": "17#HX|",
+      "lines": [
+        "from __future__ import annotations\n\nimport sys\nimport threading\nfrom pathlib import Path\nfrom typing import TYPE_CHECKING, Any, Optional, Union\n\nif TYPE_CHECKING:\n    from loguru import Logger\n"
+      ],
+      "op": "replace",
+      "pos": "12#ZQ|"
+    },
+    {
+      "end": "27#JJ|",
+      "lines": [
+        "# Remove default handler\nlogger.remove()\n\n# Global flag to track if logging has been configured (thread-safe)\n_logging_configured: bool = False\n_logging_lock = threading.Lock()\n"
+      ],
+      "op": "replace",
+      "pos": "22#MZ|"
+    },
+    {
+      "end": "190#JM|",
+      "lines": [
+        "def get_logger(name: Optional[str] = None) -> \"Logger\":\n    \"\"\"Get a logger instance with optional name binding.\n\n    Args:\n        name: Logger name. If provided, binds it to the logger context.\n\n    Returns:\n        Logger instance with optional name binding.\n    \"\"\"\n    with _logging_lock:\n        if not _logging_configured:\n            configure_logging()\n\n    if name:\n        return logger.bind(name=name)\n    return logger\n"
+      ],
+      "op": "replace",
+      "pos": "175#ZJ|"
+    },
+    {
+      "end": "235#WJ|",
+      "lines": [
+        "def log_exception(\n    message: str,\n    exception: Optional[Exception] = None,\n    **kwargs: Any,\n) -> None:\n    \"\"\"Log an exception with detailed context.\n\n    Args:\n        message: Error message.\n        exception: Exception instance. If None, uses current exception context.\n        **kwargs: Additional context to log.\n    \"\"\"\n    if not _logging_configured:\n        configure_logging()\n\n    context_logger = logger.bind(**kwargs) if kwargs else logger\n\n    if exception is not None:\n        # Log the provided exception with full traceback\n        context_logger.opt(exception=True).error(\n            f\"{message}: {type(exception).__name__}: {exception}\"\n        )\n    else:\n        # Use the current exception context (must be called from within except block)\n        context_logger.exception(message)\n"
+      ],
+      "op": "replace",
+      "pos": "213#MH|"
+    }
+  ],
+  "filePath": "/home/dkp/Documents/Automaker/2dto3d/src/video2d3d/utils/logger.py"
+}
+
+🔧 Tool: read
+Input: {
+  "filePath": "/home/dkp/Documents/Automaker/2dto3d/src/video2d3d/utils/logger.py"
+}
+
+🔧 Tool: todowrite
+Input: {
+  "todos": [
+    {
+      "content": "Fix log_exception function incorrect loguru usage",
+      "status": "completed",
+      "priority": "high"
+    },
+    {
+      "content": "Fix module-level logger initialization timing issue",
+      "status": "in_progress",
+      "priority": "high"
+    },
+    {
+      "content": "Fix import statement placement in depth module",
+      "status": "pending",
+      "priority": "medium"
+    },
+    {
+      "content": "Fix log_video_processing parameter mismatch in stereo module",
+      "status": "pending",
+      "priority": "high"
+    },
+    {
+      "content": "Add proper type hints for logger return type",
+      "status": "in_progress",
+      "priority": "medium"
+    },
+    {
+      "content": "Add thread-safe configuration flag handling",
+      "status": "in_progress",
+      "priority": "medium"
+    },
+    {
+      "content": "Verify all fixes work correctly",
+      "status": "pending",
+      "priority": "high"
+    }
+  ]
+}

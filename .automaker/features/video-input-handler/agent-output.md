@@ -1006,3 +1006,159 @@ Input: {
   ],
   "filePath": "/home/dkp/Documents/Automaker/2dto3d/src/video2d3d/video/handler.py"
 }
+
+🔧 Tool: read
+Input: {
+  "filePath": "/home/dkp/Documents/Automaker/2dto3d/src/video2d3d/video/handler.py",
+  "offset": 270,
+  "limit": 100
+}
+
+🔧 Tool: edit
+Input: {
+  "edits": [
+    {
+      "lines": "    def extract_ffmpeg_metadata(self, file_path: Path) -> dict[str, Any]:",
+      "op": "replace",
+      "pos": "275#ST|"
+    },
+    {
+      "end": "311#MJ|",
+      "lines": "            return json.loads(result.stdout)",
+      "op": "replace",
+      "pos": "309#TZ|"
+    }
+  ],
+  "filePath": "/home/dkp/Documents/Automaker/2dto3d/src/video2d3d/video/handler.py"
+}
+
+🔧 Tool: read
+Input: {
+  "filePath": "/home/dkp/Documents/Automaker/2dto3d/src/video2d3d/video/handler.py",
+  "limit": 100,
+  "offset": 305
+}
+
+🔧 Tool: edit
+Input: {
+  "edits": [
+    {
+      "lines": "        self, metadata: VideoMetadata, ffprobe_data: dict[str, Any]",
+      "op": "replace",
+      "pos": "322#QT|"
+    }
+  ],
+  "filePath": "/home/dkp/Documents/Automaker/2dto3d/src/video2d3d/video/handler.py"
+}
+
+🔧 Tool: read
+Input: {
+  "filePath": "/home/dkp/Documents/Automaker/2dto3d/src/video2d3d/video/handler.py",
+  "limit": 100,
+  "offset": 450
+}
+
+🔧 Tool: edit
+Input: {
+  "edits": [
+    {
+      "lines": "    def get_frame(self, frame_number: int) -> np.ndarray | None:",
+      "op": "replace",
+      "pos": "461#TB|"
+    },
+    {
+      "end": "521#TQ|",
+      "lines": "    def __exit__(\n        self,\n        exc_type: type[BaseException] | None,\n        exc_val: BaseException | None,\n        exc_tb: object,\n    ) -> None:\n        \"\"\"Context manager exit - cleanup resources.\"\"\"\n        if self._cap is not None:\n            self._cap.release()\n            self._cap = None",
+      "op": "replace",
+      "pos": "516#WP|"
+    }
+  ],
+  "filePath": "/home/dkp/Documents/Automaker/2dto3d/src/video2d3d/video/handler.py"
+}
+
+🔧 Tool: todowrite
+Input: {
+  "todos": [
+    {
+      "content": "Create video exceptions module with custom error classes",
+      "priority": "high",
+      "status": "completed"
+    },
+    {
+      "content": "Create video metadata dataclass for extracted info",
+      "priority": "high",
+      "status": "completed"
+    },
+    {
+      "content": "Implement VideoInputHandler class with validation",
+      "priority": "high",
+      "status": "completed"
+    },
+    {
+      "content": "Add format validation using file extension and magic bytes",
+      "priority": "high",
+      "status": "completed"
+    },
+    {
+      "content": "Implement metadata extraction (resolution, fps, codec, duration)",
+      "priority": "high",
+      "status": "completed"
+    },
+    {
+      "content": "Add error handling for corrupted/unsupported files",
+      "priority": "high",
+      "status": "completed"
+    },
+    {
+      "content": "Update video/__init__.py with exports",
+      "priority": "medium",
+      "status": "completed"
+    },
+    {
+      "content": "Create unit tests for video input handler",
+      "priority": "high",
+      "status": "completed"
+    },
+    {
+      "content": "Code Review: Fix type hint inconsistencies",
+      "priority": "high",
+      "status": "completed"
+    },
+    {
+      "content": "Code Review: Fix json import location",
+      "priority": "medium",
+      "status": "completed"
+    },
+    {
+      "content": "Code Review: Fix __exit__ type annotation",
+      "priority": "medium",
+      "status": "completed"
+    },
+    {
+      "content": "Code Review: Fix return type for FFmpeg metadata",
+      "priority": "medium",
+      "status": "completed"
+    },
+    {
+      "content": "Code Review: Improve test clarity",
+      "priority": "medium",
+      "status": "in_progress"
+    },
+    {
+      "content": "Run linting and type checking",
+      "priority": "medium",
+      "status": "pending"
+    },
+    {
+      "content": "Verify with Playwright test",
+      "priority": "high",
+      "status": "pending"
+    }
+  ]
+}
+
+🔧 Tool: read
+Input: {
+  "filePath": "/home/dkp/Documents/Automaker/2dto3d/tests/unit/test_video_input.py",
+  "limit": 30
+}

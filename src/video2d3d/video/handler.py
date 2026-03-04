@@ -272,7 +272,7 @@ class VideoInputHandler:
 
         return metadata
 
-    def extract_ffmpeg_metadata(self, file_path: Path) -> dict[str, str]:
+    def extract_ffmpeg_metadata(self, file_path: Path) -> dict[str, Any]:
         """
         Extract detailed metadata using FFmpeg.
 
@@ -306,9 +306,7 @@ class VideoInputHandler:
                 logger.warning(f"FFprobe failed for {file_path}: {result.stderr}")
                 return {}
 
-            import json
-
-            return json.loads(result.stdout)  # type: ignore[no-any-return]
+            return json.loads(result.stdout)
 
         except FileNotFoundError:
             logger.warning("FFprobe not found. Install FFmpeg for extended metadata.")
@@ -321,7 +319,7 @@ class VideoInputHandler:
             return {}
 
     def enrich_metadata_with_ffmpeg(
-        self, metadata: VideoMetadata, ffprobe_data: dict
+        self, metadata: VideoMetadata, ffprobe_data: dict[str, Any]
     ) -> VideoMetadata:
         """
         Enrich VideoMetadata with FFmpeg-extracted information.
@@ -460,7 +458,7 @@ class VideoInputHandler:
             cap.release()
             self._cap = None
 
-    def get_frame(self, frame_number: int) -> Optional[np.ndarray]:
+    def get_frame(self, frame_number: int) -> np.ndarray | None:
         """
         Get a specific frame from the currently open video.
 
@@ -515,12 +513,16 @@ class VideoInputHandler:
         """Context manager entry."""
         return self
 
-    def __exit__(self, exc_type, exc_val, exc_tb) -> None:  # type: ignore[no-untyped-def]
+    def __exit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc_val: BaseException | None,
+        exc_tb: object,
+    ) -> None:
         """Context manager exit - cleanup resources."""
         if self._cap is not None:
             self._cap.release()
             self._cap = None
-
 
 def validate_video(video_path: str | Path, strict: bool = True) -> VideoMetadata:
     """
