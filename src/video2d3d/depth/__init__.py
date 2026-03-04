@@ -285,6 +285,10 @@ class DepthEstimator:
         self._model: Optional["nn.Module"] = None
         self._transform: Optional["Compose"] = None
         self._is_loaded: bool = False
+        
+        # Temporal smoothing (lazy initialized)
+        self._temporal_smoother: Optional[TemporalSmoother] = None
+        self._temporal_config: Optional[TemporalSmoothingConfig] = None
 
         logger = _get_depth_logger()
         logger.info(
@@ -495,13 +499,16 @@ class DepthEstimator:
         self,
         frame: np.ndarray,
         temporal_smoothing: bool = False,
+        temporal_config: Optional[TemporalSmoothingConfig] = None,
     ) -> np.ndarray:
         """Estimate depth from a single frame.
 
         Args:
             frame: Input image as numpy array (H, W, C) in RGB format.
                    Expected dtype: uint8 with values 0-255.
-            temporal_smoothing: Apply temporal smoothing for video (not implemented).
+            temporal_smoothing: Apply temporal smoothing for video sequences.
+            temporal_config: Configuration for temporal smoothing. If not provided,
+                           uses default configuration.
 
         Returns:
             Depth map as numpy array (H, W) with float32 values in [0, 1] range.
@@ -533,8 +540,17 @@ class DepthEstimator:
             )
 
         if temporal_smoothing:
-            logger.warning("Temporal smoothing not yet implemented, using single frame")
-
+            # Initialize temporal smoother if needed
+            if self._temporal_smoother is None or (
+                temporal_config is not None and temporal_config != self._temporal_config
+            ):
+                if temporal_config is not None:
+                    self._temporal_config = temporal_config
+                else:
+                    self._temporal_config = TemporalSmoothingConfig()
+                self._temporal_smoother = TemporalSmoother(config=self._temporal_config)
+                logger.info("Temporal smoothing enabled")
+        
         # Ensure model is loaded
         if not self._is_loaded:
             self.load_model()
@@ -561,6 +577,11 @@ class DepthEstimator:
 
             # Postprocess
             depth_map = self._postprocess_depth(prediction, original_shape)
+            
+            # Apply temporal smoothing if enabled
+            if temporal_smoothing and self._temporal_smoother is not None:
+                depth_map = self._temporal_smoother.smooth(depth_map, frame)
+                logger.debug("Applied temporal smoothing to depth map")
 
             elapsed_ms = (time.time() - start_time) * 1000
             log_model_inference(
@@ -810,6 +831,16 @@ class DepthEstimator:
         """
         self.close()
 
+    def reset_temporal(self) -> None:
+        """Reset temporal smoothing state for a new video sequence.
+        
+        This should be called when starting a new video or when
+        temporal consistency should be reset.
+        """
+        if self._temporal_smoother is not None:
+            self._temporal_smoother.reset()
+            self._get_depth_logger().debug("Temporal smoothing state reset")
+
     def close(self) -> None:
         """Release model resources."""
         logger = _get_depth_logger()
@@ -820,6 +851,12 @@ class DepthEstimator:
             del self._transform
             self._transform = None
         self._is_loaded = False
+        
+        # Clear temporal smoothing state
+        if self._temporal_smoother is not None:
+            self._temporal_smoother.reset()
+            self._temporal_smoother = None
+            self._temporal_config = None
 
         # Clear GPU cache if using CUDA
         if self.config.device.startswith("cuda") or self.config.device == "auto":
@@ -882,6 +919,17 @@ from video2d3d.depth.processor import (
     process_depth_map,
 )
 
+
+# Import temporal smoothing components
+from video2d3d.depth.temporal import (
+    TemporalSmoother,
+    TemporalSmoothingConfig,
+    TemporalState,
+    TemporalSmoothingError,
+    TemporalSmoothingMethod,
+    create_temporal_smoother,
+    smooth_depth_temporal,
+)
 # Module-level logger for backward compatibility
 logger = _get_depth_logger()
 
@@ -892,19 +940,26 @@ __all__ = [
     "MiDaSModelType",
     "DepthMapProcessor",
     "DepthProcessorConfig",
+    "TemporalSmoother",
+    "TemporalSmoothingConfig",
+    "TemporalState",
     # Enums
     "NormalizationMethod",
     "HoleFillingMethod",
     "ColorMapType",
+    "TemporalSmoothingMethod",
     # Exceptions
     "DepthEstimationError",
     "ModelLoadError",
     "InferenceError",
     "DepthProcessingError",
+    "TemporalSmoothingError",
     # Functions
     "create_estimator",
     "estimate_depth_single",
     "create_processor",
     "process_depth_map",
+    "create_temporal_smoother",
+    "smooth_depth_temporal",
     "_get_depth_logger",
 ]
