@@ -7,14 +7,21 @@ side-by-side, anaglyph, interlaced, and VR formats.
 
 from __future__ import annotations
 
-from typing import Literal
+from typing import TYPE_CHECKING, Literal
+
+if TYPE_CHECKING:
+    from loguru import Logger
 
 from video2d3d.utils.logger import (
     get_logger,
     log_exception,
-    log_performance,
     log_video_processing,
 )
+
+
+def _get_stereo_logger() -> "Logger":
+    """Get the stereo module logger (lazy initialization)."""
+    return get_logger("stereo")
 
 logger = get_logger("stereo")
 
@@ -38,7 +45,9 @@ class StereoGenerator:
         """
         self.format = format
         self.baseline = baseline
-        logger.info(f"StereoGenerator initialized: format={format}, baseline={baseline}")
+        _get_stereo_logger().info(
+            f"StereoGenerator initialized: format={format}, baseline={baseline}"
+        )
 
     def generate_stereo_pair(
         self,
@@ -54,6 +63,7 @@ class StereoGenerator:
         Returns:
             Tuple of (left_eye, right_eye) views.
         """
+        logger = _get_stereo_logger()
         logger.debug(f"Generating stereo pair for {self.format} format")
         try:
             # TODO: Implement stereo pair generation
@@ -66,6 +76,7 @@ class StereoGenerator:
                 format=self.format,
             )
             raise
+
 
     def process_video(
         self,
@@ -82,6 +93,7 @@ class StereoGenerator:
             output_path: Path to save the output video.
             total_frames: Total number of frames (for progress logging).
         """
+        logger = _get_stereo_logger()
         logger.info(f"Processing {len(frames)} frames for stereo output: {output_path}")
 
         if total_frames == 0:
@@ -95,8 +107,8 @@ class StereoGenerator:
                 # Log progress periodically
                 if (i + 1) % 10 == 0 or i == 0:
                     log_video_processing(
-                        input_frame=i,
-                        output_frame=i,
+                        input_file="video_frames",
+                        output_file=output_path,
                         frames_processed=i + 1,
                         total_frames=total_frames,
                         format=self.format,
@@ -113,13 +125,14 @@ class StereoGenerator:
             )
             raise
 
+
     def set_format(self, format: StereoFormat) -> None:
         """Change the output format.
 
         Args:
             format: New output format.
         """
-        logger.info(f"Changing stereo format: {self.format} -> {format}")
+        _get_stereo_logger().info(f"Changing stereo format: {self.format} -> {format}")
         self.format = format
 
 
@@ -137,7 +150,7 @@ class AnaglyphGenerator(StereoGenerator):
         """
         super().__init__(format="anaglyph")
         self.color_method = color_method
-        logger.debug(f"AnaglyphGenerator initialized: color_method={color_method}")
+        _get_stereo_logger().debug(f"AnaglyphGenerator initialized: color_method={color_method}")
 
 
 class SideBySideGenerator(StereoGenerator):
@@ -160,15 +173,17 @@ class SideBySideGenerator(StereoGenerator):
         self.layout = layout
         self.swap_eyes = swap_eyes
         self.half_width = half_width
-        logger.debug(
+        _get_stereo_logger().debug(
             f"SideBySideGenerator initialized: layout={layout}, "
             f"swap_eyes={swap_eyes}, half_width={half_width}"
         )
+
 
 
 __all__ = [
     "StereoGenerator",
     "AnaglyphGenerator",
     "SideBySideGenerator",
-    "logger",
+    "_get_stereo_logger",
 ]
+

@@ -5,8 +5,8 @@ from __future__ import annotations
 import json
 import subprocess
 from pathlib import Path
-
 from typing import Any
+
 import cv2
 import numpy as np
 from loguru import logger
@@ -14,16 +14,12 @@ from loguru import logger
 from video2d3d.utils.config import VideoInputConfig, get_config
 
 from .exceptions import (
-    VideoCodecNotSupportedError,
     VideoCorruptedError,
-    VideoError,
     VideoFileNotFoundError,
     VideoFormatNotSupportedError,
-    VideoMetadataExtractionError,
     VideoValidationError,
 )
 from .metadata import VideoMetadata
-
 
 # Magic bytes (file signatures) for video format detection
 MAGIC_BYTES: dict[str, list[bytes]] = {
@@ -509,7 +505,7 @@ class VideoInputHandler:
         }
         return codec.lower() in supported
 
-    def __enter__(self) -> "VideoInputHandler":
+    def __enter__(self) -> VideoInputHandler:
         """Context manager entry."""
         return self
 

@@ -1407,3 +1407,84 @@ Input: {
 Input: {
   "filePath": "/home/dkp/Documents/Automaker/2dto3d/src/video2d3d/stereo/__init__.py"
 }
+
+🔧 Tool: edit
+Input: {
+  "edits": [
+    {
+      "end": "18#KS|",
+      "lines": [
+        "from __future__ import annotations\n\nfrom typing import TYPE_CHECKING, Literal\n\nif TYPE_CHECKING:\n    from loguru import Logger\n\nfrom video2d3d.utils.logger import (\n    get_logger,\n    log_exception,\n    log_video_processing,\n)\n\n\ndef _get_stereo_logger() -> \"Logger\":\n    \"\"\"Get the stereo module logger (lazy initialization).\"\"\"\n    return get_logger(\"stereo\")\n"
+      ],
+      "op": "replace",
+      "pos": "8#ZQ|"
+    },
+    {
+      "end": "42#XN|",
+      "lines": [
+        "        self.format = format\n        self.baseline = baseline\n        _get_stereo_logger().info(\n            f\"StereoGenerator initialized: format={format}, baseline={baseline}\"\n        )\n"
+      ],
+      "op": "replace",
+      "pos": "39#XM|"
+    },
+    {
+      "end": "68#WH|",
+      "lines": [
+        "    def generate_stereo_pair(\n        self,\n        frame: object,\n        depth_map: object,\n    ) -> tuple:\n        \"\"\"Generate left and right eye views from a frame and depth map.\n\n        Args:\n            frame: Input 2D frame.\n            depth_map: Corresponding depth map.\n\n        Returns:\n            Tuple of (left_eye, right_eye) views.\n        \"\"\"\n        logger = _get_stereo_logger()\n        logger.debug(f\"Generating stereo pair for {self.format} format\")\n        try:\n            # TODO: Implement stereo pair generation\n            logger.warning(\"Stereo pair generation not yet implemented\")\n            return (None, None)\n        except Exception as e:\n            log_exception(\n                \"Stereo pair generation failed\",\n                exception=e,\n                format=self.format,\n            )\n            raise\n"
+      ],
+      "op": "replace",
+      "pos": "43#MV|"
+    },
+    {
+      "end": "114#WH|",
+      "lines": [
+        "    def process_video(\n        self,\n        frames: list,\n        depth_maps: list,\n        output_path: str,\n        total_frames: int = 0,\n    ) -> None:\n        \"\"\"Process video frames to generate stereoscopic output.\n\n        Args:\n            frames: List of input frames.\n            depth_maps: List of corresponding depth maps.\n            output_path: Path to save the output video.\n            total_frames: Total number of frames (for progress logging).\n        \"\"\"\n        logger = _get_stereo_logger()\n        logger.info(f\"Processing {len(frames)} frames for stereo output: {output_path}\")\n\n        if total_frames == 0:\n            total_frames = len(frames)\n\n        try:\n            for i, (frame, depth) in enumerate(zip(frames, depth_maps)):\n                # Generate stereo pair\n                left, right = self.generate_stereo_pair(frame, depth)\n\n                # Log progress periodically\n                if (i + 1) % 10 == 0 or i == 0:\n                    log_video_processing(\n                        input_file=\"video_frames\",\n                        output_file=output_path,\n                        frames_processed=i + 1,\n                        total_frames=total_frames,\n                        format=self.format,\n                    )\n\n            # TODO: Implement video writing\n            logger.warning(\"Video processing not yet implemented\")\n\n        except Exception as e:\n            log_exception(\n                \"Stereo video processing failed\",\n                exception=e,\n                output_path=output_path,\n            )\n            raise\n"
+      ],
+      "op": "replace",
+      "pos": "70#HR|"
+    },
+    {
+      "end": "124#KZ|",
+      "lines": [
+        "    def set_format(self, format: StereoFormat) -> None:\n        \"\"\"Change the output format.\n\n        Args:\n            format: New output format.\n        \"\"\"\n        _get_stereo_logger().info(f\"Changing stereo format: {self.format} -> {format}\")\n        self.format = format\n"
+      ],
+      "op": "replace",
+      "pos": "116#NX|"
+    },
+    {
+      "end": "141#WX|",
+      "lines": [
+        "        super().__init__(format=\"anaglyph\")\n        self.color_method = color_method\n        _get_stereo_logger().debug(f\"AnaglyphGenerator initialized: color_method={color_method}\")\n"
+      ],
+      "op": "replace",
+      "pos": "138#RK|"
+    },
+    {
+      "end": "167#QZ|",
+      "lines": [
+        "        super().__init__(format=\"side_by_side\")\n        self.layout = layout\n        self.swap_eyes = swap_eyes\n        self.half_width = half_width\n        _get_stereo_logger().debug(\n            f\"SideBySideGenerator initialized: layout={layout}, \"\n            f\"swap_eyes={swap_eyes}, half_width={half_width}\"\n        )\n"
+      ],
+      "op": "replace",
+      "pos": "159#WN|"
+    },
+    {
+      "end": "174#VK|",
+      "lines": [
+        "\n__all__ = [\n    \"StereoGenerator\",\n    \"AnaglyphGenerator\",\n    \"SideBySideGenerator\",\n    \"_get_stereo_logger\",\n]\n"
+      ],
+      "op": "replace",
+      "pos": "169#ZJ|"
+    }
+  ],
+  "filePath": "/home/dkp/Documents/Automaker/2dto3d/src/video2d3d/stereo/__init__.py"
+}
+
+🔧 Tool: read
+Input: {
+  "filePath": "/home/dkp/Documents/Automaker/2dto3d/src/video2d3d/video/__init__.py"
+}
+
+🔧 Tool: read
+Input: {
+  "filePath": "/home/dkp/Documents/Automaker/2dto3d/src/video2d3d/video/handler.py"
+}

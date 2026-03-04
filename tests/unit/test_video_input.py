@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
+from collections.abc import Generator
 from pathlib import Path
-from typing import Generator
 from unittest.mock import MagicMock, patch
 
 import cv2
@@ -19,10 +19,11 @@ from video2d3d.video import (
     VideoFormatNotSupportedError,
     VideoInputHandler,
     VideoMetadata,
-    VideoMetadataExtractionError,
     VideoValidationError,
     validate_video,
 )
+
+
 # Fixtures
 @pytest.fixture
 def sample_video_path(tmp_path: Path) -> Path:

@@ -1313,3 +1313,28 @@ Input: {
   "filePath": "/home/dkp/Documents/Automaker/2dto3d/src/video2d3d/video/handler.py",
   "limit": 30
 }
+
+🔧 Tool: edit
+Input: {
+  "edits": [
+    {
+      "end": "26#HK|",
+      "lines": "from __future__ import annotations\n\nimport json\nimport subprocess\nfrom pathlib import Path\nfrom typing import Any\n\nimport cv2\nimport numpy as np\nfrom loguru import logger\n\nfrom video2d3d.utils.config import VideoInputConfig, get_config\n\nfrom .exceptions import (\n    VideoCorruptedError,\n    VideoFileNotFoundError,\n    VideoFormatNotSupportedError,\n    VideoValidationError,\n)\nfrom .metadata import VideoMetadata",
+      "op": "replace",
+      "pos": "3#ZQ|"
+    }
+  ],
+  "filePath": "/home/dkp/Documents/Automaker/2dto3d/src/video2d3d/video/handler.py"
+}
+
+🔧 Tool: bash
+Input: {
+  "command": "cd /home/dkp/Documents/Automaker/2dto3d && .venv/bin/python -m ruff check src/video2d3d/video/ tests/unit/test_video_input.py 2>&1 || echo \"Check completed with warnings\"",
+  "description": "Run ruff linting on updated files"
+}
+
+🔧 Tool: bash
+Input: {
+  "command": "cd /home/dkp/Documents/Automaker/2dto3d && .venv/bin/python -m ruff check --fix src/video2d3d/video/handler.py tests/unit/test_video_input.py 2>&1 || echo \"Fixed some issues\"",
+  "description": "Auto-fix linting issues"
+}
