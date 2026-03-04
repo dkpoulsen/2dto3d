@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "autoLoopWasRunning": true,
+  "maxConcurrency": 3,
+  "projectPath": "/home/dkp/Documents/Automaker/2dto3d",
+  "branchName": null,
+  "runningFeatureIds": [
+    "cli-framework",
+    "video-input-handler",
+    "logging-system"
+  ],
+  "savedAt": "2026-03-04T17:45:10.828Z"
+}

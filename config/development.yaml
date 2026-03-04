@@ -1,0 +1,26 @@
+# Development Environment Configuration
+# This file overrides settings from default.yaml for development
+
+# Processing Settings - optimized for development/testing
+processing:
+  batch_size: 1
+  num_workers: 2
+  use_gpu: false  # Use CPU for development
+  mixed_precision: false
+
+# Depth Estimation Settings
+depth_estimation:
+  model: midas_small  # Use smaller model for faster iteration
+  output_width: 256
+  output_height: 256
+
+# Logging Settings - more verbose for development
+logging:
+  level: DEBUG
+  file: logs/dev.log
+  colorize: true
+
+# Quality Settings
+quality:
+  preset: fast
+  calculate_metrics: true

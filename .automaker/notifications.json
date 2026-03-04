@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "notifications": [
+    {
+      "id": "86aec219-fdce-4c87-8104-73acb15c18ae",
+      "type": "spec_regeneration_complete",
+      "title": "Spec Generation Complete",
+      "message": "Created 20 features from the project specification.",
+      "createdAt": "2026-03-04T17:29:57.356Z",
+      "read": false,
+      "dismissed": false,
+      "projectPath": "/home/dkp/Documents/Automaker/2dto3d"
+    },
+    {
+      "id": "e260bbcd-a8a5-4292-bf62-f19a9997cec9",
+      "type": "feature_verified",
+      "title": "Feature Verified",
+      "message": "\"project-initialization\" has been verified and is complete.",
+      "createdAt": "2026-03-04T17:45:05.810Z",
+      "read": false,
+      "dismissed": false,
+      "featureId": "project-initialization",
+      "projectPath": "/home/dkp/Documents/Automaker/2dto3d"
+    }
+  ]
+}

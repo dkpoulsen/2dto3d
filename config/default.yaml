@@ -1,0 +1,185 @@
+# Project Configuration
+project:
+  name: "2Dto3D Video Converter"
+  version: "0.1.0"
+  description: "Convert 2D videos to 3D using deep learning depth estimation"
+  author: "Automaker"
+
+# Processing Settings
+processing:
+  # Batch size for frame processing
+  batch_size: 4
+  
+  # Number of worker threads for parallel processing
+  num_workers: 4
+  
+  # Use GPU acceleration if available
+  use_gpu: true
+  
+  # GPU device ID (0 for first GPU)
+  gpu_device: 0
+  
+  # Memory management
+  max_memory_percent: 80  # Maximum memory usage before cleanup
+  
+  # Frame processing
+  frame_buffer_size: 100
+  
+  # Enable mixed precision for faster processing
+  mixed_precision: true
+
+# Video Input Settings
+video_input:
+  # Supported input formats
+  supported_formats:
+    - mp4
+    - avi
+    - mov
+    - mkv
+    - webm
+    - flv
+  
+  # Default input resolution (0 = keep original)
+  default_width: 0
+  default_height: 0
+  
+  # Frame rate (0 = keep original)
+  default_fps: 0
+  
+  # Maximum input resolution for processing
+  max_width: 3840
+  max_height: 2160
+
+# Video Output Settings
+video_output:
+  # Default output format
+  format: mp4
+  
+  # Video codec
+  codec: libx264
+  
+  # Quality preset (ultrafast, superfast, veryfast, faster, fast, medium, slow, slower, veryslow)
+  preset: medium
+  
+  # CRF quality (0-51, lower = better quality, 23 is default)
+  crf: 23
+  
+  # Pixel format
+  pixel_format: yuv420p
+
+# Depth Estimation Settings
+depth_estimation:
+  # Model to use for depth estimation
+  model: midas_small  # Options: midas_small, midas_hybrid, dpt_large, dpt_hybrid
+  
+  # Model path (relative to models/ directory or absolute path)
+  model_path: ""
+  
+  # Download model if not found
+  auto_download: true
+  
+  # Depth map resolution
+  output_width: 384
+  output_height: 384
+  
+  # Depth range normalization
+  min_depth: 0.0
+  max_depth: 1.0
+  
+  # Enable temporal consistency between frames
+  temporal_consistency: true
+  temporal_smoothing_factor: 0.5
+
+# Depth Map Processing
+depth_processing:
+  # Edge-aware smoothing
+  edge_aware_smoothing: true
+  smoothing_radius: 3
+  
+  # Bilateral filter settings
+  bilateral_filter: true
+  bilateral_sigma_color: 0.1
+  bilateral_sigma_space: 5
+  
+  # Hole filling for occlusions
+  hole_filling: true
+  hole_filling_method: "inpaint"  # Options: inpaint, nearest, linear
+  
+  # Depth sharpening
+  sharpening: false
+  sharpening_amount: 0.5
+
+# Stereoscopic Generation Settings
+stereo_generation:
+  # Output 3D format
+  format: side_by_side  # Options: side_by_side, anaglyph, interlaced, vr
+  
+  # Baseline distance for virtual camera separation (in normalized units)
+  baseline: 0.05
+  
+  # Focal length for depth-based rendering
+  focal_length: 1.0
+  
+  # Convergence distance (where left and right views align)
+  convergence: 0.5
+  
+  # Anaglyph settings (when format is 'anaglyph')
+  anaglyph:
+    type: red_cyan  # Options: red_cyan, green_magenta, blue_amber
+    color_method: "dubois"  # Options: color, gray, half_color, dubois, optimized
+  
+  # Side-by-side settings
+  side_by_side:
+    layout: horizontal  # Options: horizontal, vertical
+    swap_eyes: false
+    half_width: false  # Half-resolution for each eye
+
+# Quality Settings
+quality:
+  # Processing quality preset
+  preset: balanced  # Options: fast, balanced, quality
+  
+  # Enable post-processing
+  post_processing: true
+  
+  # Output quality metrics
+  calculate_metrics: false
+
+# Logging Settings
+logging:
+  # Log level: DEBUG, INFO, WARNING, ERROR, CRITICAL
+  level: INFO
+  
+  # Log file path (empty for console only)
+  file: logs/video2d3d.log
+  
+  # Log format
+  format: "{time:YYYY-MM-DD HH:mm:ss} | {level: <8} | {name}:{function}:{line} - {message}"
+  
+  # Rotation settings
+  rotation: "10 MB"
+  retention: "7 days"
+  
+  # Enable colored output
+  colorize: true
+
+# Web API Settings (if enabled)
+web_api:
+  # Enable web API
+  enabled: false
+  
+  # Host and port
+  host: "0.0.0.0"
+  port: 8000
+  
+  # API prefix
+  prefix: "/api/v1"
+  
+  # CORS settings
+  cors_origins:
+    - "http://localhost:3000"
+    - "http://localhost:8080"
+  
+  # Upload settings
+  max_upload_size: 500  # MB
+  upload_dir: "uploads"

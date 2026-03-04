@@ -1,0 +1,14 @@
+{
+  "id": "midas-integration",
+  "category": "Core",
+  "title": "MiDaS Depth Estimation Model Integration",
+  "description": "Integrate the MiDaS pre-trained depth estimation model with PyTorch, implement model loading from cache or download, and create single-frame depth prediction functionality.",
+  "status": "backlog",
+  "priority": 1,
+  "complexity": "complex",
+  "dependencies": [
+    "frame-extraction"
+  ],
+  "createdAt": "2026-03-04T17:29:57.348Z",
+  "updatedAt": "2026-03-04T17:29:57.348Z"
+}

@@ -1,0 +1,33 @@
+# Production Environment Configuration
+# This file overrides settings from default.yaml for production use
+
+# Processing Settings - optimized for quality and performance
+processing:
+  batch_size: 8
+  num_workers: 8
+  use_gpu: true
+  gpu_device: 0
+  mixed_precision: true
+
+# Depth Estimation Settings
+depth_estimation:
+  model: dpt_large  # Use best quality model
+  output_width: 512
+  output_height: 512
+
+# Video Output Settings
+video_output:
+  preset: slow  # Better compression
+  crf: 20  # Higher quality
+
+# Logging Settings
+logging:
+  level: INFO
+  file: logs/production.log
+  colorize: false
+
+# Quality Settings
+quality:
+  preset: quality
+  post_processing: true
+  calculate_metrics: true

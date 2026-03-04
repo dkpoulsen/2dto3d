@@ -1,0 +1,21 @@
+{
+  "id": "web-api-server",
+  "category": "API",
+  "title": "FastAPI Web Service",
+  "description": "Build a REST API using FastAPI that provides HTTP endpoints for video upload, job submission, status checking, and result download to enable remote processing and web UI integration.",
+  "status": "backlog",
+  "priority": 3,
+  "complexity": "complex",
+  "dependencies": [
+    "batch-video-queue"
+  ],
+  "createdAt": "2026-03-04T17:29:57.354Z",
+  "updatedAt": "2026-03-04T17:29:57.354Z",
+  "model": "zai-coding-plan/glm-5",
+  "thinkingLevel": "none",
+  "planningMode": "spec",
+  "requirePlanApproval": true,
+  "skipTests": false,
+  "branchName": "main",
+  "descriptionHistory": []
+}
