@@ -3,14 +3,14 @@
   "category": "Core",
   "title": "Frame Extraction Engine",
   "description": "Create an efficient frame extraction system that reads video streams, decodes frames, handles memory management for large videos, and supports configurable frame sampling rates.",
-  "status": "verified",
+  "status": "pipeline_step_mmcc3rzz_k0qltm",
   "priority": 1,
   "complexity": "moderate",
   "dependencies": [
     "video-input-handler"
   ],
   "createdAt": "2026-03-04T17:29:57.346Z",
-  "updatedAt": "2026-03-04T18:31:52.330Z",
+  "updatedAt": "2026-03-04T18:26:44.504Z",
   "model": "zai-coding-plan/glm-5",
   "thinkingLevel": "none",
   "planningMode": "spec",

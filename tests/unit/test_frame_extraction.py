@@ -618,3 +618,108 @@ class TestEdgeCases:
 
         indices = extractor.get_sample_indices()
         assert len(indices) == 1  # Only frame 0
+
+    def test_frame_preprocessing_normalize(
+        self, sample_video_path: Path, mock_video_capture: MagicMock
+    ) -> None:
+        """Test frame preprocessing with normalization."""
+        sample_video_path.touch()
+
+        config = FrameExtractorConfig(normalize=True)
+        extractor = FrameExtractor(
+            sample_video_path,
+            config=config,
+            validate_video=False,
+        )
+        frame = extractor.get_frame(0)
+
+        # Frame should be normalized to float32 in [0, 1]
+        assert frame.dtype == np.float32
+        assert frame.max() <= 1.0
+        assert frame.min() >= 0.0
+
+    def test_frame_preprocessing_no_rgb_conversion(
+        self, sample_video_path: Path, mock_video_capture: MagicMock
+    ) -> None:
+        """Test frame preprocessing without RGB conversion."""
+        sample_video_path.touch()
+
+        config = FrameExtractorConfig(convert_to_rgb=False)
+        extractor = FrameExtractor(
+            sample_video_path,
+            config=config,
+            validate_video=False,
+        )
+
+        # Just verify it doesn't crash - the color space is still 3 channels
+        frame = extractor.get_frame(0)
+        assert frame is not None
+        assert len(frame.shape) == 3
+
+    def test_generator_with_start_frame(
+        self, sample_video_path: Path, mock_video_capture: MagicMock
+    ) -> None:
+        """Test extract_frames generator with start_frame > 0."""
+        sample_video_path.touch()
+
+        extractor = FrameExtractor(sample_video_path, validate_video=False)
+        frames = list(extractor.extract_frames(start_frame=50, end_frame=55))
+
+        assert len(frames) == 5
+        # First frame should be 50
+        assert frames[0][0] == 50
+
+    def test_seek_invalid_frame(
+        self, sample_video_path: Path, mock_video_capture: MagicMock
+    ) -> None:
+        """Test seek with frame not in sample indices."""
+        sample_video_path.touch()
+
+        extractor = FrameExtractor(
+            sample_video_path,
+            sampling_interval=10,
+            validate_video=False,
+        )
+
+        # Frame 5 is not in sample indices (0, 10, 20, ...)
+        with pytest.raises(FrameExtractionError, match="not in sample indices"):
+            extractor.seek(5)
+
+    def test_close_method(
+        self, sample_video_path: Path, mock_video_capture: MagicMock
+    ) -> None:
+        """Test close method releases resources."""
+        sample_video_path.touch()
+
+        extractor = FrameExtractor(sample_video_path, validate_video=False)
+        extractor.get_frame(0)  # Load a frame
+
+        extractor.close()
+
+        # Buffer should be cleared
+        stats = extractor.get_buffer_stats()
+        assert stats["size"] == 0
+
+    def test_buffer_memory_usage_property(self, sample_frame: np.ndarray) -> None:
+        """Test buffer memory_usage_mb property."""
+        buffer = FrameBuffer(max_size=10, max_memory_mb=100.0)
+
+        buffer.put(0, sample_frame)
+        assert buffer.memory_usage_mb > 0
+
+    def test_buffer_cache_hit(
+        self, sample_video_path: Path, mock_video_capture: MagicMock
+    ) -> None:
+        """Test buffer returns cached frame on second request."""
+        sample_video_path.touch()
+
+        extractor = FrameExtractor(sample_video_path, validate_video=False)
+
+        # First call reads from video
+        frame1 = extractor.get_frame(0)
+
+        # Second call should come from buffer
+        frame2 = extractor.get_frame(0)
+
+        # Frames should be identical (same object from buffer)
+        np.testing.assert_array_equal(frame1, frame2)

@@ -1051,3 +1051,100 @@ Input: {
   "command": "export CI=true DEBIAN_FRONTEND=noninteractive GIT_TERMINAL_PROMPT=0 GCM_INTERACTIVE=never HOMEBREW_NO_AUTO_UPDATE=1 GIT_EDITOR=: EDITOR=: VISUAL='' GIT_SEQUENCE_EDITOR=: GIT_MERGE_AUTOEDIT=no GIT_PAGER=cat PAGER=cat npm_config_yes=true PIP_NO_INPUT=1 YARN_ENABLE_IMMUTABLE_INSTALLS=false; git diff src/video2d3d/video/handler.py | head -30",
   "description": "Check handler changes"
 }
+
+🔧 Tool: bash
+Input: {
+  "command": "export CI=true DEBIAN_FRONTEND=noninteractive GIT_TERMINAL_PROMPT=0 GCM_INTERACTIVE=never HOMEBREW_NO_AUTO_UPDATE=1 GIT_EDITOR=: EDITOR=: VISUAL='' GIT_SEQUENCE_EDITOR=: GIT_MERGE_AUTOEDIT=no GIT_PAGER=cat PAGER=cat npm_config_yes=true PIP_NO_INPUT=1 YARN_ENABLE_IMMUTABLE_INSTALLS=false; git add -A && git commit -m \"$(cat <<'EOF'\nstyle(video): clean up unused imports in handler\n\n- Remove unused exception imports\n- Reorder imports for consistency\n- Update automaker tracking files\nEOF\n)\"",
+  "description": "Commit final style changes"
+}
+
+🔧 Tool: bash
+Input: {
+  "command": "export CI=true DEBIAN_FRONTEND=noninteractive GIT_TERMINAL_PROMPT=0 GCM_INTERACTIVE=never HOMEBREW_NO_AUTO_UPDATE=1 GIT_EDITOR=: EDITOR=: VISUAL='' GIT_SEQUENCE_EDITOR=: GIT_MERGE_AUTOEDIT=no GIT_PAGER=cat PAGER=cat npm_config_yes=true PIP_NO_INPUT=1 YARN_ENABLE_IMMUTABLE_INSTALLS=false; git status && echo \"---\" && git log --oneline -7",
+  "description": "Final verification"
+}
+<summary>
+## Summary: Commit Changes - CLI Framework
+
+### Commits Created (Conventional Commit Format)
+
+| Commit Hash | Type | Message |
+|-------------|------|---------|
+| `63f0cfe` | **feat** | feat(cli): implement foundational CLI framework with typer |
+| `fd22996` | refactor | refactor(cli,utils,video): improve type hints and thread safety |
+| `51d7de2` | chore | chore: update automaker tracking and fix duplicate import |
+| `e653879` | chore | chore: update cli-framework agent output |
+| `2d8fd05` | refactor | refactor(depth): add lazy logger initialization |
+| `ca10668` | style | style(video): clean up unused imports in handler |
+
+### Main Feature Commit
+
+**Commit Hash:** `63f0cfe132884e1750b0e2894e9a2fc82259cb92`
+
+**Commit Message:**
+```
+feat(cli): implement foundational CLI framework with typer
+
+Add a complete CLI framework for the 2Dto3D video converter using typer
+(built on click) with the following features:
+
+CLI Structure:
+- Main entry point via `video2d3d` command or `python -m video2d3d`
+- Global options: --version, --verbose, --log-level, --log-file
+- Subcommands: convert, info, list-models, list-formats
+
+Commands:
+- convert: 2D to 3D video conversion with model/format validation
+- info: Display system and configuration information
+- list-models: Show available depth estimation models
+- list-formats: Show available 3D output formats
+
+Improvements:
+- Add validation for input files, models, and output formats
+- Define constants for DEPTH_MODELS and OUTPUT_FORMATS
+- Rename callback function to avoid naming conflict with main()
+- Use output_format instead of format to avoid shadowing built-in
+- Modern type hints using str | None syntax
+
+Infrastructure:
+- Configuration system with YAML files (default, development, production)
+- Structured logging with loguru
+- Video input/output handlers with FFmpeg integration
+- Project structure with src/ layout
+
+Entry Points:
+- video2d3d.cli:main (primary)
+- v2d3d.cli:main (alias)
+- Module execution: python -m video2d3d
+
+Closes: cli-framework
+```
+
+### Files Modified (96 files, 8531 insertions)
+
+**Core CLI Files:**
+- `src/video2d3d/cli.py` - Main CLI implementation with typer
+- `src/video2d3d/__main__.py` - Module entry point
+
+**Infrastructure Files:**
+- `src/video2d3d/utils/config.py` - YAML configuration system
+- `src/video2d3d/utils/logger.py` - Structured logging with loguru
+- `src/video2d3d/video/handler.py` - Video I/O handlers
+- `src/video2d3d/video/exceptions.py` - Custom exceptions
+- `src/video2d3d/video/metadata.py` - Video metadata handling
+
+**Project Setup:**
+- `pyproject.toml` - Project configuration and entry points
+- `setup.py` - Package setup
+- `requirements.txt` / `requirements-dev.txt` - Dependencies
+
+**Configuration:**
+- `config/default.yaml` - Default settings
+- `config/development.yaml` - Development overrides
+- `config/production.yaml` - Production overrides
+
+### Notes for Developer
+- Working tree has minor automaker tracking file updates that will be committed by the system
+- All CLI commands verified working with subprocess tests
+- Playwright verification not applicable for CLI tools
+</summary>

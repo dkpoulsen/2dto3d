@@ -3,19 +3,20 @@
   "category": "Core",
   "title": "Comprehensive Logging System",
   "description": "Implement a structured logging system with multiple log levels, file rotation, console output, and detailed error tracking to support debugging and monitoring throughout the pipeline.",
-  "status": "pipeline_step_mmcbz6pm_scmfew",
+  "status": "verified",
   "priority": 2,
   "complexity": "simple",
   "dependencies": [
     "project-initialization"
   ],
   "createdAt": "2026-03-04T17:29:57.347Z",
-  "updatedAt": "2026-03-04T17:57:02.681Z",
+  "updatedAt": "2026-03-04T18:11:05.313Z",
   "model": "zai-coding-plan/glm-5",
   "thinkingLevel": "none",
   "planningMode": "spec",
   "requirePlanApproval": true,
   "skipTests": false,
   "branchName": "main",
-  "descriptionHistory": []
+  "descriptionHistory": [],
+  "summary": "## Summary: Comprehensive Logging System - Code Review & Update\n\n### Issues Found During Review\n\n**1. logger.py - Critical Bugs:**\n- `log_exception` function used incorrect loguru API: `opt(exception=exception)` expects a boolean, not an Exception object\n- Missing `_logging_configured = True` statement after handlers were configured\n- Type hint for `get_logger()` returned `Any` instead of `\"Logger\"`\n- Type hint for `log_context()` returned `Any` instead of `\"Logger\"`\n- No thread-safety for the `_logging_configured` global flag\n\n**2. depth/__init__.py - Code Quality Issues:**\n- Module-level `logger = get_logger(\"depth\")` configured logging before CLI could set options\n- `import time` was inside a function instead of at module level\n\n**3. stereo/__init__.py - Bugs:**\n- Module-level `logger = get_logger(\"stereo\")` configured logging before CLI could set options\n- `log_video_processing()` call used wrong parameter names (`input_frame`/`output_frame` instead of `input_file`/`output_file`)\n\n**4. video/handler.py - Issues:**\n- Used `from loguru import logger` directly, bypassing our configured logging system\n- No lazy logger initialization\n\n### Code Changes & Improvements Made\n\n**1. src/video2d3d/utils/logger.py:**\n- Added `import threading` for thread-safe configuration flag\n- Added `TYPE_CHECKING` import and `Logger` type hint\n- Created `_logging_lock = threading.Lock()` for thread-safety\n- Fixed `log_exception()` to use `opt(exception=True).error()` correctly\n- Changed `get_logger()` return type from `Any` to `\"Logger\"`\n- Changed `log_context()` return type from `Any` to `\"Logger\"`\n- Added `with _logging_lock:` blocks around `_logging_configured` flag access\n- Added missing `_logging_configured = True` after handler configuration\n\n**2. src/video2d3d/depth/__init__.py:**\n- Moved `import time` to module level\n- Added lazy logger initialization via `_get_depth_logger()` function\n- Replaced all module-level `logger.` calls with `_get_depth_logger().` calls\n- Updated `__all__` exports\n\n**3. src/video2d3d/stereo/__init__.py:**\n- Added `TYPE_CHECKING` import and `Logger` type hint\n- Created `_get_stereo_logger()` function for lazy initialization\n- Fixed `log_video_processing()` parameter names (`input_file`/`output_file`)\n- Replaced all module-level `logger.` calls with `_get_stereo_logger().` calls\n- Updated `__all__` exports\n\n**4. src/video2d3d/video/handler.py:**\n- Replaced `from loguru import logger` with `from video2d3d.utils.logger import get_logger`\n- Created `_get_video_logger()` function for lazy initialization\n- Replaced all 21 `logger.` calls with `_get_video_logger().` calls\n\n### Files Modified\n- `src/video2d3d/utils/logger.py` (API fixes, thread-safety, type hints)\n- `src/video2d3d/depth/__init__.py` (lazy logger, import fix)\n- `src/video2d3d/stereo/__init__.py` (lazy logger, parameter fix)\n- `src/video2d3d/video/handler.py` (unified logging system)\n\n### Verification Status\n- All Python syntax checks pass\n- All verification tests pass:\n  - Basic logging configuration\n  - Log levels (DEBUG, INFO, WARNING, ERROR, CRITICAL)\n  - Log context binding\n  - Exception logging with context\n  - Lazy logger initialization in modules\n  - LogLevel constants\n- CLI commands work correctly:\n  - `video2d3d info` - displays configuration\n  - `video2d3d list-models` - lists available models\n  - `video2d3d list-formats` - lists available formats\n- Log files created in `logs/` directory with proper formatting\n- Error logs separated into `*_errors.log` files"
 }

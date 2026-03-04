@@ -21,6 +21,50 @@
       "dismissed": false,
       "featureId": "project-initialization",
       "projectPath": "/home/dkp/Documents/Automaker/2dto3d"
+    },
+    {
+      "id": "24aa3415-3f92-4cd6-83ce-b1384d451f01",
+      "type": "feature_verified",
+      "title": "Feature Verified",
+      "message": "\"cli-framework\" has been verified and is complete.",
+      "createdAt": "2026-03-04T18:01:52.880Z",
+      "read": false,
+      "dismissed": false,
+      "featureId": "cli-framework",
+      "projectPath": "/home/dkp/Documents/Automaker/2dto3d"
+    },
+    {
+      "id": "c81a0357-f63c-4ed9-9224-2f267233f99e",
+      "type": "feature_verified",
+      "title": "Feature Verified",
+      "message": "\"video-input-handler\" has been verified and is complete.",
+      "createdAt": "2026-03-04T18:09:29.601Z",
+      "read": false,
+      "dismissed": false,
+      "featureId": "video-input-handler",
+      "projectPath": "/home/dkp/Documents/Automaker/2dto3d"
+    },
+    {
+      "id": "d3524b70-ac27-4cc2-95ea-1a8ac5004eba",
+      "type": "feature_verified",
+      "title": "Feature Verified",
+      "message": "\"logging-system\" has been verified and is complete.",
+      "createdAt": "2026-03-04T18:11:05.310Z",
+      "read": false,
+      "dismissed": false,
+      "featureId": "logging-system",
+      "projectPath": "/home/dkp/Documents/Automaker/2dto3d"
+    },
+    {
+      "id": "4a01d6c9-a27a-4c61-b622-54b30d4b5e26",
+      "type": "feature_verified",
+      "title": "Feature Verified",
+      "message": "\"frame-extraction\" has been verified and is complete.",
+      "createdAt": "2026-03-04T18:31:52.333Z",
+      "read": false,
+      "dismissed": false,
+      "featureId": "frame-extraction",
+      "projectPath": "/home/dkp/Documents/Automaker/2dto3d"
     }
   ]
 }

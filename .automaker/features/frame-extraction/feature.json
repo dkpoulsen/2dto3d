@@ -3,19 +3,20 @@
   "category": "Core",
   "title": "Frame Extraction Engine",
   "description": "Create an efficient frame extraction system that reads video streams, decodes frames, handles memory management for large videos, and supports configurable frame sampling rates.",
-  "status": "backlog",
+  "status": "verified",
   "priority": 1,
   "complexity": "moderate",
   "dependencies": [
     "video-input-handler"
   ],
   "createdAt": "2026-03-04T17:29:57.346Z",
-  "updatedAt": "2026-03-04T17:29:57.346Z",
+  "updatedAt": "2026-03-04T18:31:52.338Z",
   "model": "zai-coding-plan/glm-5",
   "thinkingLevel": "none",
   "planningMode": "spec",
   "requirePlanApproval": true,
   "skipTests": false,
   "branchName": "main",
-  "descriptionHistory": []
+  "descriptionHistory": [],
+  "summary": "## Summary: Frame Extraction Engine\n\n### Changes Implemented\n- **FrameExtractor class** - Main extraction engine with configurable sampling, preprocessing, and memory-efficient iteration\n- **FrameBuffer class** - Circular buffer with LRU eviction for memory-managed frame caching\n- **SamplingStrategy enum** - Multiple sampling strategies (ALL, INTERVAL, UNIFORM, KEYFRAME, CUSTOM)\n- **FrameExtractorConfig dataclass** - Configuration with validation for sampling parameters\n- **FrameInfo dataclass** - Frame metadata container\n- **4 new exception classes** - FrameExtractionError, FrameBufferError, MemoryLimitExceededError, InvalidSamplingStrategyError\n- **Convenience functions** - `extract_frames()` and `extract_frame_at()` for simple use cases\n- **Comprehensive unit tests** - 620 lines of tests covering all components\n\n### Files Modified\n- `src/video2d3d/video/frame_extractor.py` (NEW - 805 lines)\n- `src/video2d3d/video/exceptions.py` (+93 lines)\n- `src/video2d3d/video/__init__.py` (+32 lines)\n- `tests/unit/test_frame_extraction.py` (NEW - 620 lines)\n\n### Commit Details\n- **Commit Hash:** `99754ad5a793056e026f8ca87435fbdd983458ea`\n- **Commit Message:**\n```\nfeat(video): add frame extraction engine with memory management\n\nImplement comprehensive frame extraction system with:\n\n- FrameExtractor class for efficient video frame decoding\n- FrameBuffer for memory-managed frame caching with LRU eviction\n- Multiple sampling strategies: all, interval, uniform, keyframe, custom\n- Configurable frame preprocessing (resize, RGB conversion, normalization)\n- Generator-based iteration for memory-efficient processing\n- Input validation with descriptive error messages\n\nIncludes complete unit test coverage for all components.\n```\n\n### Notes for Developer\n- Tests require `pytest` and `opencv-python` to run\n- The `prefetch_count` config option is reserved for future implementation\n- Keyframe detection uses estimated GOP size (30 frames) as OpenCV doesn't provide direct keyframe access\n- All config parameters are validated at initialization with descriptive error messages"
 }

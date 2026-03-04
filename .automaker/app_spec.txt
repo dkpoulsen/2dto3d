@@ -48,6 +48,22 @@
       <name>Project Setup and Configuration</name>
       <description>Initialize the Python project structure with proper virtual environment setup, directory organization, requirements.txt, setup.py, and configuration management using YAML files for settings.</description>
     </feature>
+    <feature>
+      <name>Command-Line Interface Framework</name>
+      <description>Build a foundational CLI framework using argparse or click that handles command parsing, help messages, and provides the basic entry point structure for all subsequent commands.</description>
+    </feature>
+    <feature>
+      <name>Video Input Processing Module</name>
+      <description>Implement robust video file input handling using OpenCV/FFmpeg that validates video formats, extracts metadata (resolution, fps, codec), and handles error cases for corrupted or unsupported files.</description>
+    </feature>
+    <feature>
+      <name>Comprehensive Logging System</name>
+      <description>Implement a structured logging system with multiple log levels, file rotation, console output, and detailed error tracking to support debugging and monitoring throughout the pipeline.</description>
+    </feature>
+    <feature>
+      <name>Frame Extraction Engine</name>
+      <description>Create an efficient frame extraction system that reads video streams, decodes frames, handles memory management for large videos, and supports configurable frame sampling rates.</description>
+    </feature>
   </implemented_features>
 
   <additional_requirements>
