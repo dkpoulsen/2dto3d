@@ -1201,3 +1201,90 @@ Input: {
   ],
   "filePath": "/home/dkp/Documents/Automaker/2dto3d/tests/unit/test_video_input.py"
 }
+
+🔧 Tool: todowrite
+Input: {
+  "todos": [
+    {
+      "content": "Create video exceptions module with custom error classes",
+      "priority": "high",
+      "status": "completed"
+    },
+    {
+      "content": "Create video metadata dataclass for extracted info",
+      "priority": "high",
+      "status": "completed"
+    },
+    {
+      "content": "Implement VideoInputHandler class with validation",
+      "priority": "high",
+      "status": "completed"
+    },
+    {
+      "content": "Add format validation using file extension and magic bytes",
+      "priority": "high",
+      "status": "completed"
+    },
+    {
+      "content": "Implement metadata extraction (resolution, fps, codec, duration)",
+      "priority": "high",
+      "status": "completed"
+    },
+    {
+      "content": "Add error handling for corrupted/unsupported files",
+      "priority": "high",
+      "status": "completed"
+    },
+    {
+      "content": "Update video/__init__.py with exports",
+      "priority": "medium",
+      "status": "completed"
+    },
+    {
+      "content": "Create unit tests for video input handler",
+      "priority": "high",
+      "status": "completed"
+    },
+    {
+      "content": "Code Review: Fix type hint inconsistencies",
+      "priority": "high",
+      "status": "completed"
+    },
+    {
+      "content": "Code Review: Fix json import location",
+      "priority": "medium",
+      "status": "completed"
+    },
+    {
+      "content": "Code Review: Fix __exit__ type annotation",
+      "priority": "medium",
+      "status": "completed"
+    },
+    {
+      "content": "Code Review: Fix return type for FFmpeg metadata",
+      "priority": "medium",
+      "status": "completed"
+    },
+    {
+      "content": "Code Review: Improve test clarity",
+      "priority": "medium",
+      "status": "completed"
+    },
+    {
+      "content": "Run linting and type checking",
+      "priority": "medium",
+      "status": "in_progress"
+    },
+    {
+      "content": "Verify with Playwright test",
+      "priority": "high",
+      "status": "pending"
+    }
+  ]
+}
+
+🔧 Tool: bash
+Input: {
+  "command": "cd /home/dkp/Documents/Automaker/2dto3d && .venv/bin/python -m ruff check src/video2d3d/video/ tests/unit/test_video_input.py 2>&1 || echo \"Check completed with warnings\"",
+  "description": "Run ruff linting on updated files"
+}
