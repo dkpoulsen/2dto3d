@@ -151,3 +151,96 @@ class VideoMetadataExtractionError(VideoError):
         if reason:
             message += f": {reason}"
         super().__init__(message, file_path)
+
+
+class FrameExtractionError(VideoError):
+    """Raised when frame extraction fails."""
+
+    def __init__(
+        self,
+        file_path: Path,
+        frame_number: int | None = None,
+        reason: str | None = None,
+    ) -> None:
+        """Initialize FrameExtractionError.
+
+        Args:
+            file_path: Path to the video file.
+            frame_number: The frame number that failed to extract.
+            reason: Specific reason for the failure.
+        """
+        self.frame_number = frame_number
+        self.reason = reason
+        message = "Failed to extract frame"
+        if frame_number is not None:
+            message += f" at index {frame_number}"
+        if reason:
+            message += f": {reason}"
+        super().__init__(message, file_path)
+
+
+class FrameBufferError(VideoError):
+    """Raised when frame buffer operations fail."""
+
+    def __init__(
+        self,
+        message: str,
+        buffer_size: int | None = None,
+        file_path: Path | None = None,
+    ) -> None:
+        """Initialize FrameBufferError.
+
+        Args:
+            message: Error description.
+            buffer_size: Current buffer size if available.
+            file_path: Path to the video file.
+        """
+        self.buffer_size = buffer_size
+        super().__init__(message, file_path)
+
+
+class MemoryLimitExceededError(VideoError):
+    """Raised when memory limit is exceeded during frame extraction."""
+
+    def __init__(
+        self,
+        file_path: Path,
+        required_mb: float,
+        available_mb: float,
+    ) -> None:
+        """Initialize MemoryLimitExceededError.
+
+        Args:
+            file_path: Path to the video file.
+            required_mb: Required memory in megabytes.
+            available_mb: Available memory in megabytes.
+        """
+        self.required_mb = required_mb
+        self.available_mb = available_mb
+        message = (
+            f"Memory limit exceeded: required {required_mb:.1f}MB, "
+            f"available {available_mb:.1f}MB"
+        )
+        super().__init__(message, file_path)
+
+
+class InvalidSamplingStrategyError(VideoError):
+    """Raised when an invalid sampling strategy is specified."""
+
+    def __init__(
+        self,
+        strategy: str,
+        valid_strategies: list[str] | None = None,
+    ) -> None:
+        """Initialize InvalidSamplingStrategyError.
+
+        Args:
+            strategy: The invalid strategy name.
+            valid_strategies: List of valid strategy names.
+        """
+        self.strategy = strategy
+        self.valid_strategies = valid_strategies or []
+        message = f"Invalid sampling strategy: {strategy}"
+        if self.valid_strategies:
+            message += f". Valid strategies: {', '.join(self.valid_strategies)}"
+        super().__init__(message)
