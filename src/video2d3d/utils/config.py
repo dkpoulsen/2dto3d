@@ -47,7 +47,18 @@ class ProcessingConfig:
     max_memory_percent: int = 80
     frame_buffer_size: int = 100
     mixed_precision: bool = True
-
+    
+    # GPU memory management
+    auto_batch_size: bool = True
+    min_batch_size: int = 1
+    max_batch_size: int = 32
+    memory_fraction: float = 0.8
+    fallback_to_cpu: bool = True
+    pinned_memory: bool = True
+    
+    # GPU optimization
+    cudnn_benchmark: bool = True
+    async_transfer: bool = True
 
 @dataclass
 class VideoInputConfig:

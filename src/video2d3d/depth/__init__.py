@@ -597,8 +597,18 @@ class DepthEstimator:
             ) from e
 
     def _fallback_to_cpu(self) -> None:
-        """Fall back to CPU processing when GPU fails."""
+        """Fall back to CPU processing when GPU fails.
+        
+        This method moves the model to CPU and updates the config.
+        It's safe to call multiple times - subsequent calls are no-ops.
+        """
         logger = _get_depth_logger()
+        
+        # Check if already on CPU
+        if self.config.device == "cpu":
+            logger.debug("Already on CPU, skipping fallback")
+            return
+            
         logger.warning("Falling back to CPU processing")
         
         # Move model to CPU
@@ -735,13 +745,11 @@ class DepthEstimator:
                         
                         # If we can't reduce further, try CPU fallback
                         if self.config.fallback_to_cpu:
-                            logger.warning("Falling back to CPU processing")
                             self._fallback_to_cpu()
-                            # Continue processing remaining frames on CPU
-                            remaining_frames = frames[i:]
-                            return depth_maps + self.estimate_depth_batch(
-                                remaining_frames, batch_size=min(batch_size, 4)
-                            )
+                            # Reset batch size for CPU and continue in same loop
+                            # This avoids recursive call and potential stack overflow
+                            current_batch_size = min(batch_size, 4)
+                            continue  # Retry same batch on CPU
                         
                         raise InferenceError(
                             f"GPU out of memory and CPU fallback disabled",

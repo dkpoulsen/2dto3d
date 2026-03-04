@@ -21,6 +21,35 @@ from video2d3d.utils.logger import (
     set_log_level,
     is_logging_configured,
 )
+from video2d3d.utils.gpu import (
+    # Classes
+    GPUConfig,
+    GPUInfo,
+    DeviceSelection,
+    DeviceType,
+    # Exceptions
+    GPUError,
+    OutOfMemoryError,
+    # Functions
+    is_torch_available,
+    is_cuda_available,
+    is_mps_available,
+    get_device_count,
+    get_gpu_info,
+    get_all_gpu_info,
+    select_best_gpu,
+    select_device,
+    clear_gpu_memory,
+    get_memory_usage,
+    estimate_memory_requirement,
+    compute_optimal_batch_size,
+    create_pinned_tensor,
+    transfer_to_gpu,
+    transfer_to_cpu,
+    with_oom_retry,
+    configure_cudnn,
+    setup_device,
+)
 
 __all__ = [
     # Config
@@ -42,22 +71,29 @@ __all__ = [
     "log_memory_usage",
     "set_log_level",
     "is_logging_configured",
-]
-
-from video2d3d.utils.config import (
-    Config,
-    get_config,
-    get_config_path,
-    get_environment,
-    load_config,
-    reload_config,
-)
-
-__all__ = [
-    "Config",
-    "get_config",
-    "get_config_path",
-    "get_environment",
-    "load_config",
-    "reload_config",
+    # GPU
+    "GPUConfig",
+    "GPUInfo",
+    "DeviceSelection",
+    "DeviceType",
+    "GPUError",
+    "OutOfMemoryError",
+    "is_torch_available",
+    "is_cuda_available",
+    "is_mps_available",
+    "get_device_count",
+    "get_gpu_info",
+    "get_all_gpu_info",
+    "select_best_gpu",
+    "select_device",
+    "clear_gpu_memory",
+    "get_memory_usage",
+    "estimate_memory_requirement",
+    "compute_optimal_batch_size",
+    "create_pinned_tensor",
+    "transfer_to_gpu",
+    "transfer_to_cpu",
+    "with_oom_retry",
+    "configure_cudnn",
+    "setup_device",
 ]

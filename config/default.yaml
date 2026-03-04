@@ -16,8 +16,8 @@ processing:
   # Use GPU acceleration if available
   use_gpu: true
   
-  # GPU device ID (0 for first GPU)
-  gpu_device: 0
+  # GPU device ID (0 for first GPU, -1 for auto-select best)
+  gpu_device: -1
   
   # Memory management
   max_memory_percent: 80  # Maximum memory usage before cleanup
@@ -27,7 +27,20 @@ processing:
   
   # Enable mixed precision for faster processing
   mixed_precision: true
-
+  
+  # GPU batch size management
+  auto_batch_size: true    # Automatically adjust batch size based on GPU memory
+  min_batch_size: 1        # Minimum batch size when auto-adjusting
+  max_batch_size: 32       # Maximum batch size when auto-adjusting
+  memory_fraction: 0.8     # Maximum fraction of GPU memory to use
+  
+  # GPU error handling
+  fallback_to_cpu: true    # Fall back to CPU if GPU errors occur
+  pinned_memory: true      # Use pinned memory for faster CPU-GPU transfers
+  
+  # GPU optimization
+  cudnn_benchmark: true    # Enable cuDNN benchmark for optimal kernels
+  async_transfer: true     # Enable asynchronous data transfers
 # Video Input Settings
 video_input:
   # Supported input formats
