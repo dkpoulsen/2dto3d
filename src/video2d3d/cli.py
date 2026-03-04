@@ -211,6 +211,7 @@ def convert(
         help=f"Depth estimation model. Options: {', '.join(VALID_MODELS)}",
     ),
     gpu: bool = typer.Option(True, "--gpu/--no-gpu", help="Use GPU acceleration"),
+    preview: bool = typer.Option(False, "--preview", "-p", help="Enable live preview during processing"),
     config_path: str | None = typer.Option(None, "--config", "-c", help="Path to config file"),
 ) -> None:
     """Convert a 2D video to 3D.
@@ -234,11 +235,12 @@ def convert(
         raise  # Re-raise to show error to user
 
     logger.info(f"Starting conversion: {input_file} -> {output_file}")
-    logger.debug(f"Format: {output_format}, Model: {model}, GPU: {gpu}")
+    logger.debug(f"Format: {output_format}, Model: {model}, GPU: {gpu}, Preview: {preview}")
 
     console.print(f"[bold blue]Converting:[/bold blue] {input_file} -> {output_file}")
     console.print(f"[bold]Format:[/bold] {output_format}, [bold]Model:[/bold] {model}")
-
+    if preview:
+        console.print("[bold green]Preview:[/bold green] Enabled (press Q or ESC to close)")
     try:
         # TODO: Implement actual conversion
         logger.warning("Conversion not yet implemented - placeholder execution")

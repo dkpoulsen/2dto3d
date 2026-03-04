@@ -164,6 +164,21 @@ class WebApiConfig:
 
 
 @dataclass
+class PreviewConfig:
+    """Preview window configuration settings."""
+
+    enabled: bool = False
+    window_name: str = "2Dto3D Preview"
+    layout: str = "horizontal"  # Options: horizontal, vertical, grid
+    scale: float = 0.5
+    show_fps: bool = True
+    show_frame_info: bool = True
+    auto_resize: bool = True
+    max_width: int = 1920
+    max_height: int = 1080
+    update_interval_ms: int = 33
+
+@dataclass
 class Config:
     """Main configuration class."""
 
@@ -177,7 +192,7 @@ class Config:
     quality: QualityConfig = field(default_factory=QualityConfig)
     logging: LoggingConfig = field(default_factory=LoggingConfig)
     web_api: WebApiConfig = field(default_factory=WebApiConfig)
-
+    preview: PreviewConfig = field(default_factory=PreviewConfig)
 
 def deep_update(base_dict: Dict[str, Any], update_dict: Dict[str, Any]) -> Dict[str, Any]:
     """Recursively update a dictionary with another dictionary."""
@@ -285,6 +300,9 @@ def load_config(
 
     if "web_api" in merged_config:
         config.web_api = _parse_config_section(merged_config, "web_api", WebApiConfig)
+
+    if "preview" in merged_config:
+        config.preview = _parse_config_section(merged_config, "preview", PreviewConfig)
 
     return config
 
