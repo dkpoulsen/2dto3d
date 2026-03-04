@@ -6,14 +6,22 @@ This module provides depth estimation functionality using various ML models
 
 from __future__ import annotations
 
-from typing import Optional
+import time
+from typing import Optional, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from loguru import Logger
 
 from video2d3d.utils.logger import (
     get_logger,
     log_exception,
     log_model_inference,
-    log_memory_usage,
 )
+
+
+def _get_depth_logger() -> "Logger":
+    """Get the depth module logger (lazy initialization)."""
+    return get_logger("depth")
 
 logger = get_logger("depth")
 
@@ -35,10 +43,13 @@ class DepthEstimator:
         self.model_name = model_name
         self.device = device
         self.model: Optional[object] = None
-        logger.info(f"DepthEstimator initialized with model: {model_name}, device: {device}")
+        _get_depth_logger().info(
+            f"DepthEstimator initialized with model: {model_name}, device: {device}"
+        )
 
     def load_model(self) -> None:
         """Load the depth estimation model."""
+        logger = _get_depth_logger()
         logger.info(f"Loading depth model: {self.model_name}")
         try:
             # TODO: Implement model loading
@@ -66,11 +77,10 @@ class DepthEstimator:
         Returns:
             Depth map.
         """
+        logger = _get_depth_logger()
         logger.debug(f"Estimating depth for frame, temporal_smoothing={temporal_smoothing}")
         try:
             # TODO: Implement depth estimation
-            import time
-
             start_time = time.time()
 
             # Placeholder for inference
@@ -88,6 +98,7 @@ class DepthEstimator:
             log_exception("Depth estimation failed", exception=e)
             raise
 
+
     def estimate_depth_batch(
         self,
         frames: list,
@@ -102,6 +113,7 @@ class DepthEstimator:
         Returns:
             List of depth maps.
         """
+        logger = _get_depth_logger()
         logger.info(f"Processing batch of {len(frames)} frames with batch_size={batch_size}")
         try:
             # TODO: Implement batch depth estimation
@@ -112,4 +124,9 @@ class DepthEstimator:
             raise
 
 
-__all__ = ["DepthEstimator", "logger"]
+# Module-level logger for backward compatibility (lazy)
+logger = _get_depth_logger()
+
+
+__all__ = ["DepthEstimator", "_get_depth_logger"]
+

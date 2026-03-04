@@ -1347,3 +1347,63 @@ Input: {
 Input: {
   "filePath": "/home/dkp/Documents/Automaker/2dto3d/src/video2d3d/depth/__init__.py"
 }
+
+🔧 Tool: edit
+Input: {
+  "edits": [
+    {
+      "end": "17#HX|",
+      "lines": [
+        "from __future__ import annotations\n\nimport time\nfrom typing import Optional, TYPE_CHECKING\n\nif TYPE_CHECKING:\n    from loguru import Logger\n\nfrom video2d3d.utils.logger import (\n    get_logger,\n    log_exception,\n    log_model_inference,\n)\n\n\ndef _get_depth_logger() -> \"Logger\":\n    \"\"\"Get the depth module logger (lazy initialization).\"\"\"\n    return get_logger(\"depth\")\n"
+      ],
+      "op": "replace",
+      "pos": "7#ZQ|"
+    },
+    {
+      "end": "39#MS|",
+      "lines": [
+        "        self.model_name = model_name\n        self.device = device\n        self.model: Optional[object] = None\n        _get_depth_logger().info(\n            f\"DepthEstimator initialized with model: {model_name}, device: {device}\"\n        )\n"
+      ],
+      "op": "replace",
+      "pos": "35#QV|"
+    },
+    {
+      "end": "54#YJ|",
+      "lines": [
+        "    def load_model(self) -> None:\n        \"\"\"Load the depth estimation model.\"\"\"\n        logger = _get_depth_logger()\n        logger.info(f\"Loading depth model: {self.model_name}\")\n        try:\n            # TODO: Implement model loading\n            logger.warning(\"Model loading not yet implemented\")\n        except Exception as e:\n            log_exception(\n                \"Failed to load depth model\",\n                exception=e,\n                model_name=self.model_name,\n                device=self.device,\n            )\n            raise\n"
+      ],
+      "op": "replace",
+      "pos": "40#YH|"
+    },
+    {
+      "end": "89#WH|",
+      "lines": [
+        "    def estimate_depth(\n        self,\n        frame: object,\n        temporal_smoothing: bool = True,\n    ) -> object:\n        \"\"\"Estimate depth from a single frame.\n\n        Args:\n            frame: Input image/frame.\n            temporal_smoothing: Apply temporal smoothing for video.\n\n        Returns:\n            Depth map.\n        \"\"\"\n        logger = _get_depth_logger()\n        logger.debug(f\"Estimating depth for frame, temporal_smoothing={temporal_smoothing}\")\n        try:\n            # TODO: Implement depth estimation\n            start_time = time.time()\n\n            # Placeholder for inference\n            logger.warning(\"Depth estimation not yet implemented\")\n\n            elapsed_ms = (time.time() - start_time) * 1000\n            log_model_inference(\n                model_name=self.model_name,\n                batch_size=1,\n                inference_time_ms=elapsed_ms,\n            )\n\n            return None\n        except Exception as e:\n            log_exception(\"Depth estimation failed\", exception=e)\n            raise\n"
+      ],
+      "op": "replace",
+      "pos": "55#WW|"
+    },
+    {
+      "end": "113#PP|",
+      "lines": [
+        "    def estimate_depth_batch(\n        self,\n        frames: list,\n        batch_size: int = 4,\n    ) -> list:\n        \"\"\"Estimate depth for a batch of frames.\n\n        Args:\n            frames: List of input frames.\n            batch_size: Batch size for processing.\n\n        Returns:\n            List of depth maps.\n        \"\"\"\n        logger = _get_depth_logger()\n        logger.info(f\"Processing batch of {len(frames)} frames with batch_size={batch_size}\")\n        try:\n            # TODO: Implement batch depth estimation\n            logger.warning(\"Batch depth estimation not yet implemented\")\n            return []\n        except Exception as e:\n            log_exception(\"Batch depth estimation failed\", exception=e, batch_size=batch_size)\n            raise\n\n\n# Module-level logger for backward compatibility (lazy)\nlogger = _get_depth_logger()\n"
+      ],
+      "op": "replace",
+      "pos": "91#NB|"
+    },
+    {
+      "end": "115#TW|",
+      "lines": [
+        "__all__ = [\"DepthEstimator\", \"_get_depth_logger\"]\n"
+      ],
+      "op": "replace",
+      "pos": "115#TW|"
+    }
+  ],
+  "filePath": "/home/dkp/Documents/Automaker/2dto3d/src/video2d3d/depth/__init__.py"
+}
+
+🔧 Tool: read
+Input: {
+  "filePath": "/home/dkp/Documents/Automaker/2dto3d/src/video2d3d/stereo/__init__.py"
+}

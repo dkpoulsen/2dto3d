@@ -1288,3 +1288,28 @@ Input: {
   "command": "cd /home/dkp/Documents/Automaker/2dto3d && .venv/bin/python -m ruff check src/video2d3d/video/ tests/unit/test_video_input.py 2>&1 || echo \"Check completed with warnings\"",
   "description": "Run ruff linting on updated files"
 }
+
+🔧 Tool: read
+Input: {
+  "filePath": "/home/dkp/Documents/Automaker/2dto3d/tests/unit/test_video_input.py",
+  "limit": 30
+}
+
+🔧 Tool: edit
+Input: {
+  "edits": [
+    {
+      "end": "27#JJ|",
+      "lines": ")",
+      "op": "replace",
+      "pos": "25#PP|"
+    }
+  ],
+  "filePath": "/home/dkp/Documents/Automaker/2dto3d/tests/unit/test_video_input.py"
+}
+
+🔧 Tool: read
+Input: {
+  "filePath": "/home/dkp/Documents/Automaker/2dto3d/src/video2d3d/video/handler.py",
+  "limit": 30
+}

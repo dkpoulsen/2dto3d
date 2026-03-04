@@ -23,8 +23,6 @@ from video2d3d.video import (
     VideoValidationError,
     validate_video,
 )
-)
-
 # Fixtures
 @pytest.fixture
 def sample_video_path(tmp_path: Path) -> Path:
