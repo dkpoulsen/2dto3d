@@ -9,9 +9,10 @@ from typing import Any
 
 import cv2
 import numpy as np
-from loguru import logger
 
 from video2d3d.utils.config import VideoInputConfig, get_config
+from video2d3d.utils.logger import get_logger
+
 
 from .exceptions import (
     VideoCorruptedError,
@@ -20,6 +21,11 @@ from .exceptions import (
     VideoValidationError,
 )
 from .metadata import VideoMetadata
+
+
+def _get_video_logger():
+    """Get the video module logger (lazy initialization)."""
+    return get_logger("video")
 
 # Magic bytes (file signatures) for video format detection
 MAGIC_BYTES: dict[str, list[bytes]] = {
@@ -94,11 +100,11 @@ class VideoInputHandler:
             VideoFileNotFoundError: If the file does not exist.
         """
         if not file_path.exists():
-            logger.error(f"Video file not found: {file_path}")
+            _get_video_logger().error(f"Video file not found: {file_path}")
             raise VideoFileNotFoundError(file_path)
 
         if not file_path.is_file():
-            logger.error(f"Path is not a file: {file_path}")
+            _get_video_logger().error(f"Path is not a file: {file_path}")
             raise VideoFileNotFoundError(file_path)
 
     def validate_format(self, file_path: Path) -> str:
@@ -116,7 +122,7 @@ class VideoInputHandler:
         """
         extension = file_path.suffix.lower().lstrip(".")
         if not extension:
-            logger.error(f"No file extension found: {file_path}")
+            _get_video_logger().error(f"No file extension found: {file_path}")
             raise VideoFormatNotSupportedError(
                 file_path,
                 format="unknown",
@@ -124,14 +130,14 @@ class VideoInputHandler:
             )
 
         if extension not in self.config.supported_formats:
-            logger.error(f"Unsupported video format: {extension}")
+            _get_video_logger().error(f"Unsupported video format: {extension}")
             raise VideoFormatNotSupportedError(
                 file_path,
                 format=extension,
                 supported_formats=self.config.supported_formats,
             )
 
-        logger.debug(f"Format validation passed: {extension}")
+        _get_video_logger().debug(f"Format validation passed: {extension}")
         return extension
 
     def validate_magic_bytes(self, file_path: Path, expected_format: str) -> bool:
@@ -147,7 +153,7 @@ class VideoInputHandler:
         """
         if expected_format not in MAGIC_BYTES:
             # Format doesn't have magic byte validation defined
-            logger.debug(f"No magic byte validation for format: {expected_format}")
+            _get_video_logger().debug(f"No magic byte validation for format: {expected_format}")
             return True
 
         try:
@@ -157,16 +163,14 @@ class VideoInputHandler:
             expected_signatures = MAGIC_BYTES[expected_format]
             for signature in expected_signatures:
                 if header.startswith(signature) or signature in header[:12]:
-                    logger.debug(f"Magic bytes validated for {expected_format}: {file_path}")
+                    _get_video_logger().debug(f"Magic bytes validated for {expected_format}: {file_path}")
                     return True
 
-            logger.warning(
-                f"Magic bytes mismatch for {file_path}. "
-                f"Expected {expected_format} signature not found."
-            )
+            _get_video_logger().warning(f"Magic bytes mismatch for {file_path}. "
+            f"Expected {expected_format} signature not found.")
             return False
         except OSError as e:
-            logger.warning(f"Could not read file header for magic bytes check: {e}")
+            _get_video_logger().warning(f"Could not read file header for magic bytes check: {e}")
             return False
 
     def open_video(self, file_path: Path) -> cv2.VideoCapture:
@@ -186,7 +190,7 @@ class VideoInputHandler:
 
         if not cap.isOpened():
             cap.release()
-            logger.error(f"Failed to open video file: {file_path}")
+            _get_video_logger().error(f"Failed to open video file: {file_path}")
             raise VideoCorruptedError(file_path, reason="OpenCV could not open the file")
 
         return cap
@@ -263,7 +267,7 @@ class VideoInputHandler:
         )
 
         if errors and self.strict_validation:
-            logger.error(f"Video validation failed: {file_path}")
+            _get_video_logger().error(f"Video validation failed: {file_path}")
             raise VideoValidationError(file_path, errors)
 
         return metadata
@@ -299,19 +303,19 @@ class VideoInputHandler:
             )
 
             if result.returncode != 0:
-                logger.warning(f"FFprobe failed for {file_path}: {result.stderr}")
+                _get_video_logger().warning(f"FFprobe failed for {file_path}: {result.stderr}")
                 return {}
 
             return json.loads(result.stdout)
 
         except FileNotFoundError:
-            logger.warning("FFprobe not found. Install FFmpeg for extended metadata.")
+            _get_video_logger().warning("FFprobe not found. Install FFmpeg for extended metadata.")
             return {}
         except subprocess.TimeoutExpired:
-            logger.warning(f"FFprobe timed out for {file_path}")
+            _get_video_logger().warning(f"FFprobe timed out for {file_path}")
             return {}
         except (json.JSONDecodeError, ValueError) as e:
-            logger.warning(f"Failed to parse FFprobe output: {e}")
+            _get_video_logger().warning(f"Failed to parse FFprobe output: {e}")
             return {}
 
     def enrich_metadata_with_ffmpeg(
@@ -378,12 +382,12 @@ class VideoInputHandler:
         ret, frame = cap.read()
 
         if not ret or frame is None:
-            logger.error(f"Cannot read frames from video: {file_path}")
+            _get_video_logger().error(f"Cannot read frames from video: {file_path}")
             raise VideoCorruptedError(file_path, reason="Failed to read first frame from video")
 
         # Reset to beginning
         cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
-        logger.debug(f"Frame read test passed: {file_path}")
+        _get_video_logger().debug(f"Frame read test passed: {file_path}")
 
     def validate_and_extract(
         self, video_path: str | Path, check_readability: bool = True
@@ -409,7 +413,7 @@ class VideoInputHandler:
             VideoValidationError: If validation fails (in strict mode).
         """
         file_path = Path(video_path).resolve()
-        logger.info(f"Validating video: {file_path}")
+        _get_video_logger().info(f"Validating video: {file_path}")
 
         # Step 1: Check file exists
         self.validate_file_exists(file_path)
@@ -442,10 +446,8 @@ class VideoInputHandler:
             if ffprobe_data:
                 metadata = self.enrich_metadata_with_ffmpeg(metadata, ffprobe_data)
 
-            logger.info(
-                f"Video validated: {metadata.width}x{metadata.height}, "
-                f"{metadata.fps:.2f}fps, {metadata.duration_formatted}"
-            )
+            _get_video_logger().info(f"Video validated: {metadata.width}x{metadata.height}, "
+            f"{metadata.fps:.2f}fps, {metadata.duration_formatted}")
 
             return metadata
 
@@ -468,14 +470,14 @@ class VideoInputHandler:
             Frame as numpy array, or None if frame cannot be read.
         """
         if self._cap is None or not self._cap.isOpened():
-            logger.error("No video currently open. Call validate_and_extract first.")
+            _get_video_logger().error("No video currently open. Call validate_and_extract first.")
             return None
 
         self._cap.set(cv2.CAP_PROP_POS_FRAMES, frame_number)
         ret, frame = self._cap.read()
 
         if not ret or frame is None:
-            logger.warning(f"Could not read frame {frame_number}")
+            _get_video_logger().warning(f"Could not read frame {frame_number}")
             return None
 
         return frame

@@ -173,11 +173,13 @@ def configure_logging(
         filter=lambda record: record["level"].no >= logger.level("ERROR").no,
     )
 
-_logging_configured = True
-logger.debug(f"Logging configured: level={level}, file={file_path}")
+    with _logging_lock:
+        _logging_configured = True
+    logger.debug(f"Logging configured: level={level}, file={file_path}")
 
 
 def get_logger(name: Optional[str] = None) -> "Logger":
+
     """Get a logger instance with optional name binding.
 
     Args:
