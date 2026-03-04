@@ -27,6 +27,16 @@ from video2d3d.stereo.dibr import (
     create_dibr_engine,
     render_stereo_pair,
 )
+from video2d3d.stereo.anaglyph import (
+    AnaglyphEncoder,
+    AnaglyphType,
+    encode_anaglyph,
+)
+from video2d3d.stereo.side_by_side import (
+    SideBySideEncoder,
+    SideBySideLayout,
+    encode_side_by_side,
+)
 from video2d3d.utils.logger import (
     get_logger,
     log_exception,
@@ -271,30 +281,74 @@ class StereoGenerator:
 
 
 class AnaglyphGenerator(StereoGenerator):
-    """Generate anaglyph 3D video (red-cyan glasses).
+    """Generate anaglyph 3D video with support for multiple anaglyph types.
 
     This generator creates anaglyph 3D images that can be viewed with
-    red-cyan glasses. The left eye sees through the red filter and the
-    right eye sees through the cyan filter.
+    various types of colored 3D glasses:
+    - Red-Cyan (most common, standard 3D glasses)
+    - Magenta-Green (Trioscopic, better color reproduction)
+    - Amber-Blue (ColorCode3D, excellent color preservation)
+
+    Multiple encoding methods are available for red-cyan:
+    - dubois: High-quality, minimal ghosting (recommended)
+    - color: Simple channel mixing
+    - gray: Grayscale, pure depth
+    - half_color: Compromise between color and ghosting
 
     Example usage:
         ```python
-        generator = AnaglyphGenerator(color_method="dubois")
+        # Basic usage (default: red-cyan dubois)
+        generator = AnaglyphGenerator()
         left, right = generator.generate_stereo_pair(frame, depth_map)
+        anaglyph = generator.combine_to_anaglyph(left, right)
+
+        # Specify anaglyph type
+        generator = AnaglyphGenerator(anaglyph_type="magenta_green")
+        anaglyph = generator.combine_to_anaglyph(left, right)
+
+        # Use AnaglyphType enum
+        generator = AnaglyphGenerator(anaglyph_type=AnaglyphType.AMBER_BLUE)
         anaglyph = generator.combine_to_anaglyph(left, right)
         ```
     """
 
+    # Mapping from string names to AnaglyphType enum values
+    _ANAGLYPH_TYPE_MAP = {
+        # Red-Cyan variants
+        "dubois": AnaglyphType.RED_CYAN_DUBOIS,
+        "red_cyan_dubois": AnaglyphType.RED_CYAN_DUBOIS,
+        "color": AnaglyphType.RED_CYAN_COLOR,
+        "red_cyan_color": AnaglyphType.RED_CYAN_COLOR,
+        "gray": AnaglyphType.RED_CYAN_GRAY,
+        "red_cyan_gray": AnaglyphType.RED_CYAN_GRAY,
+        "half_color": AnaglyphType.RED_CYAN_HALF_COLOR,
+        "red_cyan_half_color": AnaglyphType.RED_CYAN_HALF_COLOR,
+        # Magenta-Green
+        "magenta_green": AnaglyphType.MAGENTA_GREEN,
+        "trioscopic": AnaglyphType.MAGENTA_GREEN,
+        # Amber-Blue
+        "amber_blue": AnaglyphType.AMBER_BLUE,
+        "colorcode": AnaglyphType.AMBER_BLUE,
+        "colorcode3d": AnaglyphType.AMBER_BLUE,
+    }
+
     def __init__(
         self,
-        color_method: str = "dubois",
+        anaglyph_type: str | AnaglyphType = "dubois",
         baseline: float = 0.05,
         convergence: float = 0.5,
     ) -> None:
         """Initialize anaglyph generator.
 
         Args:
-            color_method: Color mixing method ('dubois', 'color', 'gray').
+            anaglyph_type: Anaglyph encoding type. Can be a string or AnaglyphType enum.
+                String options:
+                - 'dubois' or 'red_cyan_dubois': Red-cyan Dubois (recommended)
+                - 'color' or 'red_cyan_color': Simple red-cyan
+                - 'gray' or 'red_cyan_gray': Grayscale red-cyan
+                - 'half_color' or 'red_cyan_half_color': Half-color red-cyan
+                - 'magenta_green' or 'trioscopic': Magenta-green (Trioscopic)
+                - 'amber_blue' or 'colorcode3d': Amber-blue (ColorCode3D)
             baseline: Stereo baseline (eye separation).
             convergence: Convergence distance (0-1).
         """
@@ -303,81 +357,96 @@ class AnaglyphGenerator(StereoGenerator):
             baseline=baseline,
             convergence=convergence,
         )
-        self.color_method = color_method
-        _get_stereo_logger().debug(f"AnaglyphGenerator initialized: color_method={color_method}")
+        # Convert string to AnaglyphType if needed
+        if isinstance(anaglyph_type, str):
+            anaglyph_type = self._parse_anaglyph_type(anaglyph_type)
+        self.anaglyph_type = anaglyph_type
+        self._encoder = AnaglyphEncoder(default_type=anaglyph_type)
+        _get_stereo_logger().debug(f"AnaglyphGenerator initialized: type={anaglyph_type}")
+
+    def _parse_anaglyph_type(self, type_str: str) -> AnaglyphType:
+        """Parse string to AnaglyphType enum.
+
+        Args:
+            type_str: String representation of anaglyph type.
+
+        Returns:
+            Corresponding AnaglyphType enum value.
+
+        Raises:
+            ValueError: If string is not a valid anaglyph type.
+        """
+        type_lower = type_str.lower().strip()
+        if type_lower not in self._ANAGLYPH_TYPE_MAP:
+            valid_options = list(self._ANAGLYPH_TYPE_MAP.keys())
+            raise ValueError(
+                f"Invalid anaglyph type '{type_str}'. Valid options: {valid_options}"
+            )
+        return self._ANAGLYPH_TYPE_MAP[type_lower]
 
     def combine_to_anaglyph(
         self,
         left: np.ndarray,
         right: np.ndarray,
-        method: Optional[str] = None,
+        method: Optional[str | AnaglyphType] = None,
     ) -> np.ndarray:
-        """Combine left and right views into an anaglyph image.
+        """Combine left and right views into an anaglyph 3D image.
 
         Args:
             left: Left eye view.
             right: Right eye view.
-            method: Color mixing method. If None, uses instance setting.
+            method: Anaglyph encoding method. If None, uses instance default.
+                Can be a string name or AnaglyphType enum.
 
         Returns:
-            Anaglyph 3D image.
+            Anaglyph 3D image as uint8 numpy array.
         """
-        color_method = method or self.color_method
-
-        # Ensure RGB format
-        if len(left.shape) == 2:
-            left = np.stack([left, left, left], axis=-1)
-        if len(right.shape) == 2:
-            right = np.stack([right, right, right], axis=-1)
-
-        if color_method == "dubois":
-            # Dubois anaglyph method (optimized for red-cyan glasses)
-            # Convert to float for matrix multiplication
-            left_f = left.astype(np.float32) / 255.0 if left.dtype == np.uint8 else left
-            right_f = right.astype(np.float32) / 255.0 if right.dtype == np.uint8 else right
-
-            # Dubois matrix for red-cyan anaglyph
-            # Left eye: red channel only
-            # Right eye: green + blue channels
-            anaglyph = np.zeros_like(left_f)
-            anaglyph[:, :, 0] = (
-                0.437 * left_f[:, :, 0] + 0.449 * left_f[:, :, 1] + 0.164 * left_f[:, :, 2]
-            )
-            anaglyph[:, :, 1] = (
-                0.062 * right_f[:, :, 0] + 0.736 * right_f[:, :, 1] + 0.228 * right_f[:, :, 2]
-            )
-            anaglyph[:, :, 2] = (
-                -0.046 * right_f[:, :, 0] - 0.140 * right_f[:, :, 1] + 0.917 * right_f[:, :, 2]
-            )
-
-            # Clip and convert back
-            anaglyph = np.clip(anaglyph, 0, 1)
-            return (anaglyph * 255).astype(np.uint8)
-
-        elif color_method == "gray":
-            # Grayscale anaglyph
-            # Work with copies to avoid modifying input arrays
-            left_f = left.astype(np.float32) / 255.0 if left.dtype == np.uint8 else left.astype(np.float32)
-            right_f = right.astype(np.float32) / 255.0 if right.dtype == np.uint8 else right.astype(np.float32)
-
-            gray_left = 0.299 * left_f[:, :, 0] + 0.587 * left_f[:, :, 1] + 0.114 * left_f[:, :, 2]
-            gray_right = 0.299 * right_f[:, :, 0] + 0.587 * right_f[:, :, 1] + 0.114 * right_f[:, :, 2]
-
-            anaglyph = np.stack([gray_left, gray_right, gray_right], axis=-1)
-            return (np.clip(anaglyph, 0, 1) * 255).astype(np.uint8)
-
+        if method is None:
+            anaglyph_type = self.anaglyph_type
+        elif isinstance(method, str):
+            anaglyph_type = self._parse_anaglyph_type(method)
         else:
-            # Simple color anaglyph (red-cyan)
-            # Work with copies to avoid modifying input arrays
-            left_u8 = (np.clip(left, 0, 1) * 255).astype(np.uint8) if left.dtype != np.uint8 else left
-            right_u8 = (np.clip(right, 0, 1) * 255).astype(np.uint8) if right.dtype != np.uint8 else right
+            anaglyph_type = method
 
-            anaglyph = np.zeros_like(left_u8)
-            anaglyph[:, :, 0] = left_u8[:, :, 0]  # Red from left
-            anaglyph[:, :, 1] = right_u8[:, :, 1]  # Green from right
-            anaglyph[:, :, 2] = right_u8[:, :, 2]  # Blue from right
-            return anaglyph
+        return self._encoder.encode(left, right, anaglyph_type)
 
+    def set_anaglyph_type(self, anaglyph_type: str | AnaglyphType) -> None:
+        """Change the anaglyph encoding type.
+
+        Args:
+            anaglyph_type: New anaglyph type (string or AnaglyphType enum).
+        """
+        if isinstance(anaglyph_type, str):
+            anaglyph_type = self._parse_anaglyph_type(anaglyph_type)
+        _get_stereo_logger().info(f"Changing anaglyph type: {self.anaglyph_type} -> {anaglyph_type}")
+        self.anaglyph_type = anaglyph_type
+        self._encoder.default_type = anaglyph_type
+
+    # Convenience methods for specific anaglyph types
+
+    def encode_red_cyan_dubois(self, left: np.ndarray, right: np.ndarray) -> np.ndarray:
+        """Encode using Dubois red-cyan method (high quality, minimal ghosting)."""
+        return self._encoder.encode_red_cyan_dubois(left, right)
+
+    def encode_red_cyan_color(self, left: np.ndarray, right: np.ndarray) -> np.ndarray:
+        """Encode using simple color red-cyan method."""
+        return self._encoder.encode_red_cyan_color(left, right)
+
+    def encode_red_cyan_gray(self, left: np.ndarray, right: np.ndarray) -> np.ndarray:
+        """Encode using grayscale red-cyan method."""
+        return self._encoder.encode_red_cyan_gray(left, right)
+
+    def encode_red_cyan_half_color(self, left: np.ndarray, right: np.ndarray) -> np.ndarray:
+        """Encode using half-color red-cyan method."""
+        return self._encoder.encode_red_cyan_half_color(left, right)
+
+    def encode_magenta_green(self, left: np.ndarray, right: np.ndarray) -> np.ndarray:
+        """Encode using magenta-green (Trioscopic) method."""
+        return self._encoder.encode_magenta_green(left, right)
+
+    def encode_amber_blue(self, left: np.ndarray, right: np.ndarray) -> np.ndarray:
+        """Encode using amber-blue (ColorCode3D) method."""
+        return self._encoder.encode_amber_blue(left, right)
 
 class SideBySideGenerator(StereoGenerator):
     """Generate side-by-side 3D video.
@@ -463,6 +532,12 @@ __all__ = [
     "StereoGenerator",
     "AnaglyphGenerator",
     "SideBySideGenerator",
+    # Anaglyph classes
+    "AnaglyphEncoder",
+    "AnaglyphType",
+    # Side-by-side classes
+    "SideBySideEncoder",
+    "SideBySideLayout",
     # DIBR classes (re-exported for convenience)
     "DIBREngine",
     "DIBRConfig",
@@ -472,6 +547,8 @@ __all__ = [
     # Functions
     "create_dibr_engine",
     "render_stereo_pair",
+    "encode_anaglyph",
+    "encode_side_by_side",
     # Logger
     "_get_stereo_logger",
 ]
