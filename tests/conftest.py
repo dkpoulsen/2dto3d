@@ -111,14 +111,30 @@ def _create_mock_cv2() -> MagicMock:
     mock.INTER_LINEAR = 1
 
     # Mock resize for side-by-side generator
+    # Use simple slicing for nearest-neighbor-like resize (preserves content)
     def mock_resize(img, dsize, interpolation=1):
-        h, w = dsize[1], dsize[0]
+        target_h, target_w = dsize[1], dsize[0]
+        src_h, src_w = img.shape[:2]
+        
+        # Calculate scale factors
+        scale_y = src_h / target_h
+        scale_x = src_w / target_w
+        
+        # Simple nearest-neighbor interpolation
+        y_indices = (np.arange(target_h) * scale_y).astype(int)
+        x_indices = (np.arange(target_w) * scale_x).astype(int)
+        
+        # Clip to valid range
+        y_indices = np.clip(y_indices, 0, src_h - 1)
+        x_indices = np.clip(x_indices, 0, src_w - 1)
+        
         if len(img.shape) == 3:
-            return np.zeros((h, w, img.shape[2]), dtype=img.dtype)
-        return np.zeros((h, w), dtype=img.dtype)
+            result = img[y_indices][:, x_indices]
+            return result
+        return img[np.ix_(y_indices, x_indices)]
 
     mock.resize = mock_resize
-
+    mock.INTER_AREA = 3
     return mock
 
 
