@@ -38,8 +38,13 @@ from video2d3d.utils.logger import get_logger, log_exception
 BYTES_PER_MB: int = 1024 * 1024
 
 # GPU memory management constants
+# DEFAULT_MEMORY_FRACTION: Maximum fraction of total GPU memory to allocate for the process
 DEFAULT_MEMORY_FRACTION: float = 0.8
-MEMORY_SAFETY_MARGIN: float = 0.9  # 10% safety margin for memory allocation
+# MEMORY_SAFETY_MARGIN: Factor applied to free_memory in GPUInfo.available_memory_mb
+# (e.g., 0.9 means only 90% of reported free memory is considered available)
+MEMORY_SAFETY_MARGIN: float = 0.9
+# DEFAULT_SAFETY_MARGIN: Factor applied in compute_optimal_batch_size for batch memory calculation
+# (e.g., 0.8 means use 80% of available memory for batch sizing)
 DEFAULT_SAFETY_MARGIN: float = 0.8
 
 # Default batch size settings
@@ -545,16 +550,33 @@ def estimate_memory_requirement(
     """Estimate GPU memory requirement for a batch.
 
     Args:
-        batch_size: Number of images in the batch.
-        image_height: Height of images in pixels.
-        image_width: Width of images in pixels.
-        channels: Number of channels (default 3 for RGB).
-        dtype_bytes: Bytes per element (4 for float32, 2 for float16).
-        model_overhead: Multiplier for model overhead (parameters + activations + gradients).
+        batch_size: Number of images in the batch. Must be positive.
+        image_height: Height of images in pixels. Must be positive.
+        image_width: Width of images in pixels. Must be positive.
+        channels: Number of channels (default 3 for RGB). Must be positive.
+        dtype_bytes: Bytes per element (4 for float32, 2 for float16). Must be positive.
+        model_overhead: Multiplier for model overhead (parameters + activations + gradients). Must be positive.
 
     Returns:
         Estimated memory requirement in megabytes.
+
+    Raises:
+        ValueError: If any parameter is not positive.
     """
+    # Validate inputs
+    if batch_size <= 0:
+        raise ValueError(f"batch_size must be positive, got {batch_size}")
+    if image_height <= 0:
+        raise ValueError(f"image_height must be positive, got {image_height}")
+    if image_width <= 0:
+        raise ValueError(f"image_width must be positive, got {image_width}")
+    if channels <= 0:
+        raise ValueError(f"channels must be positive, got {channels}")
+    if dtype_bytes <= 0:
+        raise ValueError(f"dtype_bytes must be positive, got {dtype_bytes}")
+    if model_overhead <= 0:
+        raise ValueError(f"model_overhead must be positive, got {model_overhead}")
+
     # Calculate tensor size
     elements = batch_size * channels * image_height * image_width
     tensor_bytes = elements * dtype_bytes
@@ -577,15 +599,25 @@ def compute_optimal_batch_size(
 
     Args:
         config: GPU configuration.
-        image_height: Height of images in pixels.
-        image_width: Width of images in pixels.
-        channels: Number of channels.
+        image_height: Height of images in pixels. Must be positive.
+        image_width: Width of images in pixels. Must be positive.
+        channels: Number of channels. Must be positive.
         use_fp16: Whether FP16 is being used.
-        safety_margin: Fraction of available memory to use.
+        safety_margin: Fraction of available memory to use. Must be between 0 and 1.
 
     Returns:
         Optimal batch size within configured limits.
     """
+    # Validate inputs
+    if image_height <= 0:
+        raise ValueError(f"image_height must be positive, got {image_height}")
+    if image_width <= 0:
+        raise ValueError(f"image_width must be positive, got {image_width}")
+    if channels <= 0:
+        raise ValueError(f"channels must be positive, got {channels}")
+    if not 0 < safety_margin <= 1:
+        raise ValueError(f"safety_margin must be between 0 and 1, got {safety_margin}")
+
     logger = _get_gpu_logger()
 
     if not config.batch_size_auto:
@@ -634,8 +666,9 @@ def compute_optimal_batch_size(
 
 def create_pinned_tensor(
     shape: tuple[int, ...],
-    dtype: Any = None,
+    dtype: Optional["torch.dtype"] = None,
 ) -> Optional["torch.Tensor"]:
+
     """Create a pinned memory tensor for faster CPU-GPU transfers.
 
     Args:
@@ -762,10 +795,8 @@ def with_oom_retry(
                 if batch_size < config.min_batch_size:
                     break
             else:
-                raise
-        except Exception:
-            raise
-
+                raise  # Re-raise non-OOM RuntimeErrors
+            continue  # Retry with smaller batch size
     raise OutOfMemoryError(
         f"Failed to execute even with minimum batch_size={config.min_batch_size}",
         device=None,

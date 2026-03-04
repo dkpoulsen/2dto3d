@@ -272,7 +272,31 @@ class TestMemoryFunctions:
 
         assert mem_fp16 < mem_fp32
 
+    def test_estimate_memory_requirement_invalid_batch_size(self, mock_torch: MagicMock) -> None:
+        """Test memory estimation raises error for invalid batch_size."""
+        from video2d3d.utils.gpu import estimate_memory_requirement
+
+        with pytest.raises(ValueError, match="batch_size must be positive"):
+            estimate_memory_requirement(batch_size=0, image_height=384, image_width=384)
+
+        with pytest.raises(ValueError, match="batch_size must be positive"):
+            estimate_memory_requirement(batch_size=-1, image_height=384, image_width=384)
+
+    def test_estimate_memory_requirement_invalid_dimensions(self, mock_torch: MagicMock) -> None:
+        """Test memory estimation raises error for invalid dimensions."""
+        from video2d3d.utils.gpu import estimate_memory_requirement
+
+        with pytest.raises(ValueError, match="image_height must be positive"):
+            estimate_memory_requirement(batch_size=4, image_height=0, image_width=384)
+
+        with pytest.raises(ValueError, match="image_width must be positive"):
+            estimate_memory_requirement(batch_size=4, image_height=384, image_width=0)
+
     def test_get_memory_usage_no_cuda(self, mock_torch: MagicMock) -> None:
+        """Test memory usage when CUDA is not available."""
+        from video2d3d.utils.gpu import get_memory_usage
+
+        mock_torch.cuda.is_available.return_value = False
         """Test memory usage when CUDA is not available."""
         from video2d3d.utils.gpu import get_memory_usage
 
@@ -307,6 +331,30 @@ class TestBatchSizeComputation:
 
         # Should return default of 4 when auto is disabled
         assert batch_size == 4
+
+    def test_compute_optimal_batch_size_invalid_dimensions(self, mock_torch: MagicMock) -> None:
+        """Test batch size computation raises error for invalid dimensions."""
+        from video2d3d.utils.gpu import GPUConfig, compute_optimal_batch_size
+
+        config = GPUConfig(batch_size_auto=False)
+
+        with pytest.raises(ValueError, match="image_height must be positive"):
+            compute_optimal_batch_size(config, 0, 384)
+
+        with pytest.raises(ValueError, match="image_width must be positive"):
+            compute_optimal_batch_size(config, 384, 0)
+
+    def test_compute_optimal_batch_size_invalid_safety_margin(self, mock_torch: MagicMock) -> None:
+        """Test batch size computation raises error for invalid safety_margin."""
+        from video2d3d.utils.gpu import GPUConfig, compute_optimal_batch_size
+
+        config = GPUConfig(batch_size_auto=False)
+
+        with pytest.raises(ValueError, match="safety_margin must be between 0 and 1"):
+            compute_optimal_batch_size(config, 384, 384, safety_margin=0)
+
+        with pytest.raises(ValueError, match="safety_margin must be between 0 and 1"):
+            compute_optimal_batch_size(config, 384, 384, safety_margin=1.5)
 
 
 class TestExceptions:
@@ -479,3 +527,132 @@ class TestConstants:
 
         assert hasattr(gpu, "DEFAULT_MAX_BATCH_SIZE")
         assert gpu.DEFAULT_MAX_BATCH_SIZE == 32
+
+
+class TestTransferToGpu:
+    """Tests for transfer_to_gpu function."""
+
+    def test_transfer_to_gpu_no_torch(self, mock_torch: MagicMock) -> None:
+        """Test transfer_to_gpu raises error when PyTorch not available."""
+        # Temporarily set TORCH_AVAILABLE to False
+        import video2d3d.utils.gpu as gpu_module
+        original = gpu_module.TORCH_AVAILABLE
+        gpu_module.TORCH_AVAILABLE = False
+        
+        try:
+            from video2d3d.utils.gpu import transfer_to_gpu, GPUError
+            
+            data = np.zeros((100, 100), dtype=np.float32)
+            with pytest.raises(GPUError):
+                transfer_to_gpu(data, "cuda:0")
+        finally:
+            gpu_module.TORCH_AVAILABLE = original
+
+    def test_transfer_to_gpu_basic(self, mock_torch: MagicMock) -> None:
+        """Test basic transfer_to_gpu functionality."""
+        from video2d3d.utils.gpu import transfer_to_gpu
+        
+        data = np.zeros((100, 100), dtype=np.float32)
+        result = transfer_to_gpu(data, "cpu", pinned=False)
+        
+        # Verify from_numpy was called
+        mock_torch.from_numpy.assert_called_once()
+
+
+class TestTransferToCpu:
+    """Tests for transfer_to_cpu function."""
+
+    def test_transfer_to_cpu_cuda_tensor(self, mock_torch: MagicMock) -> None:
+        """Test transferring CUDA tensor to CPU."""
+        from video2d3d.utils.gpu import transfer_to_cpu
+        
+        mock_tensor = MagicMock()
+        mock_tensor.device.type = "cuda"
+        mock_tensor.detach.return_value.cpu.return_value.numpy.return_value = np.zeros((10, 10))
+        
+        result = transfer_to_cpu(mock_tensor, async_transfer=True)
+        
+        assert isinstance(result, np.ndarray)
+
+    def test_transfer_to_cpu_cpu_tensor(self, mock_torch: MagicMock) -> None:
+        """Test transferring CPU tensor to CPU (no-op)."""
+        from video2d3d.utils.gpu import transfer_to_cpu
+        
+        mock_tensor = MagicMock()
+        mock_tensor.device.type = "cpu"
+        mock_tensor.detach.return_value.cpu.return_value.numpy.return_value = np.zeros((10, 10))
+        
+        result = transfer_to_cpu(mock_tensor, async_transfer=False)
+        
+        assert isinstance(result, np.ndarray)
+
+
+class TestCreatePinnedTensor:
+    """Tests for create_pinned_tensor function."""
+
+    def test_create_pinned_tensor_no_cuda(self, mock_torch: MagicMock) -> None:
+        """Test create_pinned_tensor returns None when CUDA unavailable."""
+        from video2d3d.utils.gpu import create_pinned_tensor
+        
+        mock_torch.cuda.is_available.return_value = False
+        result = create_pinned_tensor((100, 100))
+        
+        assert result is None
+
+    def test_create_pinned_tensor_with_cuda(self, mock_torch: MagicMock) -> None:
+        """Test create_pinned_tensor creates tensor when CUDA available."""
+        from video2d3d.utils.gpu import create_pinned_tensor
+        
+        mock_torch.cuda.is_available.return_value = True
+        result = create_pinned_tensor((100, 100))
+        
+        # Verify empty and pin_memory were called
+        mock_torch.empty.assert_called_once()
+
+
+class TestWithOomRetry:
+    """Tests for with_oom_retry function."""
+
+    def test_with_oom_retry_success(self, mock_torch: MagicMock) -> None:
+        """Test with_oom_retry returns result on success."""
+        from video2d3d.utils.gpu import with_oom_retry, GPUConfig
+        
+        config = GPUConfig(min_batch_size=1, max_batch_size=32)
+        
+        def success_func():
+            return "success"
+        
+        result, batch_size = with_oom_retry(success_func, config, 4)
+        
+        assert result == "success"
+        assert batch_size == 4
+
+    def test_with_oom_retry_oom_recovery(self, mock_torch: MagicMock) -> None:
+        """Test with_oom_retry reduces batch size on OOM."""
+        from video2d3d.utils.gpu import with_oom_retry, GPUConfig
+        
+        config = GPUConfig(min_batch_size=1, max_batch_size=32)
+        call_count = [0]
+        
+        def oom_then_success():
+            call_count[0] += 1
+            if call_count[0] == 1:
+                raise RuntimeError("CUDA out of memory")
+            return "recovered"
+        
+        result, batch_size = with_oom_retry(oom_then_success, config, 4)
+        
+        assert result == "recovered"
+        assert batch_size == 2  # Reduced from 4 to 2
+
+    def test_with_oom_retry_non_oom_error(self, mock_torch: MagicMock) -> None:
+        """Test with_oom_retry re-raises non-OOM errors."""
+        from video2d3d.utils.gpu import with_oom_retry, GPUConfig
+        
+        config = GPUConfig(min_batch_size=1, max_batch_size=32)
+        
+        def fail_func():
+            raise ValueError("Some other error")
+        
+        with pytest.raises(ValueError):
+            with_oom_retry(fail_func, config, 4)

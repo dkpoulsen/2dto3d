@@ -481,9 +481,7 @@ class DepthEstimator:
         )
         depth_map: np.ndarray = depth_tensor.squeeze().numpy()
 
-        # Normalize to [0, 1] range
 
-        # Normalize to [0, 1] range
         depth_min = depth_map.min()
         depth_max = depth_map.max()
         if depth_max - depth_min > 0:
@@ -801,9 +799,15 @@ class DepthEstimator:
         self,
         exc_type: type[BaseException] | None,
         exc_val: BaseException | None,
-        exc_tb: object,
+        exc_tb: object,  # types.TracebackType not available for runtime annotation
     ) -> None:
-        """Context manager exit - cleanup resources."""
+        """Context manager exit - cleanup resources.
+        
+        Args:
+            exc_type: Exception type if an exception was raised.
+            exc_val: Exception value if an exception was raised.
+            exc_tb: Traceback object if an exception was raised.
+        """
         self.close()
 
     def close(self) -> None:
