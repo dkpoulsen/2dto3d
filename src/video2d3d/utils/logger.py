@@ -173,8 +173,8 @@ def configure_logging(
         filter=lambda record: record["level"].no >= logger.level("ERROR").no,
     )
 
-    _logging_configured = True
-    logger.debug(f"Logging configured: level={level}, file={file_path}")
+_logging_configured = True
+logger.debug(f"Logging configured: level={level}, file={file_path}")
 
 
 def get_logger(name: Optional[str] = None) -> "Logger":
@@ -195,7 +195,7 @@ def get_logger(name: Optional[str] = None) -> "Logger":
     return logger
 
 
-def log_context(**kwargs: Any) -> Any:
+def log_context(**kwargs: Any) -> "Logger":
     """Create a logging context with extra fields.
 
     All logged messages within this context will include the extra fields.
@@ -207,11 +207,12 @@ def log_context(**kwargs: Any) -> Any:
         Logger with context binding.
 
     Example:
-        with log_context(user_id="123", session="abc"):
-            logger.info("Processing request")  # Will include user_id and session
+        log = log_context(user_id="123", session="abc")
+        log.info("Processing request")  # Will include user_id and session
     """
-    if not _logging_configured:
-        configure_logging()
+    with _logging_lock:
+        if not _logging_configured:
+            configure_logging()
 
     return logger.bind(**kwargs)
 

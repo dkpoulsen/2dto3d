@@ -23,8 +23,7 @@ from video2d3d.video import (
     VideoValidationError,
     validate_video,
 )
-from video2d3d.video.exceptions import VideoValidationError as VVE
-
+)
 
 # Fixtures
 @pytest.fixture
@@ -207,7 +206,7 @@ class TestVideoExceptions:
     def test_video_validation_error(self) -> None:
         """Test VideoValidationError."""
         path = Path("/test/video.mp4")
-        error = VVE(path, errors=["Invalid width", "No frames"])
+        error = VideoValidationError(path, errors=["Invalid width", "No frames"])
         assert "validation failed" in str(error).lower()
         assert error.errors == ["Invalid width", "No frames"]
 
