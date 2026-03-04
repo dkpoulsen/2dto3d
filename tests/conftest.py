@@ -101,6 +101,24 @@ def _create_mock_cv2() -> MagicMock:
 
     mock.cvtColor = mock_cvt_color
 
+    # Mock remap for DIBR warping
+    def mock_remap(img, map1, map2, interpolation, borderMode=0, borderValue=0):
+        # Return a copy of the input image with same shape and dtype
+        return img.copy()
+
+    mock.remap = mock_remap
+    mock.BORDER_CONSTANT = 0
+    mock.INTER_LINEAR = 1
+
+    # Mock resize for side-by-side generator
+    def mock_resize(img, dsize, interpolation=1):
+        h, w = dsize[1], dsize[0]
+        if len(img.shape) == 3:
+            return np.zeros((h, w, img.shape[2]), dtype=img.dtype)
+        return np.zeros((h, w), dtype=img.dtype)
+
+    mock.resize = mock_resize
+
     return mock
 
 
