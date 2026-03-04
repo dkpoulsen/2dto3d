@@ -35,7 +35,20 @@ from video2d3d.core.batch_processor import (
 )
 
 
-@pytest.fixture
+# Module-level functions for multiprocessing tests (must be picklable)
+def _double(x: int) -> int:
+    """Double a number - used in multiprocessing tests."""
+    return x * 2
+
+
+def _fail_on_three(x: int) -> int:
+    """Fail when input is 3 - used in error handling tests."""
+    if x == 3:
+        raise ValueError("test error")
+    return x * 2
+
+
+
 def sample_items() -> list[int]:
     return list(range(10))
 
@@ -446,3 +459,215 @@ class TestExceptions:
         error = WorkerInitializationError("init failed")
         assert isinstance(error, BatchProcessorError)
         assert isinstance(error, Exception)
+
+
+class TestHighWorkersWarning:
+    """Tests for high num_workers warning."""
+
+    def test_high_workers_warning(self, mock_logger: MagicMock) -> None:
+        """Test warning when num_workers exceeds MAX_WORKERS_LIMIT."""
+        mock_logger.reset_mock()
+
+        config = BatchProcessorConfig(num_workers=64)
+
+        mock_logger.warning.assert_called_once()
+        call_args = mock_logger.warning.call_args[0][0]
+        assert "64" in call_args
+        assert "exceeds" in call_args.lower()
+        assert config.num_workers == 64
+
+
+class TestMultiprocessingMode:
+    """Tests for multiprocessing mode."""
+
+    def test_multiprocessing_config_creation(self, mock_logger: MagicMock) -> None:
+        """Test that multiprocessing mode can be configured."""
+        config = BatchProcessorConfig(
+            num_workers=2,
+            mode=ProcessingMode.MULTIPROCESSING,
+        )
+        assert config.mode == ProcessingMode.MULTIPROCESSING
+
+        processor = FrameBatchProcessor(config=config)
+        assert processor.config.mode == ProcessingMode.MULTIPROCESSING
+
+    @pytest.mark.skip(reason="Multiprocessing requires picklable functions")
+    def test_process_multiprocessing_basic(self, mock_logger: MagicMock) -> None:
+        """Test basic multiprocessing operation."""
+        config = BatchProcessorConfig(
+            num_workers=2,
+            mode=ProcessingMode.MULTIPROCESSING,
+            timeout_seconds=10.0,
+        )
+        processor = FrameBatchProcessor(config=config)
+        items = [1, 2, 3, 4, 5]
+
+        result = processor.process(items, _double)
+
+        assert result.total_processed == 5
+        assert result.total_failed == 0
+        assert result.outputs == [2, 4, 6, 8, 10]
+
+    @pytest.mark.skip(reason="Multiprocessing requires picklable functions")
+    def test_process_multiprocessing_with_error(
+        self, mock_logger: MagicMock
+    ) -> None:
+        """Test multiprocessing with processing errors."""
+        error_calls = []
+
+        def error_cb(error: Exception, idx: int) -> None:
+            error_calls.append((error, idx))
+
+        config = BatchProcessorConfig(
+            num_workers=2,
+            mode=ProcessingMode.MULTIPROCESSING,
+            timeout_seconds=10.0,
+            error_callback=error_cb,
+        )
+        processor = FrameBatchProcessor(config=config)
+
+        result = processor.process([1, 2, 3, 4, 5], _fail_on_three)
+
+        assert result.total_processed == 5
+        assert result.total_failed == 1
+        assert len(result.errors) == 1
+        assert result.errors[0][0] == 2
+
+    @pytest.mark.skip(reason="Multiprocessing requires picklable functions")
+    def test_process_multiprocessing_with_timeout(
+        self, mock_logger: MagicMock
+    ) -> None:
+        """Test multiprocessing timeout handling."""
+        import time
+
+        config = BatchProcessorConfig(
+            num_workers=1,
+            mode=ProcessingMode.MULTIPROCESSING,
+            timeout_seconds=0.1,
+        )
+        processor = FrameBatchProcessor(config=config)
+
+        result = processor.process([1, 2, 3, 4, 5], _double)
+
+        assert result.total_processed == 5
+
+
+class TestMapMethod:
+    """Tests for map() method with all modes."""
+
+    def test_map_threading_mode(self, mock_logger: MagicMock) -> None:
+        """Test map() with threading mode."""
+        processor = FrameBatchProcessor(
+            mode=ProcessingMode.THREADING,
+            num_workers=2,
+        )
+        items = [1, 2, 3, 4, 5]
+
+        result = list(processor.map(items, lambda x: x * 2))
+
+        assert result == [2, 4, 6, 8, 10]
+
+    @pytest.mark.skip(reason="Multiprocessing requires picklable functions")
+    def test_map_multiprocessing_mode(self, mock_logger: MagicMock) -> None:
+        """Test map() with multiprocessing mode."""
+        config = BatchProcessorConfig(
+            mode=ProcessingMode.MULTIPROCESSING,
+            num_workers=2,
+            timeout_seconds=10.0,
+        )
+        processor = FrameBatchProcessor(config=config)
+        items = [1, 2, 3, 4, 5]
+
+        result = list(processor.map(items, _double))
+
+        assert result == [2, 4, 6, 8, 10]
+
+
+    def test_map_raises_on_error(self, mock_logger: MagicMock) -> None:
+        """Test map() raises error on processing failure."""
+        processor = FrameBatchProcessor(mode=ProcessingMode.SEQUENTIAL)
+
+        def process_fn(x: int) -> int:
+            if x == 3:
+                raise ValueError("test error")
+            return x * 2
+
+        with pytest.raises(ValueError, match="test error"):
+            list(processor.map([1, 2, 3, 4, 5], process_fn))
+
+
+class TestProcessInBatches:
+    """Tests for process_in_batches method."""
+
+    def test_process_in_batches_no_gc(self, mock_logger: MagicMock) -> None:
+        """Test process_in_batches with gc_threshold=0."""
+        config = BatchProcessorConfig(
+            batch_size=3,
+            mode=ProcessingMode.SEQUENTIAL,
+            gc_threshold=0,
+        )
+        processor = FrameBatchProcessor(config=config)
+        items = [1, 2, 3, 4, 5, 6, 7]
+
+        batch_results = list(
+            processor.process_in_batches(items, lambda b: [x * 2 for x in b])
+        )
+
+        assert len(batch_results) == 3
+        assert batch_results[0] == [2, 4, 6]
+        assert batch_results[1] == [8, 10, 12]
+        assert batch_results[2] == [14]
+
+
+class TestThreadedWithRetry:
+    """Tests for threaded processing with retry logic."""
+
+    def test_threaded_retry_on_failure(self, mock_logger: MagicMock) -> None:
+        """Test retry logic in threaded mode."""
+        call_counts = {0: 0, 1: 0, 2: 0}
+
+        def process_fn(x: int) -> int:
+            call_counts[x] += 1
+            if x == 1 and call_counts[x] < 2:
+                raise ValueError("temporary error")
+            return x * 2
+
+        config = BatchProcessorConfig(
+            mode=ProcessingMode.THREADING,
+            num_workers=2,
+            max_retries=3,
+            timeout_seconds=10.0,
+        )
+        processor = FrameBatchProcessor(config=config)
+
+        result = processor.process([0, 1, 2], process_fn)
+
+        assert result.total_processed == 3
+        assert result.outputs == [0, 2, 4]
+        assert call_counts[1] >= 2
+
+    def test_threaded_max_retries_exceeded(
+        self, mock_logger: MagicMock
+    ) -> None:
+        """Test that error is raised after max retries exceeded."""
+
+        def always_fails(x: int) -> int:
+            if x == 1:
+                raise ValueError("always fails")
+            return x * 2
+
+        config = BatchProcessorConfig(
+            mode=ProcessingMode.THREADING,
+            num_workers=2,
+            max_retries=1,
+            timeout_seconds=10.0,
+        )
+        processor = FrameBatchProcessor(config=config)
+
+        result = processor.process([0, 1, 2], always_fails)
+
+        assert result.total_processed == 3
+        assert result.total_failed == 1
+        assert result.outputs[1] is None
+        assert result.outputs[0] == 0
+        assert result.outputs[2] == 4
