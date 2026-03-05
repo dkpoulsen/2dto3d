@@ -48,7 +48,7 @@ import tempfile
 from dataclasses import dataclass, field
 from enum import Enum
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
 
 import numpy as np
 
@@ -178,12 +178,13 @@ class VideoWriterConfig:
 
     def __post_init__(self) -> None:
         """Validate and apply codec defaults after initialization."""
-        # Apply codec defaults for missing values
+        # Apply codec defaults for missing values (but not if bitrate is explicitly set)
         if self.codec in CODEC_DEFAULTS:
             defaults = CODEC_DEFAULTS[self.codec]
             if self.preset is None and "preset" in defaults:
                 self.preset = defaults["preset"]
-            if self.crf is None and "crf" in defaults:
+            # Only apply CRF default if bitrate is not set (mutually exclusive)
+            if self.crf is None and self.bitrate is None and "crf" in defaults:
                 self.crf = defaults["crf"]
             if self.pixel_format is None and "pixel_format" in defaults:
                 self.pixel_format = defaults["pixel_format"]
@@ -277,6 +278,8 @@ class VideoOutputWriter:
         fps: float = 30.0,
         source_video: str | Path | None = None,
         input_pixel_format: str = "rgb24",
+        progress_callback: Callable[[int, int], None] | None = None,
+        total_frames: int | None = None,
     ) -> None:
         """Initialize the video output writer.
 
@@ -288,6 +291,8 @@ class VideoOutputWriter:
             fps: Frames per second for the output video.
             source_video: Optional source video to copy audio from.
             input_pixel_format: Pixel format of input frames (default: rgb24).
+            progress_callback: Optional callback(completed, total) for progress tracking.
+            total_frames: Total number of frames to be written (for progress tracking).
 
         Raises:
             InvalidVideoDimensionsError: If width or height are invalid.
@@ -300,37 +305,8 @@ class VideoOutputWriter:
         self.fps = fps
         self.source_video = Path(source_video) if source_video else None
         self.input_pixel_format = input_pixel_format
-
-        # Validate dimensions
-        if width <= 0 or height <= 0:
-            raise InvalidVideoDimensionsError(width, height, "Dimensions must be positive integers")
-
-        # Check if dimensions are even (required by most codecs)
-        if width % 2 != 0 or height % 2 != 0:
-            _get_writer_logger().warning(
-                f"Video dimensions ({width}x{height}) are not even. Some encoders may have issues."
-            )
-
-        # Validate FPS
-        if fps <= 0:
-            raise ValueError(f"FPS must be positive, got {fps}")
-
-        # Check FFmpeg availability
-        self._check_ffmpeg_available()
-
-        # Internal state
-        self._process: subprocess.Popen[bytes] | None = None
-        self._audio_process: subprocess.Popen[bytes] | None = None
-        self._temp_audio_file: Path | None = None
-        self._stats = WriterStats()
-        self._is_open = False
-        self._frames_written = 0
-
-        _get_writer_logger().info(
-            f"VideoOutputWriter initialized: {self.output_path.name}, "
-            f"{width}x{height}, {fps:.2f}fps, codec={self.config.codec}"
-        )
-
+        self._progress_callback = progress_callback
+        self._total_frames = total_frames or 0
     def _check_ffmpeg_available(self) -> None:
         """Check if FFmpeg is available in the system PATH."""
         if shutil.which("ffmpeg") is None:
@@ -557,6 +533,10 @@ class VideoOutputWriter:
             # Write frame to FFmpeg stdin
             self._process.stdin.write(frame.tobytes())
             self._frames_written += 1
+
+            # Call progress callback if set
+            if self._progress_callback:
+                self._progress_callback(self._frames_written, self._total_frames)
 
             # Log progress periodically
             if self._frames_written % 100 == 0:

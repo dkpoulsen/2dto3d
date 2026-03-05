@@ -37,6 +37,7 @@ from pathlib import Path
 from typing import (
     TYPE_CHECKING,
     Any,
+    Callable,
     Generator,
     Iterator,
 )
@@ -533,6 +534,7 @@ class FrameExtractor:
         self,
         start_frame: int = 0,
         end_frame: int | None = None,
+        progress_callback: Callable[[int, int], None] | None = None,
     ) -> Generator[tuple[int, np.ndarray], None, None]:
         """Extract frames as a generator.
 
@@ -542,6 +544,7 @@ class FrameExtractor:
         Args:
             start_frame: Starting frame index (inclusive).
             end_frame: Ending frame index (exclusive). None = last frame.
+            progress_callback: Optional callback(completed, total) for progress tracking.
 
         Yields:
             Tuples of (frame_number, frame).
@@ -556,6 +559,8 @@ class FrameExtractor:
             self._frame_indices = self._calculate_frame_indices()
 
         end_frame = end_frame or self.metadata.frame_count
+        total_frames = len([i for i in self._frame_indices if start_frame <= i < end_frame])
+        completed = 0
 
         for frame_number in self._frame_indices:
             if frame_number < start_frame:
@@ -565,6 +570,9 @@ class FrameExtractor:
 
             try:
                 frame = self._read_frame_at(frame_number)
+                completed += 1
+                if progress_callback:
+                    progress_callback(completed, total_frames)
                 yield frame_number, frame
             except FrameExtractionError as e:
                 _get_frame_logger().warning(f"Skipping frame {frame_number}: {e}")

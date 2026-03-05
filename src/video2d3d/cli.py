@@ -16,6 +16,11 @@ from video2d3d.utils.logger import (
     get_logger,
     log_exception,
 )
+from video2d3d.utils.progress import (
+    ProgressConfig,
+    ProgressStage,
+    VideoConversionProgress,
+)
 
 # ============================================================================
 # Constants
@@ -212,6 +217,7 @@ def convert(
     ),
     gpu: bool = typer.Option(True, "--gpu/--no-gpu", help="Use GPU acceleration"),
     preview: bool = typer.Option(False, "--preview", "-p", help="Enable live preview during processing"),
+    no_progress: bool = typer.Option(False, "--no-progress", help="Disable progress tracking display"),
     config_path: str | None = typer.Option(None, "--config", "-c", help="Path to config file"),
 ) -> None:
     """Convert a 2D video to 3D.
@@ -241,10 +247,36 @@ def convert(
     console.print(f"[bold]Format:[/bold] {output_format}, [bold]Model:[/bold] {model}")
     if preview:
         console.print("[bold green]Preview:[/bold green] Enabled (press Q or ESC to close)")
+
+    # Initialize progress tracking
+    config = get_config()
+    progress_config = ProgressConfig(
+        enabled=config.progress.enabled and not no_progress,
+        show_speed=config.progress.show_speed,
+        show_eta=config.progress.show_eta,
+        show_elapsed=config.progress.show_elapsed,
+        show_percent=config.progress.show_percent,
+        show_overall=config.progress.show_overall,
+        refresh_rate=config.progress.refresh_rate,
+        transient=config.progress.transient,
+    )
+    progress = VideoConversionProgress(
+        total_frames=0,  # Will be updated when conversion is implemented
+        config=progress_config,
+        input_file=input_file,
+        output_file=output_file,
+        console=console,
+    )
+
     try:
-        # TODO: Implement actual conversion
-        logger.warning("Conversion not yet implemented - placeholder execution")
-        console.print("[yellow]Conversion not yet implemented[/yellow]")
+        with progress:
+            # TODO: Implement actual conversion with progress tracking
+            # Example flow:
+            # 1. progress.start_stage(ProgressStage.EXTRACT, total=frame_count)
+            # 2. progress.start_stage(ProgressStage.PROCESS, total=frame_count)
+            # 3. progress.start_stage(ProgressStage.WRITE, total=frame_count)
+            logger.warning("Conversion not yet implemented - placeholder execution")
+            console.print("[yellow]Conversion not yet implemented[/yellow]")
     except FileNotFoundError as e:
         log_exception("Input file not found", exception=e, input_file=input_file)
         console.print(f"[red]Error: Input file not found: {e}[/red]")

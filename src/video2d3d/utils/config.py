@@ -178,6 +178,31 @@ class PreviewConfig:
     max_height: int = 1080
     update_interval_ms: int = 33
 
+
+@dataclass
+class ProgressTrackingConfig:
+    """Progress tracking configuration settings.
+
+    Attributes:
+        enabled: Whether progress tracking is enabled.
+        show_speed: Show processing speed (frames/sec).
+        show_eta: Show estimated time remaining.
+        show_elapsed: Show elapsed time.
+        show_percent: Show percentage complete.
+        show_overall: Show overall progress across all stages.
+        refresh_rate: Display refresh rate in seconds.
+        transient: Whether progress bars disappear after completion.
+    """
+
+    enabled: bool = True
+    show_speed: bool = True
+    show_eta: bool = True
+    show_elapsed: bool = True
+    show_percent: bool = True
+    show_overall: bool = True
+    refresh_rate: float = 0.1
+    transient: bool = False
+
 @dataclass
 class Config:
     """Main configuration class."""
@@ -193,6 +218,7 @@ class Config:
     logging: LoggingConfig = field(default_factory=LoggingConfig)
     web_api: WebApiConfig = field(default_factory=WebApiConfig)
     preview: PreviewConfig = field(default_factory=PreviewConfig)
+    progress: ProgressTrackingConfig = field(default_factory=ProgressTrackingConfig)
 
 def deep_update(base_dict: Dict[str, Any], update_dict: Dict[str, Any]) -> Dict[str, Any]:
     """Recursively update a dictionary with another dictionary."""
@@ -304,8 +330,10 @@ def load_config(
     if "preview" in merged_config:
         config.preview = _parse_config_section(merged_config, "preview", PreviewConfig)
 
-    return config
+    if "progress" in merged_config:
+        config.progress = _parse_config_section(merged_config, "progress", ProgressTrackingConfig)
 
+    return config
 
 # Global configuration instance (lazy-loaded)
 _config: Optional[Config] = None
