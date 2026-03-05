@@ -244,3 +244,101 @@ class InvalidSamplingStrategyError(VideoError):
         if self.valid_strategies:
             message += f". Valid strategies: {', '.join(self.valid_strategies)}"
         super().__init__(message)
+
+
+class VideoWriteError(VideoError):
+    """Raised when video writing fails."""
+
+    def __init__(
+        self,
+        file_path: Path,
+        reason: str | None = None,
+    ) -> None:
+        """Initialize VideoWriteError.
+
+        Args:
+            file_path: Path to the output video file.
+            reason: Specific reason for the failure.
+        """
+        self.reason = reason
+        message = "Failed to write video"
+        if reason:
+            message += f": {reason}"
+        super().__init__(message, file_path)
+
+
+class FFmpegProcessError(VideoError):
+    """Raised when FFmpeg process fails."""
+
+    def __init__(
+        self,
+        file_path: Path | None,
+        return_code: int | None = None,
+        stderr_output: str | None = None,
+        command: list[str] | None = None,
+    ) -> None:
+        """Initialize FFmpegProcessError.
+
+        Args:
+            file_path: Path to the video file.
+            return_code: FFmpeg process return code.
+            stderr_output: FFmpeg stderr output.
+            command: The FFmpeg command that failed.
+        """
+        self.return_code = return_code
+        self.stderr_output = stderr_output
+        self.command = command
+        message = "FFmpeg process failed"
+        if return_code is not None:
+            message += f" (return code: {return_code})"
+        if stderr_output:
+            # Truncate very long error messages
+            truncated = stderr_output[:500] + "..." if len(stderr_output) > 500 else stderr_output
+            message += f": {truncated}"
+        super().__init__(message, file_path)
+
+
+class AudioProcessingError(VideoError):
+    """Raised when audio processing fails."""
+
+    def __init__(
+        self,
+        file_path: Path | None,
+        reason: str | None = None,
+    ) -> None:
+        """Initialize AudioProcessingError.
+
+        Args:
+            file_path: Path to the video file.
+            reason: Specific reason for the failure.
+        """
+        self.reason = reason
+        message = "Failed to process audio"
+        if reason:
+            message += f": {reason}"
+        super().__init__(message, file_path)
+
+
+class InvalidVideoDimensionsError(VideoError):
+    """Raised when video dimensions are invalid for the encoder."""
+
+    def __init__(
+        self,
+        width: int,
+        height: int,
+        reason: str | None = None,
+    ) -> None:
+        """Initialize InvalidVideoDimensionsError.
+
+        Args:
+            width: Video width.
+            height: Video height.
+            reason: Specific reason for the failure.
+        """
+        self.width = width
+        self.height = height
+        self.reason = reason
+        message = f"Invalid video dimensions: {width}x{height}"
+        if reason:
+            message += f": {reason}"
+        super().__init__(message)
