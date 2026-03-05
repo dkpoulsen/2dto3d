@@ -398,16 +398,325 @@ def list_formats() -> None:
 
     console.print("\n[bold blue]Available 3D Output Formats[/bold blue]\n")
 
-    table = Table()
-    table.add_column("Format", style="cyan")
-    table.add_column("Description", style="green")
+@app.command("batch-convert")
+def batch_convert(
+    input_path: str = typer.Argument(
+        ...,
+        help="Path to input file, directory, or wildcard pattern",
+        metavar="INPUT"
+    ),
+    output_dir: str | None = typer.Option(
+        None,
+        "--output-dir",
+        "-o",
+        help="Output directory for converted files"
+    ),
+    pattern: str | None = typer.Option(
+        None,
+        "--pattern",
+        "-p",
+        help="Wildcard pattern for file matching (e.g., '*.mp4')"
+    ),
+    recursive: bool = typer.Option(
+        True,
+        "--recursive/--no-recursive",
+        help="Search directories recursively"
+    ),
+    format: str = typer.Option(
+        "side_by_side",
+        "--format",
+        "-f",
+        help=f"3D output format. Options: {', '.join(VALID_FORMATS)}",
+    ),
+    model: str = typer.Option(
+        "midas_small",
+        "--model",
+        "-m",
+        help=f"Depth estimation model. Options: {', '.join(VALID_MODELS)}",
+    ),
+    concurrent: int = typer.Option(
+        1,
+        "--concurrent",
+        "-c",
+        help="Number of concurrent jobs to process"
+    ),
+    skip_existing: bool = typer.Option(
+        True,
+        "--skip-existing/--no-skip-existing",
+        help="Skip files that already have output"
+    ),
+    watch: bool = typer.Option(
+        False,
+        "--watch",
+        "-w",
+        help="Watch folder for new files (continuous mode)"
+    ),
+    list_file: str | None = typer.Option(
+        None,
+        "--list",
+        "-l",
+        help="Path to text file containing list of videos to process"
+    ),
+) -> None:
+    from pathlib import Path
+    from video2d3d.batch import BatchVideoQueue, BatchQueueConfig, BatchJobResult
+    
+    logger = get_logger("batch_convert")
+    output_format = validate_output_format(format)
+    validated_model = validate_model(model)
+    
+    console.print(f"[bold blue]Batch Video Conversion[/bold blue]")
+    console.print(f"[bold]Format:[/bold] {format}, [bold]Model:[/bold] {model}")
+    console.print(f"[bold]Concurrent:[/bold] {concurrent}, [bold]Recursive:[/bold] {recursive}")
+    
+    config = BatchQueueConfig(
+        max_concurrent_jobs=concurrent,
+        skip_existing=skip_existing,
+        output_directory=Path(output_dir) if output_dir else None,
+    )
+    
+    if watch:
+        config.folder_watcher.enabled = True
+        config.folder_watcher.watch_paths = [Path(input_path)]
+    
+    def dummy_processor(input_path: Path, output_path: Path) -> BatchJobResult:
+        return BatchJobResult(
+            success=True,
+            output_path=output_path,
+            metadata={"format": format, "model": model}
+        )
+    
+    queue = BatchVideoQueue(config=config, processor=dummy_processor)
+    
+    try:
+        input_p = Path(input_path)
+        
+        if list_file:
+            jobs = queue.add_jobs_from_list(
+                list(Path(line.strip()) for line in open(list_file) if line.strip())
+            )
+        elif pattern:
+            jobs = queue.add_jobs_from_pattern(pattern, base_dir=input_p if input_p.is_dir() else None)
+        elif input_p.is_dir():
+            jobs = queue.add_jobs_from_directory(input_p, recursive=recursive)
+        else:
+            job = queue.add_job(input_p)
+            jobs = [job]
+        
+        console.print(f"[green]Added {len(jobs)} jobs to queue[/green]")
+        
+        if not watch:
+            queue.start()
+            
+            import time
+            while queue.running_count > 0 or queue.pending_count > 0:
+                stats = queue.get_stats()
+                console.print(
+                    f"\r[bold]Progress:[/bold] {stats.completed_jobs}/{stats.total_jobs} "
+                    f"completed, {stats.running_jobs} running, {stats.pending_jobs} pending",
+                    end=""
+                )
+                time.sleep(1.0)
+            
+            console.print()
+            stats = queue.get_stats()
+            console.print(f"\n[bold green]Batch complete![/bold green]")
+            console.print(f"  Completed: {stats.completed_jobs}")
+            console.print(f"  Failed: {stats.failed_jobs}")
+            console.print(f"  Skipped: {stats.skipped_jobs}")
+            console.print(f"  Success rate: {stats.success_rate:.1f}%")
+            
+            queue.stop()
+        else:
+            console.print("[yellow]Watching for new files... Press Ctrl+C to stop[/yellow]")
+            queue.start()
+            try:
+                import time
+                while True:
+                    time.sleep(1.0)
+            except KeyboardInterrupt:
+                console.print("\n[yellow]Stopping...[/yellow]")
+                queue.stop()
+    
+    except FileNotFoundError as e:
+        console.print(f"[red]Error: {e}[/red]")
+        raise typer.Exit(code=1)
+    except Exception as e:
+        log_exception("Batch conversion failed", exception=e)
+        console.print(f"[red]Error: {e}[/red]")
+        raise typer.Exit(code=1)
 
-    for format_id, description in OUTPUT_FORMATS.items():
-        table.add_row(format_id, description)
 
-    console.print(table)
-    console.print(f"\n[dim]Default format: side_by_side[/dim]")
+@app.command("queue-status")
+def queue_status(
+    state_file: str | None = typer.Option(
+        None,
+        "--state-file",
+        "-s",
+        help="Path to queue state file"
+    ),
+    watch: bool = typer.Option(
+        False,
+        "--watch",
+        "-w",
+        help="Continuously monitor queue status"
+    ),
+    clear_completed: bool = typer.Option(
+        False,
+        "--clear",
+        help="Clear completed jobs from queue"
+    ),
+) -> None:
+    import json
+    from pathlib import Path
+    from video2d3d.batch import BatchQueueConfig
+    
+    logger = get_logger("queue_status")
+    config = BatchQueueConfig()
+    state_path = Path(state_file) if state_file else Path("logs/batch_queue_state.json")
+    
+    if not state_path.exists():
+        console.print(f"[yellow]No queue state file found at {state_path}[/yellow]")
+        console.print("[dim]Start a batch conversion to create a queue.[/dim]")
+        return
+    
+    try:
+        with open(state_path) as f:
+            state = json.load(f)
+        
+        console.print(f"\n[bold blue]Batch Queue Status[/bold blue]")
+        console.print(f"[dim]State file: {state_path}[/dim]")
+        console.print(f"[dim]Saved at: {state.get('saved_at', 'unknown')}[/dim]\n")
+        
+        jobs = state.get("jobs", [])
+        
+        stats = {
+            "total": len(jobs),
+            "pending": sum(1 for j in jobs if j["status"] == "pending"),
+            "running": sum(1 for j in jobs if j["status"] == "running"),
+            "completed": sum(1 for j in jobs if j["status"] == "completed"),
+            "failed": sum(1 for j in jobs if j["status"] == "failed"),
+            "cancelled": sum(1 for j in jobs if j["status"] == "cancelled"),
+            "skipped": sum(1 for j in jobs if j["status"] == "skipped"),
+        }
+        
+        table = Table(title="Queue Statistics")
+        table.add_column("Status", style="cyan")
+        table.add_column("Count", style="green")
+        table.add_row("Total", str(stats["total"]))
+        table.add_row("Pending", str(stats["pending"]))
+        table.add_row("Running", str(stats["running"]))
+        table.add_row("Completed", str(stats["completed"]))
+        table.add_row("Failed", str(stats["failed"]))
+        table.add_row("Cancelled", str(stats["cancelled"]))
+        table.add_row("Skipped", str(stats["skipped"]))
+        console.print(table)
+        
+        if stats["total"] > 0:
+            success_rate = (stats["completed"] / (stats["completed"] + stats["failed"])) * 100 if (stats["completed"] + stats["failed"]) > 0 else 0
+            console.print(f"\n[bold]Success Rate:[/bold] {success_rate:.1f}%")
+        
+        if watch:
+            console.print("\n[yellow]Monitoring... Press Ctrl+C to stop[/yellow]")
+            import time
+            try:
+                while True:
+                    time.sleep(2.0)
+                    console.clear()
+            except KeyboardInterrupt:
+                console.print("\n[yellow]Stopped.[/yellow]")
+    
+    except json.JSONDecodeError as e:
+        console.print(f"[red]Error reading state file: {e}[/red]")
+        raise typer.Exit(code=1)
+    except Exception as e:
+        log_exception("Failed to get queue status", exception=e)
+        console.print(f"[red]Error: {e}[/red]")
+        raise typer.Exit(code=1)
 
+
+@app.command("serve")
+def serve(
+    host: str = typer.Option(
+        "0.0.0.0",
+        "--host",
+        "-h",
+        help="Host address to bind the server",
+    ),
+    port: int = typer.Option(
+        8000,
+        "--port",
+        "-p",
+        help="Port number to bind the server",
+    ),
+    reload: bool = typer.Option(
+        False,
+        "--reload",
+        "-r",
+        help="Enable auto-reload for development",
+    ),
+    workers: int = typer.Option(
+        1,
+        "--workers",
+        "-w",
+        help="Number of worker processes",
+    ),
+    log_level: str = typer.Option(
+        "info",
+        "--log-level",
+        "-l",
+        help="Log level (debug, info, warning, error, critical)",
+    ),
+) -> None:
+    """Start the REST API server.
+
+    This command starts a FastAPI-based REST API server that provides
+    endpoints for video upload, job submission, status checking, and
+    result download.
+
+    Examples:
+        video2d3d serve
+        video2d3d serve --host 127.0.0.1 --port 8080
+        video2d3d serve --reload  # Development mode with auto-reload
+    """
+    logger = get_logger("serve")
+
+    try:
+        import uvicorn
+    except ImportError:
+        console.print("[red]Error: uvicorn is not installed.[/red]")
+        console.print("[yellow]Install with: pip install uvicorn[standard][/yellow]")
+        raise typer.Exit(code=1)
+
+    config = get_config()
+
+    console.print(f"[bold blue]Starting 2Dto3D API Server[/bold blue]")
+    console.print(f"[bold]Host:[/bold] {host}")
+    console.print(f"[bold]Port:[/bold] {port}")
+    console.print(f"[bold]Workers:[/bold] {workers}")
+    console.print(f"[bold]API Docs:[/bold] http://{host}:{port}/docs")
+    console.print(f"[bold]ReDoc:[/bold] http://{host}:{port}/redoc")
+    console.print()
+    console.print("[dim]Press Ctrl+C to stop the server[/dim]")
+
+    logger.info(f"Starting API server on {host}:{port}")
+
+    try:
+        uvicorn.run(
+            "video2d3d.web.app:app",
+            host=host,
+            port=port,
+            reload=reload,
+            workers=workers if not reload else 1,  # Reload doesn't work with multiple workers
+            log_level=log_level,
+            access_log=True,
+        )
+    except KeyboardInterrupt:
+        console.print("\n[yellow]Server stopped.[/yellow]")
+    except Exception as e:
+        log_exception("Server error", exception=e)
+        console.print(f"[red]Error: {e}[/red]")
+        raise typer.Exit(code=1)
 
 def main() -> None:
     """Main entry point for the CLI application.

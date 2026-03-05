@@ -199,26 +199,53 @@ web_api:
 
 # Preview Window Settings
 preview:
-  # Enable live preview during processing
   enabled: false
-
-  # Window name
   window_name: "2Dto3D Preview"
-
-  # Layout: horizontal, vertical, grid
   layout: horizontal
-
-  # Scale factor (0.0-1.0)
   scale: 0.5
-
-  # Display options
   show_fps: true
   show_frame_info: true
-
-  # Window sizing
   auto_resize: true
   max_width: 1920
   max_height: 1080
-
-  # Update rate (ms) - ~30 FPS
   update_interval_ms: 33
+
+# Batch Queue Settings
+batch_queue:
+  max_concurrent_jobs: 1
+  auto_start: true
+  retry_failed: true
+  max_retries: 3
+  retry_delay_seconds: 5.0
+  job_timeout_seconds: 3600
+  output_naming_pattern: "{name}_3d{ext}"
+  preserve_directory_structure: false
+  skip_existing: true
+  save_state: true
+  state_file: "logs/batch_queue_state.json"
+  state_save_interval: 30.0
+  progress_update_interval: 1.0
+
+  file_discovery:
+    patterns:
+      - "*.mp4"
+      - "*.avi"
+      - "*.mov"
+      - "*.mkv"
+      - "*.webm"
+    exclude_patterns: []
+    recursive: true
+    case_sensitive: false
+    max_depth: 10
+    follow_symlinks: false
+    min_file_size_mb: 0.0
+    max_file_size_mb: 0.0
+
+  folder_watcher:
+    enabled: false
+    watch_paths: []
+    poll_interval_seconds: 2.0
+    use_inotify: true
+    stable_time_seconds: 5.0
+    process_existing: true
+    recursive: true

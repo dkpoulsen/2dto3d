@@ -1,10 +1,11 @@
 """Batch video processing queue module.
 
-This module provides batch processing capabilities for video conversion:
-- VideoJobQueue: Priority queue for managing multiple video jobs
-- VideoBatchProcessor: Processor for running multiple jobs sequentially or in parallel
-- FolderMonitor: Automatic monitoring of directories for new video files
-- FileDiscovery: Pattern-based file discovery with wildcard support
+This module provides comprehensive batch processing capabilities:
+- Job queue management with priorities
+- Folder monitoring for automatic job creation
+- Wildcard pattern matching for file discovery
+- Progress tracking and callbacks
+- State persistence and recovery
 """
 
 from video2d3d.batch.config import BatchQueueConfig, FileDiscoveryConfig, FolderWatcherConfig
@@ -29,31 +30,29 @@ from video2d3d.batch.models import (
     JobStatus,
 )
 
+from video2d3d.batch.queue import BatchVideoQueue
+
 __all__ = [
-    # Config
+    "BatchVideoQueue",
     "BatchQueueConfig",
     "FileDiscoveryConfig",
     "FolderWatcherConfig",
-    # Models
     "BatchJob",
     "BatchJobResult",
     "BatchQueueStats",
     "JobPriority",
     "JobStatus",
-    # Exceptions
-    "BatchQueueError",
-    "FileDiscoveryError",
-    "FolderWatcherError",
-    "JobAlreadyExistsError",
-    "JobNotFoundError",
-    "JobValidationError",
-    "QueueFullError",
-    "QueueNotRunningError",
-    "StatePersistenceError",
-    # File Discovery
     "FileDiscovery",
     "discover_videos",
-    # Folder Watcher
     "FolderWatcher",
     "WATCHDOG_AVAILABLE",
+    "BatchQueueError",
+    "JobNotFoundError",
+    "JobAlreadyExistsError",
+    "QueueFullError",
+    "QueueNotRunningError",
+    "JobValidationError",
+    "FileDiscoveryError",
+    "FolderWatcherError",
+    "StatePersistenceError",
 ]

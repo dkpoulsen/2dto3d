@@ -68,6 +68,7 @@ dev = [
 web = [
     "fastapi>=0.75.0",
     "uvicorn>=0.17.0",
+    "python-multipart>=0.0.5",
     "flask>=2.0.0",
 ]
 viz = [
