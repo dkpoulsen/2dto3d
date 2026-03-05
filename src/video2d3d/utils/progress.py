@@ -46,6 +46,7 @@ from __future__ import annotations
 
 import threading
 import time
+import types
 from contextlib import contextmanager
 from dataclasses import dataclass, field
 from enum import Enum
@@ -62,7 +63,7 @@ from rich.progress import (
     TimeRemainingColumn,
 )
 from rich.table import Table
-from rich.table import Table
+
 
 
 DEFAULT_REFRESH_RATE: float = 0.1  # seconds
@@ -256,12 +257,18 @@ class VideoConversionProgress:
         """Initialize the progress tracker.
 
         Args:
-            total_frames: Total number of frames to process.
+            total_frames: Total number of frames to process. Must be >= 0.
             config: Progress configuration. If None, uses defaults.
             input_file: Input file path (for display).
             output_file: Output file path (for display).
             console: Rich console to use. If None, creates new one.
+
+        Raises:
+            ValueError: If total_frames is negative.
         """
+        if total_frames < 0:
+            raise ValueError(f"total_frames must be non-negative, got {total_frames}")
+
         self.total_frames = total_frames
         self.config = config or ProgressConfig()
         self.input_file = input_file
@@ -486,15 +493,18 @@ class VideoConversionProgress:
                     self._stats.frames_written = self._stage_metrics[self._current_stage].completed
 
     def _get_overall_speed(self) -> float:
-        """Calculate overall processing speed."""
+        """Calculate overall processing speed across all stages.
+
+        Returns:
+            Items per second based on total completed items and elapsed time.
+            This gives a meaningful overall rate regardless of the number of stages.
+        """
         if self._start_time is None:
             return 0.0
         elapsed = time.time() - self._start_time
         if elapsed > 0:
             total_completed = sum(m.completed for m in self._stage_metrics.values())
-            # Divide by number of stages to get frames/sec
-            num_stages = len(self._stage_metrics) or 1
-            return (total_completed / num_stages) / elapsed
+            return total_completed / elapsed
         return 0.0
 
     def get_stats(self) -> ConversionStats:
@@ -536,12 +546,21 @@ class VideoConversionProgress:
     def create_callback(self) -> Callable[[int, int], None]:
         """Create a callback function for use with batch processor.
 
+        The callback accepts (completed, total) parameters but ignores them,
+        advancing progress by 1 each call. This is designed for integration
+        with APIs that expect progress callbacks with those signatures.
+
         Returns:
-            A callback function that updates progress.
+            A callback function that updates progress by 1 item per call.
+
+        Note:
+            The completed and total parameters are intentionally ignored since
+            we track cumulative progress via the advance parameter in update().
         """
 
         def callback(completed: int, total: int) -> None:
-            # Calculate delta since we track cumulative progress
+            # Parameters intentionally ignored - we use advance-based tracking
+            _ = completed, total
             self.update(1)
 
         return callback
@@ -590,13 +609,12 @@ class VideoConversionProgress:
         self,
         exc_type: type[BaseException] | None,
         exc_val: BaseException | None,
-        exc_tb: object,
+        exc_tb: types.TracebackType | None,
     ) -> None:
-        """Exit context manager."""
+        """Exit context manager and stop progress display."""
         self.stop()
         if exc_type is None:
             self.print_summary()
-
 
 class SimpleProgressTracker:
     """Simple progress tracker for basic use cases.
@@ -683,9 +701,9 @@ class SimpleProgressTracker:
         self,
         exc_type: type[BaseException] | None,
         exc_val: BaseException | None,
-        exc_tb: object,
+        exc_tb: types.TracebackType | None,
     ) -> None:
-        """Exit context manager."""
+        """Exit context manager and stop progress display."""
         self.stop()
 
 
