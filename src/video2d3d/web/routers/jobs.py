@@ -219,6 +219,24 @@ async def submit_job(request: SubmitJobRequest) -> SubmitJobResponse:
         **request.config.extra_options,
     }
 
+    # Add depth curve config if provided
+    if request.config.depth_curve:
+        job_config["depth_curve"] = request.config.depth_curve.model_dump()
+
+    # Add depth focus config if provided
+    if request.config.depth_focus:
+        job_config["depth_focus"] = request.config.depth_focus.model_dump()
+
+    job_config = {
+        "stereo_format": request.config.stereo_format.value,
+        "depth_model": request.config.depth_model.value,
+        "use_gpu": request.config.use_gpu,
+        "quality_preset": request.config.quality_preset,
+        "output_codec": request.config.output_codec,
+        "output_crf": request.config.output_crf,
+        **request.config.extra_options,
+    }
+
     # Add callback URL if provided
     if request.callback_url:
         job_config["callback_url"] = request.callback_url

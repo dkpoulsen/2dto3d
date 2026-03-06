@@ -29,6 +29,7 @@ export interface JobConfig {
   output_codec: string;
   output_crf: number;
   extra_options?: Record<string, unknown>;
+  depth_focus?: DepthFocusConfig;
 }
 
 export interface SubmitJobRequest {
@@ -70,7 +71,7 @@ export interface DepthCurveConfig {
 
 // Extended JobConfig with depth curve support
 export interface JobConfigWithCurve extends JobConfig {
-  depth_curve?: DepthCurveConfig | null;
+  depth_curve?: DepthCurveConfig;
 }
 
 // Depth Focus Types - controls which depth range appears at screen plane
@@ -84,7 +85,7 @@ export interface DepthFocusConfig {
 
 // Extended JobConfig with depth focus support
 export interface JobConfigWithFocus extends JobConfigWithCurve {
-  depth_focus?: DepthFocusConfig | null;
+  depth_focus?: DepthFocusConfig;
 }
 
 // Response types
@@ -323,4 +324,145 @@ export interface DepthMapExport {
   height: number;
   data: string; // Base64 encoded PNG
   planes: DepthPlane[];
+}
+
+// Model Performance Comparison Types
+
+/** Available depth estimation models for comparison */
+export type ComparisonModel = 'midas_small' | 'midas_hybrid' | 'dpt_large' | 'dpt_hybrid';
+
+/** Metrics for a single model's depth estimation */
+export interface ModelMetrics {
+  /** Processing time in seconds */
+  processing_time_seconds: number;
+  /** Average confidence score (0-1) */
+  avg_confidence: number;
+  /** Memory usage in MB */
+  memory_usage_mb: number;
+  /** Number of frames processed */
+  frames_processed: number;
+  /** Quality score if ground truth available (0-1) */
+  quality_score?: number;
+  /** Edge preservation score (0-1) */
+  edge_score?: number;
+  /** Depth consistency across frames (0-1) */
+  temporal_consistency?: number;
+}
+
+/** Individual model result in a comparison session */
+export interface ModelResult {
+  /** Model identifier */
+  model: ComparisonModel;
+  /** Display name of the model */
+  model_name: string;
+  /** Depth map image URL (with colormap applied) */
+  depth_map_url: string;
+  /** Original depth map URL (grayscale) */
+  raw_depth_map_url?: string;
+  /** Metrics for this model */
+  metrics: ModelMetrics;
+  /** Number of votes received */
+  votes: number;
+  /** Whether the current user has voted for this model */
+  user_voted: boolean;
+}
+
+/** User vote for a comparison */
+export interface ComparisonVote {
+  /** Session ID */
+  session_id: string;
+  /** Model that received the vote */
+  model: ComparisonModel;
+  /** Optional user comment */
+ comment?: string;
+  /** Timestamp of the vote */
+  voted_at: string;
+}
+
+/** Comparison session containing multiple model results */
+export interface ComparisonSession {
+  /** Unique session identifier */
+  session_id: string;
+  /** Source job ID if applicable */
+  job_id?: string;
+  /** Frame index being compared */
+  frame_index: number;
+  /** Original frame image URL */
+  original_frame_url: string;
+  /** All model results for comparison */
+  results: ModelResult[];
+  /** Total votes cast in this session */
+  total_votes: number;
+  /** Session creation time */
+  created_at: string;
+  /** Whether the session is active for voting */
+  is_active: boolean;
+  /** Current user's vote if any */
+  user_vote?: ComparisonVote;
+}
+
+/** Request to create a new comparison session */
+export interface CreateComparisonRequest {
+  /** Source job ID */
+  job_id?: string;
+  /** Specific frame index to compare (optional, defaults to middle frame) */
+  frame_index?: number;
+  /** Models to include in comparison */
+  models?: ComparisonModel[];
+}
+
+/** Request to submit a vote */
+export interface SubmitVoteRequest {
+  /** Session ID */
+  session_id: string;
+  /** Model receiving the vote */
+  model: ComparisonModel;
+  /** Optional comment */
+  comment?: string;
+}
+
+/** Response after submitting a vote */
+export interface SubmitVoteResponse {
+  /** Session ID */
+  session_id: string;
+  /** Model that received the vote */
+  model: ComparisonModel;
+  /** Whether the vote was successfully recorded */
+  success: boolean;
+  /** Updated vote count for the model */
+  new_vote_count: number;
+  /** Total votes in the session */
+  total_votes: number;
+  /** Message about the vote */
+  message: string;
+}
+
+/** Leaderboard entry for model rankings */
+export interface LeaderboardEntry {
+  /** Model identifier */
+  model: ComparisonModel;
+  /** Display name */
+  model_name: string;
+  /** Total votes received */
+  total_votes: number;
+  /** Win rate percentage */
+  win_rate_percent: number;
+  /** Average confidence across all comparisons */
+  avg_confidence: number;
+  /** Average processing time */
+  avg_processing_time_seconds: number;
+  /** Number of comparison sessions participated in */
+  sessions_count: number;
+}
+
+/** Leaderboard response */
+export interface LeaderboardResponse {
+  /** Leaderboard entries ranked by votes */
+  leaderboard: LeaderboardEntry[];
+  /** Total comparison sessions */
+  total_sessions: number;
+  /** Total votes cast */
+  total_votes: number;
+  /** Last updated timestamp */
+  updated_at: string;
 }

@@ -9,11 +9,13 @@ import {
   Filter,
   AlertTriangle,
 } from 'lucide-react';
-import { StatusBadge, ProgressBar } from '../components';
+import { StatusBadge, ProgressBar, DepthFocusControl } from '../components';
+
 import { jobsApi, uploadApi } from '../api';
 import { formatDuration, capitalize } from '../utils/format';
 import { POLLING_INTERVALS, PAGINATION, DEFAULT_JOB_CONFIG } from '../utils/constants';
-import type { JobStatus, JobPriority, StereoFormat, DepthModel, DownloadInfo } from '../api';
+import type { JobStatus, JobPriority, StereoFormat, DepthModel, DownloadInfo, DepthFocusConfig } from '../api';
+
 
 const statusFilters: (JobStatus | 'all')[] = [
   'all',
@@ -310,6 +312,12 @@ function CreateJobModal({ files, onClose, onSuccess, onError }: CreateJobModalPr
   const [stereoFormat, setStereoFormat] = useState<StereoFormat>('side_by_side');
   const [depthModel, setDepthModel] = useState<DepthModel>('midas_small');
   const [useGpu, setUseGpu] = useState(true);
+  const [depthFocus, setDepthFocus] = useState<DepthFocusConfig>({
+    enabled: false,
+    focus_depth: 0.5,
+    focus_range: 0.3,
+  });
+
 
   const createMutation = useMutation({
     mutationFn: () =>
@@ -323,7 +331,9 @@ function CreateJobModal({ files, onClose, onSuccess, onError }: CreateJobModalPr
           quality_preset: DEFAULT_JOB_CONFIG.QUALITY_PRESET,
           output_codec: DEFAULT_JOB_CONFIG.OUTPUT_CODEC,
           output_crf: DEFAULT_JOB_CONFIG.OUTPUT_CRF,
+          depth_focus: depthFocus.enabled ? depthFocus : undefined,
         },
+
       }),
     onSuccess,
     onError: (err: Error) => onError(err.message),
@@ -341,7 +351,8 @@ function CreateJobModal({ files, onClose, onSuccess, onError }: CreateJobModalPr
       aria-modal="true"
       aria-labelledby="modal-title"
     >
-      <form className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4" onSubmit={handleSubmit}>
+      <form className="bg-white rounded-lg shadow-xl max-w-lg w-full mx-4 max-h-[90vh] overflow-y-auto" onSubmit={handleSubmit}>
+
         <div className="px-6 py-4 border-b border-gray-200">
           <h3 id="modal-title" className="text-lg font-medium text-gray-900">Create New Job</h3>
         </div>
@@ -430,7 +441,16 @@ function CreateJobModal({ files, onClose, onSuccess, onError }: CreateJobModalPr
               Use GPU acceleration
             </label>
           </div>
+
+          {/* Depth Focus Control */}
+          <div className="border-t border-gray-200 pt-4 mt-4">
+            <DepthFocusControl
+              value={depthFocus}
+              onChange={setDepthFocus}
+            />
+          </div>
         </div>
+
 
         <div className="px-6 py-4 border-t border-gray-200 flex justify-end gap-3">
           <button

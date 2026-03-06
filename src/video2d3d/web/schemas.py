@@ -122,6 +122,44 @@ class DepthCurveRequest(BaseModel):
         description="Control points defining the curve (ignored if preset is set)",
     )
 
+
+class DepthFocusRequest(BaseModel):
+    """Depth focus configuration for controlling the screen plane depth.
+
+    Allows users to specify which depth range should appear at screen plane
+    and which should recede or project, creating a focus effect.
+    """
+
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "enabled": True,
+                "focus_depth": 0.5,
+                "focus_range": 0.3,
+            },
+        }
+    )
+
+    enabled: bool = Field(
+        default=False,
+        description="Whether depth focus adjustment is enabled",
+    )
+    focus_depth: float = Field(
+        default=0.5,
+        ge=0.0,
+        le=1.0,
+        description="Focus depth - normalized 0-1, where 0=closest (pop out), 1=farthest (behind screen). "
+        "Objects at this depth appear at screen level (zero parallax).",
+    )
+    focus_range: float = Field(
+        default=0.3,
+        ge=0.0,
+        le=1.0,
+        description="Focus range - how much depth around focus_depth appears at/near screen plane (0-1). "
+        "Larger values keep more of the scene at screen depth.",
+    )
+
+
 class JobConfigRequest(BaseModel):
     """Configuration options for a video conversion job."""
 
@@ -173,6 +211,11 @@ class JobConfigRequest(BaseModel):
         default=None,
         description="Depth curve adjustment for non-linear depth mapping",
     )
+    depth_focus: Optional[DepthFocusRequest] = Field(
+        default=None,
+        description="Depth focus adjustment for controlling which depth appears at screen plane",
+    )
+
 
 
 class SubmitJobRequest(BaseModel):
@@ -867,6 +910,8 @@ __all__ = [
     # Request models
     "CurveControlPointRequest",
     "DepthCurveRequest",
+    "DepthFocusRequest",
+
     "JobConfigRequest",
     "SubmitJobRequest",
     "SubmitBatchRequest",
