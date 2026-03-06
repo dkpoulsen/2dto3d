@@ -3,19 +3,20 @@
   "category": "Core",
   "title": "Depth Map Processing and Refinement",
   "description": "Implement depth map post-processing including normalization, edge-aware filtering, hole-filling algorithms, and color mapping for visualization and quality improvement.",
-  "status": "backlog",
+  "status": "verified",
   "priority": 1,
   "complexity": "moderate",
   "dependencies": [
     "midas-integration"
   ],
   "createdAt": "2026-03-04T17:29:57.348Z",
-  "updatedAt": "2026-03-04T17:29:57.348Z",
+  "updatedAt": "2026-03-04T19:22:09.230Z",
   "model": "zai-coding-plan/glm-5",
   "thinkingLevel": "none",
   "planningMode": "spec",
   "requirePlanApproval": true,
   "skipTests": false,
   "branchName": "main",
-  "descriptionHistory": []
+  "descriptionHistory": [],
+  "summary": "## Summary: Depth Map Processing and Refinement\n\n### Changes Implemented\n- Created `DepthMapProcessor` class with configurable processing pipeline\n- Implemented `DepthProcessorConfig` dataclass with validation\n- Added normalization methods: min-max, percentile, histogram equalization\n- Added edge-aware bilateral filtering for smoothing while preserving edges\n- Added hole-filling algorithms: inpainting, nearest-neighbor, linear interpolation\n- Added color mapping for visualization with multiple colormaps (turbo, plasma, viridis, magma, jet, inferno, grayscale)\n- Added unsharp mask sharpening for edge enhancement\n- Created comprehensive unit tests covering all processor functionality\n- Exposed processor components in depth module `__init__.py`\n\n### Files Modified\n- `src/video2d3d/depth/processor.py` (NEW - 765 lines) - Core processor implementation\n- `src/video2d3d/depth/__init__.py` (MODIFIED) - Added processor exports\n- `tests/unit/test_depth_processor.py` (NEW - 691 lines) - Unit tests\n- `tests/conftest.py` (MODIFIED) - Added cv2 and loguru mocks\n\n### Commit Details\n- **Commit Hash**: `c216fa82f25e94be1afda34470e1dede4825c23d`\n- **Commit Message**:\n  ```\n  feat(depth): add depth map post-processor with normalization and filtering\n  \n  Implement DepthMapProcessor for depth map post-processing including:\n  - Normalization methods (min-max, percentile, histogram equalization)\n  - Edge-aware bilateral filtering for smoothing while preserving edges\n  - Hole-filling algorithms (inpainting, nearest-neighbor, linear interpolation)\n  - Color mapping for visualization (turbo, plasma, viridis, magma, jet, inferno)\n  - Unsharp mask sharpening for edge enhancement\n  - Full processing pipeline with configurable operations\n  \n  Add DepthProcessorConfig dataclass with validation and comprehensive\n  unit tests for all processor functionality.\n  ```\n\n### Notes for Developer\n- The processor integrates with the existing `DepthEstimator` output\n- All operations are configurable via `DepthProcessorConfig`\n- Unit tests use mocked cv2/torch/loguru to avoid external dependencies\n- The processor supports both float32 depth output and RGB visualization output\n- Note: Playwright verification is not applicable for this backend Python module; pytest verification is used instead\n\n### Verification Status\n- Unit tests created in `tests/unit/test_depth_processor.py`\n- Tests cover: config validation, normalization, bilateral filtering, hole filling, sharpening, color mapping, full pipeline, and error handling\n- Tests require cv2/torch mocks set up in `tests/conftest.py`"
 }

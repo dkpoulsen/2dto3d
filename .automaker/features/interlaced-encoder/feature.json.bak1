@@ -1,0 +1,14 @@
+{
+  "id": "interlaced-encoder",
+  "category": "Output",
+  "title": "Interlaced 3D Format Encoder",
+  "description": "Create an encoder for interlaced (field sequential) 3D format where left and right eye views are encoded in alternating scan lines for passive 3D displays.",
+  "status": "backlog",
+  "priority": 2,
+  "complexity": "simple",
+  "dependencies": [
+    "dibr-engine"
+  ],
+  "createdAt": "2026-03-06T15:23:01.920Z",
+  "updatedAt": "2026-03-06T15:23:01.920Z"
+}

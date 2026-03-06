@@ -1,0 +1,14 @@
+{
+  "id": "job-scheduler",
+  "category": "Management",
+  "title": "Job Scheduling System",
+  "description": "Implement job scheduler allowing users to queue multiple conversions with priority levels, scheduled start times, and dependencies.",
+  "status": "backlog",
+  "priority": 2,
+  "complexity": "moderate",
+  "dependencies": [
+    "batch-video-queue"
+  ],
+  "createdAt": "2026-03-06T15:23:01.933Z",
+  "updatedAt": "2026-03-06T15:23:01.933Z"
+}

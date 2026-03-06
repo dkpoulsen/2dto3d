@@ -1,0 +1,14 @@
+{
+  "id": "preset-manager",
+  "category": "Configuration",
+  "title": "Processing Preset Manager",
+  "description": "Create system for saving, loading, and sharing processing presets with optimized settings for different use cases (cinema, VR, web, mobile).",
+  "status": "backlog",
+  "priority": 2,
+  "complexity": "simple",
+  "dependencies": [
+    "cli-framework"
+  ],
+  "createdAt": "2026-03-06T15:23:01.930Z",
+  "updatedAt": "2026-03-06T15:23:01.930Z"
+}

@@ -1,0 +1,21 @@
+{
+  "id": "checkpoint-resume",
+  "category": "Reliability",
+  "title": "Checkpoint and Resume System",
+  "description": "Implement periodic checkpointing of conversion progress allowing resumption from interrupted processing without starting over.",
+  "status": "pipeline_step_mmcc38tb_z6cxyk",
+  "priority": 1,
+  "complexity": "moderate",
+  "dependencies": [
+    "progress-tracking"
+  ],
+  "createdAt": "2026-03-06T15:23:01.928Z",
+  "updatedAt": "2026-03-06T15:57:58.954Z",
+  "descriptionHistory": [],
+  "model": "zai-coding-plan/glm-5",
+  "thinkingLevel": "none",
+  "planningMode": "spec",
+  "requirePlanApproval": true,
+  "skipTests": false,
+  "branchName": "main"
+}

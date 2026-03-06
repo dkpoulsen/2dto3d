@@ -3,19 +3,20 @@
   "category": "Core",
   "title": "Batch Video Processing Queue",
   "description": "Add support for processing multiple videos sequentially or in parallel from a queue, with folder monitoring, wildcard pattern matching, and comprehensive batch job management.",
-  "status": "backlog",
+  "status": "verified",
   "priority": 3,
   "complexity": "moderate",
   "dependencies": [
     "progress-tracking"
   ],
   "createdAt": "2026-03-04T17:29:57.353Z",
-  "updatedAt": "2026-03-04T17:29:57.353Z",
+  "updatedAt": "2026-03-05T07:17:40.188Z",
   "model": "zai-coding-plan/glm-5",
   "thinkingLevel": "none",
   "planningMode": "spec",
   "requirePlanApproval": true,
   "skipTests": false,
   "branchName": "main",
-  "descriptionHistory": []
+  "descriptionHistory": [],
+  "summary": "## Summary: Batch Video Processing Queue\n\n### Changes Committed\n- Created new `src/video2d3d/batch/` module with 6 files totaling 1,453 lines\n- **models.py**: Data models for batch video processing (`BatchJob`, `BatchJobResult`, `BatchQueueStats`, `JobStatus`, `JobPriority`)\n- **config.py**: Configuration classes (`BatchQueueConfig`, `FileDiscoveryConfig`, `FolderWatcherConfig`)\n- **file_discovery.py**: Pattern-based file discovery with wildcard matching and filtering\n- **folder_watcher.py**: Folder monitoring with watchdog/inotify support for automatic detection of new video files\n- **exceptions.py**: Custom exception hierarchy for batch queue error handling\n- **__init__.py**: Module exports for public API\n\n### Files Modified (New Files)\n- src/video2d3d/batch/__init__.py\n- src/video2d3d/batch/config.py\n- src/video2d3d/batch/exceptions.py\n- src/video2d3d/batch/file_discovery.py\n- src/video2d3d/batch/folder_watcher.py\n- src/video2d3d/batch/models.py\n\n### Commit Details\n- **Commit Hash**: `acc7caa31819e1c156d0cc9c5b1fce460605f2b7`\n- **Commit Message**: `feat(batch): add video batch processing queue with folder monitoring`\n- **Type**: `feat` (new feature)\n- **Scope**: `batch`\n\n### Notes for Developer\n- The batch module provides the foundation for processing multiple videos sequentially or in parallel\n- Folder monitoring supports both watchdog (inotify on Linux) and polling fallback\n- Files are tracked for stability before processing to ensure complete uploads\n- Configuration supports retry logic, timeouts, state persistence, and callbacks\n- The `FileDiscovery` class supports glob patterns, recursive search, and file size filtering"
 }

@@ -1,0 +1,22 @@
+{
+  "id": "quality-metrics",
+  "category": "Testing",
+  "title": "Depth Quality Metrics and Validation",
+  "description": "Implement quality assessment metrics for depth maps including consistency scoring, edge preservation metrics, and optional comparison against ground truth data for model validation.",
+  "status": "pipeline_step_mmcc38tb_z6cxyk",
+  "priority": 3,
+  "complexity": "complex",
+  "dependencies": [
+    "temporal-smoothing",
+    "occlusion-handling"
+  ],
+  "createdAt": "2026-03-04T17:29:57.355Z",
+  "updatedAt": "2026-03-05T05:45:50.123Z",
+  "model": "zai-coding-plan/glm-5",
+  "thinkingLevel": "none",
+  "planningMode": "spec",
+  "requirePlanApproval": true,
+  "skipTests": false,
+  "branchName": "main",
+  "descriptionHistory": []
+}

@@ -65,6 +65,225 @@
       "dismissed": false,
       "featureId": "frame-extraction",
       "projectPath": "/home/dkp/Documents/Automaker/2dto3d"
+    },
+    {
+      "id": "0111b766-ba9e-46bd-b1c1-16dc543309b4",
+      "type": "feature_verified",
+      "title": "Feature Verified",
+      "message": "\"midas-integration\" has been verified and is complete.",
+      "createdAt": "2026-03-04T18:59:41.940Z",
+      "read": false,
+      "dismissed": false,
+      "featureId": "midas-integration",
+      "projectPath": "/home/dkp/Documents/Automaker/2dto3d"
+    },
+    {
+      "id": "9b91a893-f0ad-49d7-8c87-81359432537d",
+      "type": "feature_verified",
+      "title": "Feature Verified",
+      "message": "\"depth-map-processor\" has been verified and is complete.",
+      "createdAt": "2026-03-04T19:22:09.226Z",
+      "read": false,
+      "dismissed": false,
+      "featureId": "depth-map-processor",
+      "projectPath": "/home/dkp/Documents/Automaker/2dto3d"
+    },
+    {
+      "id": "648a2b7f-21b0-4fa2-926e-a0618e658270",
+      "type": "feature_verified",
+      "title": "Feature Verified",
+      "message": "\"gpu-acceleration\" has been verified and is complete.",
+      "createdAt": "2026-03-04T19:45:36.635Z",
+      "read": false,
+      "dismissed": false,
+      "featureId": "gpu-acceleration",
+      "projectPath": "/home/dkp/Documents/Automaker/2dto3d"
+    },
+    {
+      "id": "13b05fbb-68ce-4e73-8a16-1560aef92b4e",
+      "type": "feature_verified",
+      "title": "Feature Verified",
+      "message": "\"batch-processor\" has been verified and is complete.",
+      "createdAt": "2026-03-04T20:08:32.202Z",
+      "read": false,
+      "dismissed": false,
+      "featureId": "batch-processor",
+      "projectPath": "/home/dkp/Documents/Automaker/2dto3d"
+    },
+    {
+      "id": "bd6aa251-f6e0-45ae-8ab3-6ab46f864ba6",
+      "type": "feature_verified",
+      "title": "Feature Verified",
+      "message": "\"temporal-smoothing\" has been verified and is complete.",
+      "createdAt": "2026-03-04T20:30:07.139Z",
+      "read": false,
+      "dismissed": false,
+      "featureId": "temporal-smoothing",
+      "projectPath": "/home/dkp/Documents/Automaker/2dto3d"
+    },
+    {
+      "id": "5dbd6594-3c45-4268-a8a4-4358669cf42b",
+      "type": "feature_verified",
+      "title": "Feature Verified",
+      "message": "\"dibr-engine\" has been verified and is complete.",
+      "createdAt": "2026-03-04T20:55:33.318Z",
+      "read": false,
+      "dismissed": false,
+      "featureId": "dibr-engine",
+      "projectPath": "/home/dkp/Documents/Automaker/2dto3d"
+    },
+    {
+      "id": "759c819e-ca31-4309-98d9-cdbc1e2dd413",
+      "type": "feature_verified",
+      "title": "Feature Verified",
+      "message": "\"occlusion-handling\" has been verified and is complete.",
+      "createdAt": "2026-03-04T21:08:59.050Z",
+      "read": false,
+      "dismissed": false,
+      "featureId": "occlusion-handling",
+      "projectPath": "/home/dkp/Documents/Automaker/2dto3d"
+    },
+    {
+      "id": "c84be3bb-5036-4e86-8f42-67b695575e74",
+      "type": "feature_verified",
+      "title": "Feature Verified",
+      "message": "\"video-preview\" has been verified and is complete.",
+      "createdAt": "2026-03-04T21:16:00.615Z",
+      "read": false,
+      "dismissed": false,
+      "featureId": "video-preview",
+      "projectPath": "/home/dkp/Documents/Automaker/2dto3d"
+    },
+    {
+      "id": "7103385e-ef20-4a1c-9bea-b5121026503e",
+      "type": "feature_verified",
+      "title": "Feature Verified",
+      "message": "\"anaglyph-encoder\" has been verified and is complete.",
+      "createdAt": "2026-03-04T21:18:55.973Z",
+      "read": false,
+      "dismissed": false,
+      "featureId": "anaglyph-encoder",
+      "projectPath": "/home/dkp/Documents/Automaker/2dto3d"
+    },
+    {
+      "id": "c4b4ac9b-9190-479b-9a4f-d95584397787",
+      "type": "feature_verified",
+      "title": "Feature Verified",
+      "message": "\"side-by-side-encoder\" has been verified and is complete.",
+      "createdAt": "2026-03-04T21:30:33.689Z",
+      "read": false,
+      "dismissed": false,
+      "featureId": "side-by-side-encoder",
+      "projectPath": "/home/dkp/Documents/Automaker/2dto3d"
+    },
+    {
+      "id": "99072d4b-b585-4937-a599-225515d7f978",
+      "type": "feature_verified",
+      "title": "Feature Verified",
+      "message": "\"quality-metrics\" has been verified and is complete.",
+      "createdAt": "2026-03-05T05:52:36.638Z",
+      "read": false,
+      "dismissed": false,
+      "featureId": "quality-metrics",
+      "projectPath": "/home/dkp/Documents/Automaker/2dto3d"
+    },
+    {
+      "id": "184f4e85-ab1a-4dfc-bb9a-5dec104c1a08",
+      "type": "feature_verified",
+      "title": "Feature Verified",
+      "message": "\"video-output-writer\" has been verified and is complete.",
+      "createdAt": "2026-03-05T06:01:43.605Z",
+      "read": false,
+      "dismissed": false,
+      "featureId": "video-output-writer",
+      "projectPath": "/home/dkp/Documents/Automaker/2dto3d"
+    },
+    {
+      "id": "518429bc-c911-4bf7-a263-c5582eabf476",
+      "type": "feature_verified",
+      "title": "Feature Verified",
+      "message": "\"progress-tracking\" has been verified and is complete.",
+      "createdAt": "2026-03-05T06:54:59.378Z",
+      "read": false,
+      "dismissed": false,
+      "featureId": "progress-tracking",
+      "projectPath": "/home/dkp/Documents/Automaker/2dto3d"
+    },
+    {
+      "id": "77ba6994-90f3-40c3-a2f3-cbaf75f0cbc1",
+      "type": "feature_verified",
+      "title": "Feature Verified",
+      "message": "\"batch-video-queue\" has been verified and is complete.",
+      "createdAt": "2026-03-05T07:17:40.180Z",
+      "read": false,
+      "dismissed": false,
+      "featureId": "batch-video-queue",
+      "projectPath": "/home/dkp/Documents/Automaker/2dto3d"
+    },
+    {
+      "id": "5b2510c6-b9d4-492b-b13d-8a8f0edd957f",
+      "type": "feature_verified",
+      "title": "Feature Verified",
+      "message": "\"web-api-server\" has been verified and is complete.",
+      "createdAt": "2026-03-05T08:03:25.798Z",
+      "read": false,
+      "dismissed": false,
+      "featureId": "web-api-server",
+      "projectPath": "/home/dkp/Documents/Automaker/2dto3d"
+    },
+    {
+      "id": "61391d89-6418-4be2-958f-c93fb51cf4e7",
+      "type": "spec_regeneration_complete",
+      "title": "Spec Generation Complete",
+      "message": "Created 51 features from the project specification.",
+      "createdAt": "2026-03-06T15:23:01.940Z",
+      "read": false,
+      "dismissed": false,
+      "projectPath": "/home/dkp/Documents/Automaker/2dto3d"
+    },
+    {
+      "id": "5f74bf32-aa84-446f-8b2f-da4f79b60279",
+      "type": "feature_verified",
+      "title": "Feature Verified",
+      "message": "\"api-documentation\" has been verified and is complete.",
+      "createdAt": "2026-03-06T15:50:49.514Z",
+      "read": false,
+      "dismissed": false,
+      "featureId": "api-documentation",
+      "projectPath": "/home/dkp/Documents/Automaker/2dto3d"
+    },
+    {
+      "id": "10a640d9-95cd-470a-a466-ab43fe20d0e9",
+      "type": "feature_verified",
+      "title": "Feature Verified",
+      "message": "\"checkpoint-resume\" has been verified and is complete.",
+      "createdAt": "2026-03-06T16:09:49.060Z",
+      "read": false,
+      "dismissed": false,
+      "featureId": "checkpoint-resume",
+      "projectPath": "/home/dkp/Documents/Automaker/2dto3d"
+    },
+    {
+      "id": "c82e4ef3-96f1-4f13-91fb-583af0f379be",
+      "type": "feature_verified",
+      "title": "Feature Verified",
+      "message": "\"error-recovery\" has been verified and is complete.",
+      "createdAt": "2026-03-06T17:00:52.585Z",
+      "read": false,
+      "dismissed": false,
+      "featureId": "error-recovery",
+      "projectPath": "/home/dkp/Documents/Automaker/2dto3d"
+    },
+    {
+      "id": "f2321e41-c5ca-499b-9747-fce6ce25a210",
+      "type": "feature_verified",
+      "title": "Feature Verified",
+      "message": "\"api-rate-limiting\" has been verified and is complete.",
+      "createdAt": "2026-03-06T17:03:57.137Z",
+      "read": false,
+      "dismissed": false,
+      "featureId": "api-rate-limiting",
+      "projectPath": "/home/dkp/Documents/Automaker/2dto3d"
     }
   ]
 }

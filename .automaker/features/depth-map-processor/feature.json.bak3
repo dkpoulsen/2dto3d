@@ -1,0 +1,21 @@
+{
+  "id": "depth-map-processor",
+  "category": "Core",
+  "title": "Depth Map Processing and Refinement",
+  "description": "Implement depth map post-processing including normalization, edge-aware filtering, hole-filling algorithms, and color mapping for visualization and quality improvement.",
+  "status": "pipeline_step_mmcc38tb_z6cxyk",
+  "priority": 1,
+  "complexity": "moderate",
+  "dependencies": [
+    "midas-integration"
+  ],
+  "createdAt": "2026-03-04T17:29:57.348Z",
+  "updatedAt": "2026-03-04T19:17:09.397Z",
+  "model": "zai-coding-plan/glm-5",
+  "thinkingLevel": "none",
+  "planningMode": "spec",
+  "requirePlanApproval": true,
+  "skipTests": false,
+  "branchName": "main",
+  "descriptionHistory": []
+}

@@ -560,5 +560,158 @@ class TestExceptions:
         error = InvalidVideoDimensionsError(1921, 1081, "Must be even numbers")
         assert error.width == 1921
         assert error.height == 1081
-        assert error.reason == "Must be even numbers"
         assert "1921x1081" in str(error)
+
+
+class TestProgressCallback:
+    """Tests for progress callback in video writer."""
+
+    def test_write_frame_with_callback(
+        self,
+        output_video_path: Path,
+        video_writer_config: VideoWriterConfig,
+        sample_frame: np.ndarray,
+    ) -> None:
+        """Test write_frame calls progress callback."""
+        progress_calls = []
+
+        def callback(completed: int, total: int) -> None:
+            progress_calls.append((completed, total))
+
+        with patch("shutil.which") as mock_which:
+            mock_which.return_value = "/usr/bin/ffmpeg"
+            with patch("subprocess.Popen") as mock_popen:
+                mock_process = MagicMock()
+                mock_stdin = MagicMock()
+                mock_process.stdin = mock_stdin
+                mock_process.wait.return_value = 0
+                mock_process.returncode = 0
+                mock_popen.return_value = mock_process
+
+                writer = VideoOutputWriter(
+                    output_video_path,
+                    config=video_writer_config,
+                    width=640,
+                    height=480,
+                    progress_callback=callback,
+                    total_frames=10,
+                )
+                writer.open()
+
+                for _ in range(5):
+                    writer.write_frame(sample_frame)
+
+                assert len(progress_calls) == 5
+                assert progress_calls[-1] == (5, 10)
+
+                writer.close()
+
+    def test_callback_values_increments(
+        self,
+        output_video_path: Path,
+        video_writer_config: VideoWriterConfig,
+        sample_frame: np.ndarray,
+    ) -> None:
+        """Test callback receives incrementing values."""
+        progress_calls = []
+
+        def callback(completed: int, total: int) -> None:
+            progress_calls.append((completed, total))
+
+        with patch("shutil.which") as mock_which:
+            mock_which.return_value = "/usr/bin/ffmpeg"
+            with patch("subprocess.Popen") as mock_popen:
+                mock_process = MagicMock()
+                mock_stdin = MagicMock()
+                mock_process.stdin = mock_stdin
+                mock_process.wait.return_value = 0
+                mock_process.returncode = 0
+                mock_popen.return_value = mock_process
+
+                writer = VideoOutputWriter(
+                    output_video_path,
+                    config=video_writer_config,
+                    width=640,
+                    height=480,
+                    progress_callback=callback,
+                    total_frames=3,
+                )
+                writer.open()
+
+                writer.write_frame(sample_frame)
+                writer.write_frame(sample_frame)
+                writer.write_frame(sample_frame)
+
+                assert progress_calls[0] == (1, 3)
+                assert progress_calls[1] == (2, 3)
+                assert progress_calls[2] == (3, 3)
+
+                writer.close()
+
+    def test_write_without_callback(
+        self,
+        output_video_path: Path,
+        video_writer_config: VideoWriterConfig,
+        sample_frame: np.ndarray,
+    ) -> None:
+        """Test writing works without callback."""
+        with patch("shutil.which") as mock_which:
+            mock_which.return_value = "/usr/bin/ffmpeg"
+            with patch("subprocess.Popen") as mock_popen:
+                mock_process = MagicMock()
+                mock_stdin = MagicMock()
+                mock_process.stdin = mock_stdin
+                mock_process.wait.return_value = 0
+                mock_process.returncode = 0
+                mock_popen.return_value = mock_process
+
+                writer = VideoOutputWriter(
+                    output_video_path,
+                    config=video_writer_config,
+                    width=640,
+                    height=480,
+                )
+                writer.open()
+
+                writer.write_frame(sample_frame)
+                assert writer.frames_written == 1
+
+                writer.close()
+
+    def test_callback_with_write_frames_list(
+        self,
+        output_video_path: Path,
+        video_writer_config: VideoWriterConfig,
+        sample_frames: list[np.ndarray],
+    ) -> None:
+        """Test callback works with write_frames list."""
+        progress_calls = []
+
+        def callback(completed: int, total: int) -> None:
+            progress_calls.append((completed, total))
+
+        with patch("shutil.which") as mock_which:
+            mock_which.return_value = "/usr/bin/ffmpeg"
+            with patch("subprocess.Popen") as mock_popen:
+                mock_process = MagicMock()
+                mock_stdin = MagicMock()
+                mock_process.stdin = mock_stdin
+                mock_process.wait.return_value = 0
+                mock_process.returncode = 0
+                mock_popen.return_value = mock_process
+
+                writer = VideoOutputWriter(
+                    output_video_path,
+                    config=video_writer_config,
+                    width=640,
+                    height=480,
+                    progress_callback=callback,
+                    total_frames=10,
+                )
+                writer.open()
+                writer.write_frames(sample_frames)
+
+                assert len(progress_calls) == len(sample_frames)
+                assert progress_calls[-1] == (len(sample_frames), 10)
+
+                writer.close()

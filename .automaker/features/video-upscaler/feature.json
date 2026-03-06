@@ -1,0 +1,21 @@
+{
+  "id": "video-upscaler",
+  "category": "Enhancement",
+  "title": "AI Video Upscaling Integration",
+  "description": "Integrate AI-based video upscaling models (ESRGAN, Real-ESRGAN) to enhance output resolution during conversion.",
+  "status": "backlog",
+  "priority": 3,
+  "complexity": "complex",
+  "dependencies": [
+    "video-input-handler"
+  ],
+  "createdAt": "2026-03-06T15:23:01.924Z",
+  "updatedAt": "2026-03-06T15:23:01.924Z",
+  "model": "zai-coding-plan/glm-5",
+  "thinkingLevel": "none",
+  "planningMode": "spec",
+  "requirePlanApproval": true,
+  "skipTests": false,
+  "branchName": "main",
+  "descriptionHistory": []
+}

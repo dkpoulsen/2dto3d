@@ -3,7 +3,7 @@
   "category": "UI",
   "title": "Real-time Preview Window",
   "description": "Create an optional live preview window using OpenCV that displays original frame, depth map, and stereoscopic result side-by-side during processing for quality assessment.",
-  "status": "backlog",
+  "status": "verified",
   "priority": 3,
   "complexity": "moderate",
   "dependencies": [
@@ -11,12 +11,13 @@
     "dibr-engine"
   ],
   "createdAt": "2026-03-04T17:29:57.354Z",
-  "updatedAt": "2026-03-04T17:29:57.354Z",
+  "updatedAt": "2026-03-04T21:16:00.618Z",
   "model": "zai-coding-plan/glm-5",
   "thinkingLevel": "none",
   "planningMode": "spec",
   "requirePlanApproval": true,
   "skipTests": false,
   "branchName": "main",
-  "descriptionHistory": []
+  "descriptionHistory": [],
+  "summary": "## Summary: Real-time Preview Window\n\n### Commit Details\n- **Commit Hash:** `c8100131e71e2ad9f80ce70d906f4479b2152880`\n- **Commit Message:**\n  ```\n  feat(preview): add real-time preview window for video processing\n  \n  Add optional live preview functionality using OpenCV that displays\n  original frame, depth map, and stereoscopic result side-by-side\n  during processing for quality assessment.\n  \n  - PreviewWindow class with thread-safe frame updates\n  - PreviewConfig dataclass for configuration\n  - CLI --preview/-p flag to enable preview mode\n  - Support for horizontal, vertical, and grid layouts\n  - FPS counter and frame info overlay\n  - Automatic resizing to fit screen constraints\n  - Rate limiting for efficient updates (~30 FPS)\n  - Context manager support for proper resource cleanup\n  \n  Unit tests cover configuration, frame processing, and all layout modes.\n  ```\n\n### Changes Committed\n- **6 files changed, 1018 insertions(+), 3 deletions(-)**\n\n### Files Modified\n- `config/default.yaml` - Added preview configuration section with all settings\n- `src/video2d3d/cli.py` - Added `--preview`/`-p` CLI flag\n- `src/video2d3d/utils/config.py` - Added `PreviewConfig` dataclass and config loading\n- `src/video2d3d/preview/__init__.py` - New module exports\n- `src/video2d3d/preview/preview_window.py` - New PreviewWindow class (578 lines)\n- `tests/unit/test_preview.py` - Comprehensive unit tests (369 lines)\n\n### Notes for Developer\n- Preview requires OpenCV (`opencv-python` package)\n- Preview can be disabled via config or by not using the `--preview` flag\n- Window closes with Q or ESC key\n- Feature is production-ready with thread-safe implementation\n- Rate-limited updates to prevent excessive rendering overhead\n\n### Verification Status\n- Unit tests implemented for all major functionality\n- Tests pass locally with mocked cv2 for CI environments\n- Feature tested with `pytest tests/unit/test_preview.py`"
 }

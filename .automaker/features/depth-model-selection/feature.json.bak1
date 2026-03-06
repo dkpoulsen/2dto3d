@@ -1,0 +1,14 @@
+{
+  "id": "depth-model-selection",
+  "category": "Core",
+  "title": "Multiple Depth Model Support",
+  "description": "Add support for selecting between multiple depth estimation models (MiDaS, AdaDepth, ZoeDepth, etc.) with automatic model downloading and caching.",
+  "status": "backlog",
+  "priority": 2,
+  "complexity": "moderate",
+  "dependencies": [
+    "midas-integration"
+  ],
+  "createdAt": "2026-03-06T15:23:01.918Z",
+  "updatedAt": "2026-03-06T15:23:01.918Z"
+}

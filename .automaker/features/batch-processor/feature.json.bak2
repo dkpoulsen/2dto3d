@@ -1,0 +1,21 @@
+{
+  "id": "batch-processor",
+  "category": "Performance",
+  "title": "Batch Frame Processing",
+  "description": "Implement parallel batch processing for multiple frames simultaneously using multiprocessing or threading queues, with configurable batch sizes and worker pool management.",
+  "status": "pipeline_step_mmcc3rzz_k0qltm",
+  "priority": 2,
+  "complexity": "complex",
+  "dependencies": [
+    "gpu-acceleration"
+  ],
+  "createdAt": "2026-03-04T17:29:57.349Z",
+  "updatedAt": "2026-03-04T20:01:22.823Z",
+  "model": "zai-coding-plan/glm-5",
+  "thinkingLevel": "none",
+  "planningMode": "spec",
+  "requirePlanApproval": true,
+  "skipTests": false,
+  "branchName": "main",
+  "descriptionHistory": []
+}

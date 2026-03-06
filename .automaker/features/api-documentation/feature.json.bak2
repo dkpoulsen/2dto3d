@@ -1,0 +1,21 @@
+{
+  "id": "api-documentation",
+  "category": "Documentation",
+  "title": "Interactive API Documentation",
+  "description": "Generate interactive API documentation using OpenAPI/Swagger with auto-generated from FastAPI routes and request/response schemas.",
+  "status": "pipeline_step_mmcc38tb_z6cxyk",
+  "priority": 2,
+  "complexity": "simple",
+  "dependencies": [
+    "web-api-server"
+  ],
+  "createdAt": "2026-03-06T15:23:01.938Z",
+  "updatedAt": "2026-03-06T15:44:15.030Z",
+  "model": "zai-coding-plan/glm-5",
+  "thinkingLevel": "none",
+  "planningMode": "spec",
+  "requirePlanApproval": true,
+  "skipTests": false,
+  "branchName": "main",
+  "descriptionHistory": []
+}

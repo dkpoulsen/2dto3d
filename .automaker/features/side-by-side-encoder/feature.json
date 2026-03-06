@@ -3,19 +3,20 @@
   "category": "Output",
   "title": "Side-by-Side 3D Format Encoder",
   "description": "Create an encoder that combines left and right eye views into side-by-side format (half-width or full-width) compatible with most 3D TVs and VR headsets.",
-  "status": "backlog",
+  "status": "verified",
   "priority": 1,
   "complexity": "moderate",
   "dependencies": [
     "occlusion-handling"
   ],
   "createdAt": "2026-03-04T17:29:57.352Z",
-  "updatedAt": "2026-03-04T17:29:57.352Z",
+  "updatedAt": "2026-03-04T21:30:33.691Z",
   "model": "zai-coding-plan/glm-5",
   "thinkingLevel": "none",
   "planningMode": "spec",
   "requirePlanApproval": true,
   "skipTests": false,
   "branchName": "main",
-  "descriptionHistory": []
+  "descriptionHistory": [],
+  "summary": "## Summary: Side-by-Side 3D Format Encoder\n\n### Changes Committed\n\n**Commit:** `f532ef60b4fec0c88bf325e2667415c8f1775db0`\n\n**Files Modified/Created:**\n- `src/video2d3d/stereo/side_by_side.py` (new - 410 lines)\n- `tests/unit/test_side_by_side.py` (new - 694 lines)\n- `tests/conftest.py` (modified - improved mock cv2.resize for testing)\n\n### Implementation Details\n\n**SideBySideEncoder class** with:\n- `SideBySideLayout` enum (HORIZONTAL, VERTICAL)\n- Core `encode()` method with half-width and full-width support\n- Convenience methods: `encode_horizontal()`, `encode_vertical()`, `encode_half_width()`, `encode_full_width()`, `encode_cross_eye()`, `encode_parallel()`\n- Factory functions: `create_side_by_side_encoder()`, `encode_side_by_side()`\n- INTER_AREA interpolation for optimal downscaling quality\n- Comprehensive input validation and error handling\n\n### Test Coverage\n- 41 unit tests covering all functionality\n- 100% code coverage for side_by_side.py module\n- Tests include: RGBA input, single-channel, float edge cases, large images, dimension validation, eye swapping verification\n\n### Verification Status\n- All 41 tests pass\n- No lint errors\n- Module properly exported from `video2d3d.stereo` package\n\n### Commit Message Used\n```\nfeat(stereo): add side-by-side 3D format encoder\n\nAdd SideBySideEncoder class that combines left and right eye views into side-by-side format compatible with most 3D TVs and VR headsets.\n\nFeatures:\n- Support for horizontal and vertical layouts\n- Half-width mode for 3D TV compatibility\n- Full-width mode for maximum quality\n- Cross-eye and parallel viewing modes\n- Convenience factory functions\n\nIncludes comprehensive unit tests covering edge cases,\ndifferent image formats, and integration with existing stereo module.\n```\n\n### Notes for Developer\n- The encoder follows the same pattern as the existing `AnaglyphEncoder`\n- Already integrated into `video2d3d.stereo` module exports\n- The half-width mode uses INTER_AREA interpolation for best downscaling quality"
 }

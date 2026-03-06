@@ -110,50 +110,102 @@ class JobConfigRequest(BaseModel):
 
 
 class SubmitJobRequest(BaseModel):
-    """Request to submit a new conversion job."""
+    """Request to submit a new conversion job.
+
+    This schema defines the structure for submitting a video conversion job.
+    The job will be added to the processing queue and executed based on priority.
+    """
 
     model_config = ConfigDict(
         json_schema_extra={
             "example": {
                 "input_file_id": "550e8400-e29b-41d4-a716-446655440000",
-                "output_filename": "my_video_3d.mp4",
+                "output_filename": "my_vacation_video_3d.mp4",
                 "priority": "normal",
                 "config": {
                     "stereo_format": "side_by_side",
                     "depth_model": "midas_small",
                     "use_gpu": True,
+                    "quality_preset": "balanced",
+                    "output_codec": "libx264",
+                    "output_crf": 23,
+                    "extra_options": {"temporal_smoothing": True},
                 },
-                "callback_url": "https://example.com/callback",
-            }
+                "callback_url": "https://example.com/webhook/video-complete",
+            },
+            "examples": [
+                {
+                    "description": "Basic job with default settings",
+                    "value": {
+                        "input_file_id": "550e8400-e29b-41d4-a716-446655440000",
+                        "priority": "normal",
+                    },
+                },
+                {
+                    "description": "High priority VR video conversion",
+                    "value": {
+                        "input_file_id": "550e8400-e29b-41d4-a716-446655440000",
+                        "output_filename": "vr_video_3d.mp4",
+                        "priority": "urgent",
+                        "config": {
+                            "stereo_format": "vr",
+                            "depth_model": "dpt_large",
+                            "use_gpu": True,
+                            "quality_preset": "quality",
+                        },
+                    },
+                },
+                {
+                    "description": "Fast conversion with callback",
+                    "value": {
+                        "input_file_id": "550e8400-e29b-41d4-a716-446655440000",
+                        "priority": "high",
+                        "config": {
+                            "stereo_format": "anaglyph",
+                            "depth_model": "midas_small",
+                            "quality_preset": "fast",
+                        },
+                        "callback_url": "https://myapp.com/api/video-callback",
+                    },
+                },
+            ],
         }
     )
 
     input_file_id: str = Field(
         ...,
-        description="ID of the uploaded input file",
+        description="Unique identifier of the uploaded input file (UUID format)",
         min_length=1,
+        examples=["550e8400-e29b-41d4-a716-446655440000"],
     )
     output_filename: Optional[str] = Field(
         default=None,
-        description="Custom output filename (optional)",
+        description="Custom output filename. If not provided, will be auto-generated as '{input_name}_3d.mp4'. "
+        "Path separators are automatically removed for security.",
+        examples=["my_vacation_3d.mp4"],
     )
     priority: JobPriorityRequest = Field(
         default=JobPriorityRequest.NORMAL,
-        description="Job priority level",
+        description="Job priority level. Higher priority jobs are processed first.",
     )
     config: JobConfigRequest = Field(
         default_factory=JobConfigRequest,
-        description="Job configuration options",
+        description="Job configuration options for video conversion.",
     )
     callback_url: Optional[str] = Field(
         default=None,
-        description="URL to POST completion notification",
+        description="Optional webhook URL that will receive a POST request when the job completes. "
+        "The callback payload includes job status, output file ID, and any error details.",
+        examples=["https://example.com/webhook/video-complete"],
     )
 
     @field_validator("output_filename")
     @classmethod
     def validate_output_filename(cls, v: Optional[str]) -> Optional[str]:
-        """Validate output filename format."""
+        """Validate output filename format.
+
+        Removes path separators for security to prevent directory traversal attacks.
+        """
         if v is not None:
             # Remove path separators for security
             v = v.replace("/", "_").replace("\\", "_")
@@ -184,15 +236,52 @@ class SubmitBatchRequest(BaseModel):
 
 
 class UploadResponse(BaseModel):
-    """Response after successful file upload."""
+    """Response after successful file upload.
 
-    file_id: str = Field(..., description="Unique file identifier")
-    filename: str = Field(..., description="Original filename")
-    file_size_bytes: int = Field(..., description="File size in bytes")
-    content_type: Optional[str] = Field(None, description="Detected content type")
-    upload_time: datetime = Field(..., description="Upload timestamp")
-    message: str = Field(default="File uploaded successfully")
+    Contains the file ID which should be used in subsequent job submission requests.
+    """
 
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "file_id": "550e8400-e29b-41d4-a716-446655440000",
+                "filename": "vacation_video.mp4",
+                "file_size_bytes": 52428800,
+                "content_type": "video/mp4",
+                "upload_time": "2024-01-15T10:30:00Z",
+                "message": "File uploaded successfully",
+            }
+        }
+    )
+
+    file_id: str = Field(
+        ...,
+        description="Unique file identifier (UUID). Use this ID when submitting conversion jobs.",
+        examples=["550e8400-e29b-41d4-a716-446655440000"],
+    )
+    filename: str = Field(
+        ...,
+        description="Original filename as uploaded.",
+        examples=["vacation_video.mp4"],
+    )
+    file_size_bytes: int = Field(
+        ...,
+        description="File size in bytes.",
+        examples=[52428800, 104857600],
+    )
+    content_type: Optional[str] = Field(
+        None,
+        description="Detected MIME content type based on file extension.",
+        examples=["video/mp4", "video/x-msvideo"],
+    )
+    upload_time: datetime = Field(
+        ...,
+        description="UTC timestamp when the file was uploaded.",
+    )
+    message: str = Field(
+        default="File uploaded successfully",
+        description="Success message.",
+    )
 
 class JobResultResponse(BaseModel):
     """Result details for a completed job."""
@@ -210,41 +299,116 @@ class JobResultResponse(BaseModel):
 
 
 class JobResponse(BaseModel):
-    """Full job details response."""
+    """Full job details response.
 
-    job_id: str = Field(..., description="Unique job identifier")
-    status: JobStatusResponse = Field(..., description="Current job status")
-    priority: JobPriorityRequest = Field(..., description="Job priority")
-    input_filename: str = Field(..., description="Input video filename")
-    output_filename: Optional[str] = Field(None, description="Output filename")
+    Contains complete information about a conversion job including status,
+    progress, timing information, and result (when completed).
+    """
+
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "job_id": "job_abc123",
+                "status": "completed",
+                "priority": "normal",
+                "input_filename": "vacation_video.mp4",
+                "output_filename": "vacation_video_3d.mp4",
+                "progress": 1.0,
+                "current_stage": "complete",
+                "created_at": "2024-01-15T10:30:00Z",
+                "started_at": "2024-01-15T10:30:05Z",
+                "completed_at": "2024-01-15T10:45:30Z",
+                "elapsed_time_seconds": 925.5,
+                "estimated_remaining_seconds": None,
+                "retry_count": 0,
+                "result": {
+                    "success": True,
+                    "output_file_id": "out_xyz789",
+                    "output_filename": "vacation_video_3d.mp4",
+                    "error_message": None,
+                    "error_type": None,
+                    "frames_processed": 1500,
+                    "processing_time_seconds": 925.5,
+                },
+                "config": {
+                    "stereo_format": "side_by_side",
+                    "depth_model": "midas_small",
+                    "use_gpu": True,
+                },
+            }
+        }
+    )
+
+    job_id: str = Field(
+        ...,
+        description="Unique job identifier.",
+        examples=["job_abc123"],
+    )
+    status: JobStatusResponse = Field(
+        ...,
+        description="Current job status. Possible values: pending, queued, preparing, running, paused, completed, failed, cancelled, retrying, skipped.",
+    )
+    priority: JobPriorityRequest = Field(
+        ...,
+        description="Job priority level.",
+    )
+    input_filename: str = Field(
+        ...,
+        description="Original input video filename.",
+        examples=["vacation_video.mp4"],
+    )
+    output_filename: Optional[str] = Field(
+        None,
+        description="Output 3D video filename.",
+        examples=["vacation_video_3d.mp4"],
+    )
     progress: float = Field(
         default=0.0,
         ge=0.0,
         le=1.0,
-        description="Processing progress (0.0 to 1.0)",
+        description="Processing progress from 0.0 (not started) to 1.0 (complete).",
+        examples=[0.0, 0.5, 0.75, 1.0],
     )
-    current_stage: str = Field(default="", description="Current processing stage")
-    created_at: datetime = Field(..., description="Job creation time")
-    started_at: Optional[datetime] = Field(None, description="Processing start time")
-    completed_at: Optional[datetime] = Field(None, description="Completion time")
+    current_stage: str = Field(
+        default="",
+        description="Current processing stage (e.g., 'extracting_frames', 'depth_estimation', 'stereo_generation', 'encoding').",
+        examples=["depth_estimation"],
+    )
+    created_at: datetime = Field(
+        ...,
+        description="UTC timestamp when the job was created.",
+    )
+    started_at: Optional[datetime] = Field(
+        None,
+        description="UTC timestamp when processing started. Null if not yet started.",
+    )
+    completed_at: Optional[datetime] = Field(
+        None,
+        description="UTC timestamp when processing completed. Null if still running.",
+    )
     elapsed_time_seconds: Optional[float] = Field(
         None,
-        description="Elapsed processing time",
+        description="Elapsed processing time in seconds. Null if not yet started.",
+        examples=[125.5, 925.0],
     )
     estimated_remaining_seconds: Optional[float] = Field(
         None,
-        description="Estimated remaining time",
+        description="Estimated remaining time in seconds. Null if unknown or job is complete.",
+        examples=[60.0, 120.5],
     )
-    retry_count: int = Field(default=0, description="Number of retry attempts")
+    retry_count: int = Field(
+        default=0,
+        description="Number of automatic retry attempts made.",
+        ge=0,
+    )
     result: Optional[JobResultResponse] = Field(
         None,
-        description="Job result (when completed)",
+        description="Job result details. Only present when job is completed.",
     )
     config: dict[str, Any] = Field(
         default_factory=dict,
-        description="Job configuration",
+        description="Job configuration used for processing.",
     )
-
 
 class JobListResponse(BaseModel):
     """Response for job listing endpoint."""

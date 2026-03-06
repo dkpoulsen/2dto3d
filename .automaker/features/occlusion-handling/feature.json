@@ -3,14 +3,14 @@
   "category": "Core",
   "title": "Occlusion and Disocclusion Handling",
   "description": "Add sophisticated occlusion detection and hole-filling algorithms using inpainting techniques to handle disoccluded areas revealed by viewpoint shifts in stereoscopic generation.",
-  "status": "backlog",
+  "status": "verified",
   "priority": 2,
   "complexity": "complex",
   "dependencies": [
     "dibr-engine"
   ],
   "createdAt": "2026-03-04T17:29:57.351Z",
-  "updatedAt": "2026-03-04T17:29:57.351Z",
+  "updatedAt": "2026-03-04T21:08:59.049Z",
   "model": "zai-coding-plan/glm-5",
   "thinkingLevel": "none",
   "planningMode": "spec",

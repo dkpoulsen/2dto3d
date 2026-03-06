@@ -1,0 +1,11 @@
+{
+  "id": "evt-1772693765194-5fd6476f",
+  "trigger": "feature_error",
+  "timestamp": "2026-03-05T06:56:05.194Z",
+  "projectPath": "/home/dkp/Documents/Automaker/2dto3d",
+  "projectName": "2dto3d",
+  "featureId": "batch-video-queue",
+  "featureName": "Batch Video Processing Queue",
+  "error": "Agent execution ended with: error",
+  "errorType": "execution"
+}

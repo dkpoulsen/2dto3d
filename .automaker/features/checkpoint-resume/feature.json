@@ -1,0 +1,22 @@
+{
+  "id": "checkpoint-resume",
+  "category": "Reliability",
+  "title": "Checkpoint and Resume System",
+  "description": "Implement periodic checkpointing of conversion progress allowing resumption from interrupted processing without starting over.",
+  "status": "verified",
+  "priority": 1,
+  "complexity": "moderate",
+  "dependencies": [
+    "progress-tracking"
+  ],
+  "createdAt": "2026-03-06T15:23:01.928Z",
+  "updatedAt": "2026-03-06T16:09:49.063Z",
+  "descriptionHistory": [],
+  "model": "zai-coding-plan/glm-5",
+  "thinkingLevel": "none",
+  "planningMode": "spec",
+  "requirePlanApproval": true,
+  "skipTests": false,
+  "branchName": "main",
+  "summary": "## Summary: Checkpoint and Resume System - Commit Executed\n\n### Commit Details\n- **Commit Hash**: `355448b`\n- **Commit Message**:\n  ```\n  feat(checkpoint): add checkpoint and resume system for video conversion\n  \n  Implement periodic checkpointing of conversion progress allowing\n  resumption from interrupted processing without starting over.\n  \n  Components:\n  - ConversionCheckpoint: Data model for frame-level state tracking\n  - CheckpointManager: Save/load/cleanup checkpoint files\n  - CheckpointConfig: Configuration for checkpoint behavior\n  - StageCheckpoint: Track pipeline stage progress\n  - FrameCheckpoint: Track individual frame processing state\n  \n  Features:\n  - Save checkpoint every N frames (configurable interval)\n  - Resume from last successful frame on interruption\n  - Cleanup old checkpoints automatically\n  - Keep intermediate frame data optionally\n  - Thread-safe checkpoint operations\n  \n  Integration:\n  - CheckpointConfig integrated into BatchQueueConfig\n  - from_dict methods for config deserialization\n  - 42 unit tests for checkpoint functionality\n  ```\n\n### Files Committed (5 files, +1539 lines, -4 lines)\n- `src/video2d3d/checkpoint/__init__.py` (new)\n- `src/video2d3d/checkpoint/manager.py` (new)\n- `src/video2d3d/checkpoint/models.py` (new)\n- `src/video2d3d/batch/config.py` (modified)\n- `tests/unit/test_checkpoint.py` (new)\n\n### Verification Status\n- All 42 unit tests pass\n- Python syntax validation passes\n- Git commit created with conventional commit format\n\n### Notes for Developer\n- The `.automaker/` metadata files were intentionally NOT committed (they are project management artifacts)\n- Other unrelated changes (web API, progress tracking, etc.) remain unstaged for separate commits"
+}

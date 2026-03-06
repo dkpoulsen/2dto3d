@@ -1,0 +1,11 @@
+{
+  "id": "evt-1772658975333-cdd435c8",
+  "trigger": "feature_error",
+  "timestamp": "2026-03-04T21:16:15.333Z",
+  "projectPath": "/home/dkp/Documents/Automaker/2dto3d",
+  "projectName": "2dto3d",
+  "featureId": "feature-1772658933889-ao8zzd17a",
+  "featureName": "Interactive Depth Map Editor",
+  "error": "Claude Code process exited with code 1",
+  "errorType": "execution"
+}

@@ -3,12 +3,19 @@
   "category": "Performance",
   "title": "GPU Acceleration Support",
   "description": "Add CUDA GPU support with automatic device detection, fallback to CPU processing, memory management for GPU batches, and optimized tensor operations.",
-  "status": "backlog",
+  "status": "verified",
   "priority": 2,
   "complexity": "moderate",
   "dependencies": [
     "midas-integration"
   ],
   "createdAt": "2026-03-04T17:29:57.349Z",
-  "updatedAt": "2026-03-04T17:29:57.349Z"
+  "updatedAt": "2026-03-04T19:45:36.633Z",
+  "model": "zai-coding-plan/glm-5",
+  "thinkingLevel": "none",
+  "planningMode": "spec",
+  "requirePlanApproval": true,
+  "skipTests": false,
+  "branchName": "main",
+  "descriptionHistory": []
 }

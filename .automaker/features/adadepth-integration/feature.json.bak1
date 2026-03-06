@@ -1,0 +1,14 @@
+{
+  "id": "adadepth-integration",
+  "category": "Core",
+  "title": "AdaDepth Model Integration",
+  "description": "Integrate AdaDepth adaptive depth estimation model for improved performance on varied scene types with automatic fallback to MiDaS.",
+  "status": "backlog",
+  "priority": 2,
+  "complexity": "moderate",
+  "dependencies": [
+    "depth-model-selection"
+  ],
+  "createdAt": "2026-03-06T15:23:01.919Z",
+  "updatedAt": "2026-03-06T15:23:01.919Z"
+}

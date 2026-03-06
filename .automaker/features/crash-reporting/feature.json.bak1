@@ -1,0 +1,14 @@
+{
+  "id": "crash-reporting",
+  "category": "Reliability",
+  "title": "Crash Reporting and Diagnostics",
+  "description": "Implement crash detection and reporting system that captures system state, error logs, and diagnostics for debugging failures.",
+  "status": "backlog",
+  "priority": 3,
+  "complexity": "simple",
+  "dependencies": [
+    "logging-system"
+  ],
+  "createdAt": "2026-03-06T15:23:01.929Z",
+  "updatedAt": "2026-03-06T15:23:01.929Z"
+}

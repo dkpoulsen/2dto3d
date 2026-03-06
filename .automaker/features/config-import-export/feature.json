@@ -1,0 +1,21 @@
+{
+  "id": "config-import-export",
+  "category": "Configuration",
+  "title": "Configuration Import/Export",
+  "description": "Add ability to export and import full configuration including all parameters, presets, and model settings.",
+  "status": "backlog",
+  "priority": 2,
+  "complexity": "simple",
+  "dependencies": [
+    "preset-manager"
+  ],
+  "createdAt": "2026-03-06T15:23:01.931Z",
+  "updatedAt": "2026-03-06T15:23:01.931Z",
+  "model": "zai-coding-plan/glm-5",
+  "thinkingLevel": "none",
+  "planningMode": "spec",
+  "requirePlanApproval": true,
+  "skipTests": false,
+  "branchName": "main",
+  "descriptionHistory": []
+}

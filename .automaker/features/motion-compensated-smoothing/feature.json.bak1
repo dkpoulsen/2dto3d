@@ -1,0 +1,14 @@
+{
+  "id": "motion-compensated-smoothing",
+  "category": "Processing",
+  "title": "Motion-Compensated Temporal Smoothing",
+  "description": "Enhance temporal smoothing using optical flow to track moving objects and maintain depth consistency across frame transitions.",
+  "status": "backlog",
+  "priority": 2,
+  "complexity": "complex",
+  "dependencies": [
+    "temporal-smoothing"
+  ],
+  "createdAt": "2026-03-06T15:23:01.926Z",
+  "updatedAt": "2026-03-06T15:23:01.926Z"
+}

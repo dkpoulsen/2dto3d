@@ -1,0 +1,14 @@
+{
+  "id": "video-denoiser",
+  "category": "Enhancement",
+  "title": "Video Denoising Module",
+  "description": "Add video denoising using AI models (FastDVDNet, BasicVSR++) to reduce noise before depth estimation for cleaner depth maps.",
+  "status": "backlog",
+  "priority": 3,
+  "complexity": "moderate",
+  "dependencies": [
+    "video-input-handler"
+  ],
+  "createdAt": "2026-03-06T15:23:01.925Z",
+  "updatedAt": "2026-03-06T15:23:01.925Z"
+}

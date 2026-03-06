@@ -1,0 +1,14 @@
+{
+  "id": "optical-flow-engine",
+  "category": "Processing",
+  "title": "Optical Flow Calculation Engine",
+  "description": "Implement optical flow calculation using RAFT or PWC-Net model for motion estimation to support motion-compensated processing.",
+  "status": "backlog",
+  "priority": 2,
+  "complexity": "complex",
+  "dependencies": [
+    "temporal-smoothing"
+  ],
+  "createdAt": "2026-03-06T15:23:01.927Z",
+  "updatedAt": "2026-03-06T15:23:01.927Z"
+}

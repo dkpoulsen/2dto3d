@@ -1,0 +1,21 @@
+{
+  "id": "desktop-gui",
+  "category": "UI",
+  "title": "Desktop GUI Application",
+  "description": "Build a desktop GUI using PyQt or Tkinter for standalone operation without requiring a web browser.",
+  "status": "backlog",
+  "priority": 3,
+  "complexity": "complex",
+  "dependencies": [
+    "cli-framework"
+  ],
+  "createdAt": "2026-03-06T15:23:01.932Z",
+  "updatedAt": "2026-03-06T15:23:01.932Z",
+  "model": "zai-coding-plan/glm-5",
+  "thinkingLevel": "none",
+  "planningMode": "spec",
+  "requirePlanApproval": true,
+  "skipTests": false,
+  "branchName": "main",
+  "descriptionHistory": []
+}

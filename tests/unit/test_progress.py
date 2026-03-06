@@ -712,3 +712,369 @@ class TestProgressIntegration:
         extract_metrics = progress._stage_metrics[ProgressStage.EXTRACT]
         assert extract_metrics.failed == 10
         assert extract_metrics.completed == 100
+
+    def test_double_start_is_safe(self) -> None:
+        """Test that calling start() twice is safe (line 334)."""
+        progress = VideoConversionProgress(
+            total_frames=100,
+            config=ProgressConfig(enabled=True),
+        )
+        progress.start()
+        assert progress._is_active is True
+        # Call start again - should be a no-op
+        progress.start()
+        assert progress._is_active is True
+        progress.stop()
+
+    def test_stop_when_disabled(self) -> None:
+        """Test stop() when config is disabled (line 352)."""
+        progress = VideoConversionProgress(
+            total_frames=100,
+            config=ProgressConfig(enabled=False),
+        )
+        # Should be safe to call stop when disabled
+        progress.stop()
+        assert progress._is_active is False
+
+    def test_stop_when_not_active(self) -> None:
+        """Test stop() when already stopped (line 356)."""
+        progress = VideoConversionProgress(
+            total_frames=100,
+            config=ProgressConfig(enabled=True),
+        )
+        progress.start()
+        progress.stop()
+        assert progress._is_active is False
+        # Call stop again - should be safe
+        progress.stop()
+        assert progress._is_active is False
+
+    def test_start_stage_when_disabled(self) -> None:
+        """Test start_stage() when config is disabled (line 378)."""
+        progress = VideoConversionProgress(
+            total_frames=100,
+            config=ProgressConfig(enabled=False),
+        )
+        # Should be a no-op
+        progress.start_stage(ProgressStage.EXTRACT, total=100)
+        assert progress._current_stage == ProgressStage.INIT
+
+    def test_start_stage_auto_starts_progress(self) -> None:
+        """Test start_stage() auto-starts if not started (line 396)."""
+        progress = VideoConversionProgress(
+            total_frames=100,
+            config=ProgressConfig(enabled=True),
+        )
+        # Don't call start() first
+        assert progress._progress is None
+        progress.start_stage(ProgressStage.EXTRACT, total=100)
+        # Should have auto-started
+        assert progress._progress is not None
+        assert progress._is_active is True
+        progress.stop()
+
+    def test_start_stage_with_previous_task(self) -> None:
+        """Test start_stage() completes previous task (line 403)."""
+        progress = VideoConversionProgress(
+            total_frames=100,
+            config=ProgressConfig(enabled=True),
+        )
+        progress.start()
+        progress.start_stage(ProgressStage.EXTRACT, total=50)
+        progress.update(25)
+        # Start another stage - should complete previous
+        progress.start_stage(ProgressStage.PROCESS, total=50)
+        # Previous stage should be marked complete
+        progress.stop()
+
+    def test_update_when_disabled(self) -> None:
+        """Test update() when config is disabled (line 424)."""
+        progress = VideoConversionProgress(
+            total_frames=100,
+            config=ProgressConfig(enabled=False),
+        )
+        progress.start()
+        progress.start_stage(ProgressStage.EXTRACT, total=100)
+        # Should be safe but no effect
+        initial_completed = progress._stats.frames_extracted
+        progress.update(1)
+        # Stats won't change since disabled
+        assert progress._stats.frames_extracted == initial_completed
+        progress.stop()
+
+    def test_update_without_progress(self) -> None:
+        """Test update() when no progress bar exists (line 428)."""
+        progress = VideoConversionProgress(
+            total_frames=100,
+            config=ProgressConfig(enabled=True),
+        )
+        # Don't start, no progress bar
+        assert progress._progress is None
+        progress._current_stage = ProgressStage.EXTRACT
+        progress._stage_metrics[ProgressStage.EXTRACT] = StageMetrics(
+            name="Extract", total=100
+        )
+        # Should be safe
+        progress.update(1)
+
+    def test_update_without_overall_task(self) -> None:
+        """Test update() when no overall task exists (line 448)."""
+        progress = VideoConversionProgress(
+            total_frames=0,  # Zero frames = no overall task
+            config=ProgressConfig(enabled=True, show_overall=True),
+        )
+        progress.start()
+        progress.start_stage(ProgressStage.EXTRACT, total=100)
+        # Should work without overall task
+        progress.update(1)
+        metrics = progress._stage_metrics[ProgressStage.EXTRACT]
+        assert metrics.completed == 1
+        progress.stop()
+
+    def test_complete_stage_when_disabled(self) -> None:
+        """Test complete_stage() when config is disabled (line 465)."""
+        progress = VideoConversionProgress(
+            total_frames=100,
+            config=ProgressConfig(enabled=False),
+        )
+        progress._current_stage = ProgressStage.EXTRACT
+        # Should be safe
+        progress.complete_stage()
+
+    def test_complete_stage_without_metrics(self) -> None:
+        """Test complete_stage() when no metrics exist (line 468)."""
+        progress = VideoConversionProgress(
+            total_frames=100,
+            config=ProgressConfig(enabled=True),
+        )
+        progress.start()
+        progress._current_stage = ProgressStage.EXTRACT
+        # No metrics for this stage
+        assert ProgressStage.EXTRACT not in progress._stage_metrics
+        progress.complete_stage()
+        # Should be safe
+        progress.stop()
+
+    def test_complete_stage_without_progress(self) -> None:
+        """Test complete_stage() when no progress bar exists (line 473)."""
+        progress = VideoConversionProgress(
+            total_frames=100,
+            config=ProgressConfig(enabled=True),
+        )
+        progress._current_stage = ProgressStage.EXTRACT
+        progress._stage_metrics[ProgressStage.EXTRACT] = StageMetrics(
+            name="Extract", total=100
+        )
+        # No progress bar
+        assert progress._progress is None
+        progress.complete_stage()
+        # Should still mark stage complete
+        assert progress._stage_metrics[ProgressStage.EXTRACT].end_time is not None
+
+    def test_get_overall_speed_no_start_time(self) -> None:
+        """Test _get_overall_speed() when no start time (line 503)."""
+        progress = VideoConversionProgress(
+            total_frames=100,
+            config=ProgressConfig(enabled=True),
+        )
+        # No start time set
+        assert progress._start_time is None
+        speed = progress._get_overall_speed()
+        assert speed == 0.0
+
+    def test_get_overall_speed_no_completed(self) -> None:
+        """Test _get_overall_speed() with no completed items (line 508)."""
+        progress = VideoConversionProgress(
+            total_frames=100,
+            config=ProgressConfig(enabled=True),
+        )
+        progress.start()
+        # No completed items
+        speed = progress._get_overall_speed()
+        # With no completed items, speed is 0
+        assert speed == 0.0
+        progress.stop()
+
+    def test_print_summary_with_failures(self) -> None:
+        """Test print_summary() with failures (line 536)."""
+        progress = VideoConversionProgress(
+            total_frames=100,
+            config=ProgressConfig(enabled=True),
+        )
+        progress.start()
+        progress.start_stage(ProgressStage.EXTRACT, total=100)
+        for i in range(100):
+            progress.update(advance=1, failed=1 if i % 10 == 0 else 0)
+        progress.complete_stage()
+        progress.stop()
+        # Should include failure count in output
+        progress.print_summary()
+
+    def test_print_summary_no_speed(self) -> None:
+        """Test print_summary() with zero speed (line 542)."""
+        progress = VideoConversionProgress(
+            total_frames=100,
+            config=ProgressConfig(enabled=True),
+        )
+        # Don't process anything
+        progress.print_summary()
+
+    def test_context_manager_with_exception(self) -> None:
+        """Test context manager handles exceptions properly."""
+        progress = VideoConversionProgress(
+            total_frames=100,
+            config=ProgressConfig(enabled=True),
+        )
+        try:
+            with progress:
+                progress.start_stage(ProgressStage.EXTRACT, total=100)
+                progress.update(50)
+                raise RuntimeError("Test error")
+        except RuntimeError:
+            pass
+
+        # Should have stopped properly
+        assert progress._is_active is False
+
+
+class TestSimpleProgressTrackerEdgeCases:
+    """Edge case tests for SimpleProgressTracker."""
+
+    def test_elapsed_seconds_not_started(self) -> None:
+        """Test elapsed_seconds when not started (line 684)."""
+        tracker = SimpleProgressTracker(total=100)
+        # No start time
+        assert tracker._start_time is None
+        assert tracker.elapsed_seconds == 0.0
+
+    def test_items_per_second_zero_elapsed(self) -> None:
+        """Test items_per_second with zero elapsed (line 693)."""
+        tracker = SimpleProgressTracker(total=100)
+        tracker.start()
+        tracker.update(10)
+        tracker._start_time = None  # Force zero elapsed path
+        assert tracker.items_per_second == 0.0
+        tracker.stop()
+
+    def test_stop_when_not_started(self) -> None:
+        """Test stop() when progress was never started."""
+        tracker = SimpleProgressTracker(total=100)
+        # Should be safe
+        tracker.stop()
+
+
+class TestProgressConfigVariations:
+    """Tests for various ProgressConfig combinations."""
+
+    def test_config_hide_speed(self) -> None:
+        """Test config with show_speed=False."""
+        config = ProgressConfig(enabled=True, show_speed=False)
+        progress = VideoConversionProgress(total_frames=100, config=config)
+        progress.start()
+        progress.start_stage(ProgressStage.EXTRACT, total=100)
+        progress.update(1)
+        progress.stop()
+
+    def test_config_hide_eta(self) -> None:
+        """Test config with show_eta=False."""
+        config = ProgressConfig(enabled=True, show_eta=False)
+        progress = VideoConversionProgress(total_frames=100, config=config)
+        progress.start()
+        progress.start_stage(ProgressStage.EXTRACT, total=100)
+        progress.update(1)
+        progress.stop()
+
+    def test_config_hide_elapsed(self) -> None:
+        """Test config with show_elapsed=False."""
+        config = ProgressConfig(enabled=True, show_elapsed=False)
+        progress = VideoConversionProgress(total_frames=100, config=config)
+        progress.start()
+        progress.start_stage(ProgressStage.EXTRACT, total=100)
+        progress.update(1)
+        progress.stop()
+
+    def test_config_hide_percent(self) -> None:
+        """Test config with show_percent=False."""
+        config = ProgressConfig(enabled=True, show_percent=False)
+        progress = VideoConversionProgress(total_frames=100, config=config)
+        progress.start()
+        progress.start_stage(ProgressStage.EXTRACT, total=100)
+        progress.update(1)
+        progress.stop()
+
+    def test_config_hide_overall(self) -> None:
+        """Test config with show_overall=False."""
+        config = ProgressConfig(enabled=True, show_overall=False)
+        progress = VideoConversionProgress(total_frames=100, config=config)
+        progress.start()
+        # No overall task should be created
+        assert progress._overall_task is None
+        progress.start_stage(ProgressStage.EXTRACT, total=100)
+        progress.update(1)
+        progress.stop()
+
+
+class TestStageMetricsEdgeCases:
+    """Edge case tests for StageMetrics."""
+
+    def test_eta_seconds_full_completion(self) -> None:
+        """Test eta_seconds when fully complete."""
+        start = time.time() - 1.0
+        metrics = StageMetrics(
+            name="test", total=100, completed=100, start_time=start
+        )
+        # No remaining items, ETA should be 0
+        assert metrics.eta_seconds == 0.0
+
+
+class TestUpdateWithDescription:
+    """Tests for update() with description parameter."""
+
+    def test_update_with_description(self) -> None:
+        """Test update() with description change."""
+        progress = VideoConversionProgress(
+            total_frames=100,
+            config=ProgressConfig(enabled=True),
+        )
+        progress.start()
+        progress.start_stage(ProgressStage.EXTRACT, total=100)
+        progress.update(1, description="Custom update")
+        progress.stop()
+
+
+class TestCompleteStageWithMessage:
+    """Tests for complete_stage() with message parameter."""
+
+    def test_complete_stage_with_message(self) -> None:
+        """Test complete_stage() with completion message."""
+        progress = VideoConversionProgress(
+            total_frames=100,
+            config=ProgressConfig(enabled=True),
+        )
+        progress.start()
+        progress.start_stage(ProgressStage.EXTRACT, total=100)
+        progress.update(100)
+        progress.complete_stage(message="Extraction finished!")
+        progress.stop()
+
+
+class TestConversionStatsEdgeCases:
+    """Edge case tests for ConversionStats."""
+
+    def test_success_rate_all_failed(self) -> None:
+        """Test success_rate when all frames failed."""
+        stats = ConversionStats(total_frames=100, frames_failed=100)
+        assert stats.success_rate == 0.0
+
+    def test_to_dict_with_stages(self) -> None:
+        """Test to_dict with stages populated."""
+        metrics = StageMetrics(name="extract", total=100, completed=50)
+        stats = ConversionStats(
+            total_frames=100,
+            stages={"extract": metrics},
+        )
+        result = stats.to_dict()
+        assert "stages" in result
+        assert "extract" in result["stages"]
+        assert result["stages"]["extract"]["completed"] == 50
+

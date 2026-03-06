@@ -603,3 +603,330 @@ class TestCheckpointManager:
 
         path = config.get_checkpoint_path("disabled-test")
         assert not path.exists()
+        path = config.get_checkpoint_path("disabled-test")
+        assert not path.exists()
+
+
+class TestBatchQueueConfigCheckpointIntegration:
+    """Tests for CheckpointConfig integration with BatchQueueConfig."""
+
+    def test_checkpoint_config_in_batch_queue(self) -> None:
+        """Test CheckpointConfig can be passed to BatchQueueConfig."""
+        from video2d3d.batch.config import BatchQueueConfig, CheckpointConfig
+
+        checkpoint_config = CheckpointConfig(
+            enabled=True,
+            checkpoint_dir=Path("/tmp/test_checkpoints"),
+            checkpoint_interval=25,
+            keep_intermediate=True,
+        )
+
+        batch_config = BatchQueueConfig(
+            checkpoint=checkpoint_config,
+        )
+
+        assert batch_config.checkpoint.enabled is True
+        assert batch_config.checkpoint.checkpoint_interval == 25
+        assert batch_config.checkpoint.keep_intermediate is True
+
+    def test_batch_queue_config_to_dict_includes_checkpoint(self) -> None:
+        """Test BatchQueueConfig.to_dict() includes checkpoint config."""
+        from video2d3d.batch.config import BatchQueueConfig, CheckpointConfig
+
+        checkpoint_config = CheckpointConfig(
+            enabled=True,
+            checkpoint_dir=Path("/custom/checkpoints"),
+            checkpoint_interval=50,
+        )
+
+        batch_config = BatchQueueConfig(
+            checkpoint=checkpoint_config,
+        )
+
+        d = batch_config.to_dict()
+        assert "checkpoint" in d
+        assert d["checkpoint"]["enabled"] is True
+        assert d["checkpoint"]["checkpoint_interval"] == 50
+
+        config = BatchQueueConfig.from_dict(data)
+        assert config.checkpoint.enabled is False
+        assert str(config.checkpoint.checkpoint_dir) == "/restored/checkpoints"
+        assert config.checkpoint.checkpoint_interval == 100
+        """Test BatchQueueConfig.from_dict() restores checkpoint config."""
+        from video2d3d.batch.config import BatchQueueConfig
+
+        data = {
+            "checkpoint": {
+                "enabled": False,
+                "checkpoint_dir": "/restored/checkpoints",
+                "checkpoint_interval": 100,
+            },
+        }
+
+        config = BatchQueueConfig.from_dict(data)
+        assert config.checkpoint.enabled is False
+        assert str(config.checkpoint.checkpoint_dir) == "/restored/checkpoints"
+        assert config.checkpoint.checkpoint_interval == 100
+
+
+
+    def test_get_frame_data_path(self, checkpoint_manager: CheckpointManager) -> None:
+        """Test get_frame_data_path returns correct path."""
+        path = checkpoint_manager.get_frame_data_path("test-job", 42, "depth")
+        assert "test-job" in str(path)
+        assert "frame_000042" in str(path)
+        assert "depth" in str(path)
+        assert str(path).endswith(".npy")
+
+    def test_save_and_load_frame_data(
+        self, checkpoint_manager: CheckpointManager
+    ) -> None:
+        """Test save_frame_data and load_frame_data roundtrip."""
+        import numpy as np
+
+        checkpoint_manager.config.keep_intermediate = True
+
+        original_data = np.random.rand(10, 10).astype(np.float32)
+        path = checkpoint_manager.save_frame_data(
+            "test-job", 0, "depth", original_data
+        )
+
+        assert path is not None
+        assert path.exists()
+
+        loaded_data = checkpoint_manager.load_frame_data(path)
+        assert loaded_data is not None
+        np.testing.assert_array_almost_equal(original_data, loaded_data)
+
+        # Cleanup
+        path.unlink(missing_ok=True)
+
+    def test_save_frame_data_disabled(
+        self, checkpoint_manager: CheckpointManager
+    ) -> None:
+        """Test save_frame_data returns None when keep_intermediate is False."""
+        import numpy as np
+
+        checkpoint_manager.config.keep_intermediate = False
+
+        data = np.zeros((5, 5))
+        result = checkpoint_manager.save_frame_data("test-job", 0, "depth", data)
+
+        assert result is None
+
+    def test_load_frame_data_nonexistent(
+        self, checkpoint_manager: CheckpointManager
+    ) -> None:
+        """Test load_frame_data returns None for nonexistent file."""
+        result = checkpoint_manager.load_frame_data("/nonexistent/path.npy")
+        assert result is None
+
+    def test_get_resume_info_none(
+        self, checkpoint_manager: CheckpointManager
+    ) -> None:
+        """Test get_resume_info returns None for nonexistent job."""
+        info = checkpoint_manager.get_resume_info("nonexistent-job")
+        assert info is None
+
+    def test_get_resume_info_complete(
+        self, checkpoint_manager: CheckpointManager
+    ) -> None:
+        """Test get_resume_info returns None for complete job."""
+        checkpoint = checkpoint_manager.create_checkpoint(
+            job_id="complete-resume-test",
+            input_path="input.mp4",
+            output_path="output.mp4",
+        )
+        checkpoint.state = CheckpointState.COMPLETE
+        checkpoint_manager.save(checkpoint)
+
+        info = checkpoint_manager.get_resume_info("complete-resume-test")
+        assert info is None
+
+        checkpoint_manager.delete("complete-resume-test")
+
+    def test_cleanup_old_checkpoints_zero_max(
+        self, checkpoint_manager: CheckpointManager
+    ) -> None:
+        """Test cleanup_old_checkpoints with max_checkpoints=0."""
+        checkpoint_manager.config.max_checkpoints = 0
+
+        for i in range(3):
+            checkpoint = checkpoint_manager.create_checkpoint(
+                job_id=f"zero-max-test-{i}",
+                input_path=f"input{i}.mp4",
+                output_path=f"output{i}.mp4",
+            )
+            checkpoint_manager.save(checkpoint)
+
+        deleted = checkpoint_manager.cleanup_old_checkpoints()
+        assert deleted == 0
+
+        for i in range(3):
+            checkpoint_manager.delete(f"zero-max-test-{i}")
+
+
+class TestFrameCheckpointTemporal:
+    """Tests for FrameCheckpoint temporal_smoothed field."""
+
+    def test_temporal_smoothed_default(self) -> None:
+        """Test temporal_smoothed defaults to False."""
+        frame = FrameCheckpoint(frame_index=0)
+        assert frame.temporal_smoothed is False
+
+    def test_is_complete_without_temporal(self) -> None:
+        """Test is_complete ignores temporal_smoothed."""
+        frame = FrameCheckpoint(
+            frame_index=0,
+            extracted=True,
+            depth_processed=True,
+            stereo_generated=True,
+            written=True,
+            temporal_smoothed=False,
+        )
+        # is_complete should be True even without temporal smoothing
+        assert frame.is_complete is True
+
+    def test_can_resume_from_temporal_stage(self) -> None:
+        """Test can_resume_from at temporal smoothing stage."""
+        frame = FrameCheckpoint(
+            frame_index=0,
+            extracted=True,
+            depth_processed=True,
+            temporal_smoothed=False,
+        )
+        # Can resume when extracted and depth processed but not temporal
+        assert frame.can_resume_from is True
+
+
+class TestStageCheckpointElapsed:
+    """Tests for StageCheckpoint elapsed time calculation."""
+
+    def test_elapsed_seconds_not_started(self) -> None:
+        """Test elapsed_seconds returns 0 when not started."""
+        stage = StageCheckpoint(name="test")
+        assert stage.elapsed_seconds == 0.0
+
+    def test_elapsed_seconds_in_progress(self) -> None:
+        """Test elapsed_seconds calculates time correctly."""
+        from datetime import datetime, timedelta
+
+        stage = StageCheckpoint(
+            name="test",
+            started_at=datetime.now() - timedelta(seconds=30),
+        )
+        # Should be approximately 30 seconds
+        assert 29 <= stage.elapsed_seconds <= 31
+
+    def test_elapsed_seconds_completed(self) -> None:
+        """Test elapsed_seconds uses completed_at when set."""
+        from datetime import datetime, timedelta
+
+        start = datetime.now() - timedelta(minutes=5)
+        end = datetime.now() - timedelta(minutes=2)
+        stage = StageCheckpoint(
+            name="test",
+            started_at=start,
+            completed_at=end,
+        )
+        # Should be approximately 3 minutes (180 seconds)
+        assert 175 <= stage.elapsed_seconds <= 185
+
+
+class TestConversionCheckpointFramesCompleted:
+    """Tests for ConversionCheckpoint.frames_completed property."""
+
+    def test_frames_completed_empty(self) -> None:
+        """Test frames_completed returns 0 when no frames."""
+        checkpoint = ConversionCheckpoint(
+            job_id="test",
+            input_path="input.mp4",
+            output_path="output.mp4",
+        )
+        assert checkpoint.frames_completed == 0
+
+    def test_frames_completed_mixed(self) -> None:
+        """Test frames_completed counts only complete frames."""
+        checkpoint = ConversionCheckpoint(
+            job_id="test",
+            input_path="input.mp4",
+            output_path="output.mp4",
+        )
+
+        # Add complete frame
+        checkpoint.frame_checkpoints[0] = FrameCheckpoint(
+            frame_index=0,
+            extracted=True,
+            depth_processed=True,
+            stereo_generated=True,
+            written=True,
+        )
+
+        # Add incomplete frame
+        checkpoint.frame_checkpoints[1] = FrameCheckpoint(
+            frame_index=1,
+            extracted=True,
+            depth_processed=False,
+        )
+
+        assert checkpoint.frames_completed == 1
+
+    def test_frames_completed_all(self) -> None:
+        """Test frames_completed when all frames are complete."""
+        checkpoint = ConversionCheckpoint(
+            job_id="test",
+            input_path="input.mp4",
+            output_path="output.mp4",
+        )
+
+        for i in range(5):
+            checkpoint.frame_checkpoints[i] = FrameCheckpoint(
+                frame_index=i,
+                extracted=True,
+                depth_processed=True,
+                stereo_generated=True,
+                written=True,
+            )
+
+        assert checkpoint.frames_completed == 5
+
+
+class TestCheckpointManagerGetCheckpoint:
+    """Tests for CheckpointManager.get_checkpoint method."""
+
+    def test_get_checkpoint_in_memory(
+        self, checkpoint_manager: CheckpointManager
+    ) -> None:
+        """Test get_checkpoint returns in-memory checkpoint."""
+        checkpoint = checkpoint_manager.create_checkpoint(
+            job_id="memory-test",
+            input_path="input.mp4",
+            output_path="output.mp4",
+        )
+
+        # Don't save to disk
+        retrieved = checkpoint_manager.get_checkpoint("memory-test")
+        assert retrieved is not None
+        assert retrieved.job_id == "memory-test"
+
+    def test_get_checkpoint_from_disk(
+        self, checkpoint_manager: CheckpointManager
+    ) -> None:
+        """Test get_checkpoint loads from disk if not in memory."""
+        checkpoint = checkpoint_manager.create_checkpoint(
+            job_id="disk-test",
+            input_path="input.mp4",
+            output_path="output.mp4",
+            total_frames=500,
+        )
+        checkpoint_manager.save(checkpoint)
+
+        # Clear in-memory cache by creating new manager with same config
+        with patch("video2d3d.checkpoint.manager.get_logger"):
+            new_manager = CheckpointManager(checkpoint_manager.config)
+
+        retrieved = new_manager.get_checkpoint("disk-test")
+        assert retrieved is not None
+        assert retrieved.total_frames == 500
+
+        checkpoint_manager.delete("disk-test")

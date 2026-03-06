@@ -1,0 +1,14 @@
+{
+  "id": "top-bottom-encoder",
+  "category": "Output",
+  "title": "Top-Bottom 3D Format Encoder",
+  "description": "Implement top-bottom 3D format encoder where left view is placed in top half and right view in bottom half of the frame.",
+  "status": "backlog",
+  "priority": 2,
+  "complexity": "simple",
+  "dependencies": [
+    "dibr-engine"
+  ],
+  "createdAt": "2026-03-06T15:23:01.921Z",
+  "updatedAt": "2026-03-06T15:23:01.921Z"
+}

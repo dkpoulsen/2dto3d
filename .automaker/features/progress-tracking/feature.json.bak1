@@ -3,12 +3,19 @@
   "category": "UI",
   "title": "Progress Tracking and Display",
   "description": "Implement real-time progress tracking using tqdm or rich that shows frame processing progress, estimated time remaining, current speed metrics, and visual progress bars.",
-  "status": "backlog",
+  "status": "verified",
   "priority": 2,
   "complexity": "simple",
   "dependencies": [
     "video-output-writer"
   ],
   "createdAt": "2026-03-04T17:29:57.353Z",
-  "updatedAt": "2026-03-04T17:29:57.353Z"
+  "updatedAt": "2026-03-05T06:54:59.377Z",
+  "model": "zai-coding-plan/glm-5",
+  "thinkingLevel": "none",
+  "planningMode": "spec",
+  "requirePlanApproval": true,
+  "skipTests": false,
+  "branchName": "main",
+  "descriptionHistory": []
 }

@@ -721,5 +721,73 @@ class TestEdgeCases:
         # Second call should come from buffer
         frame2 = extractor.get_frame(0)
 
-        # Frames should be identical (same object from buffer)
         np.testing.assert_array_equal(frame1, frame2)
+
+
+class TestProgressCallback:
+    """Tests for progress callback in frame extraction."""
+
+    def test_extract_frames_with_callback(
+        self, sample_video_path: Path, mock_video_capture: MagicMock
+    ) -> None:
+        """Test extract_frames calls progress callback."""
+        sample_video_path.touch()
+
+        progress_calls = []
+
+        def callback(completed: int, total: int) -> None:
+            progress_calls.append((completed, total))
+
+        extractor = FrameExtractor(sample_video_path, validate_video=False)
+        list(extractor.extract_frames(end_frame=5, progress_callback=callback))
+
+        assert len(progress_calls) == 5
+        assert progress_calls[-1] == (5, 5)
+
+    def test_extract_frames_callback_values(
+        self, sample_video_path: Path, mock_video_capture: MagicMock
+    ) -> None:
+        """Test progress callback receives correct values."""
+        sample_video_path.touch()
+
+        progress_calls = []
+
+        def callback(completed: int, total: int) -> None:
+            progress_calls.append((completed, total))
+
+        extractor = FrameExtractor(sample_video_path, validate_video=False)
+        list(extractor.extract_frames(start_frame=10, end_frame=15, progress_callback=callback))
+
+        assert progress_calls[0] == (1, 5)
+        assert progress_calls[-1] == (5, 5)
+
+    def test_extract_frames_without_callback(
+        self, sample_video_path: Path, mock_video_capture: MagicMock
+    ) -> None:
+        """Test extract_frames works without callback."""
+        sample_video_path.touch()
+
+        extractor = FrameExtractor(sample_video_path, validate_video=False)
+        frames = list(extractor.extract_frames(end_frame=5))
+
+        assert len(frames) == 5
+
+    def test_callback_with_interval_sampling(
+        self, sample_video_path: Path, mock_video_capture: MagicMock
+    ) -> None:
+        """Test callback with interval sampling."""
+        sample_video_path.touch()
+
+        progress_calls = []
+
+        def callback(completed: int, total: int) -> None:
+            progress_calls.append((completed, total))
+
+        extractor = FrameExtractor(
+            sample_video_path,
+            sampling_interval=20,
+            validate_video=False,
+        )
+        list(extractor.extract_frames(end_frame=60, progress_callback=callback))
+
+        assert len(progress_calls) == 3  # Frames 0, 20, 40

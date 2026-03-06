@@ -379,8 +379,6 @@ class FrameRecoveryManager(Generic[InputT, OutputT]):
         ```
 
     Thread Safety:
-    
-    Thread Safety:
         This class uses locks to protect shared state and is safe for use
         across multiple threads processing frames concurrently.
     """
@@ -593,10 +591,8 @@ class ModelFallbackChain:
         # Process with fallback
         depth_map = fallback_chain.estimate_with_fallback(frame)
         ```
-        ```
 
-    Thread Safety:
-    
+
     Thread Safety:
         This class uses reentrant locks to protect model switching state
         and is safe for concurrent access from multiple threads.

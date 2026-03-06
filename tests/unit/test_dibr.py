@@ -159,6 +159,21 @@ class TestDIBRConfig:
         with pytest.raises(ValueError, match="Invalid depth_interpretation"):
             DIBRConfig(depth_interpretation="invalid")
 
+    def test_invalid_max_disparity(self, mock_logger: MagicMock) -> None:
+        """Test that invalid max_disparity raises error."""
+        with pytest.raises(ValueError, match="max_disparity must be positive"):
+            DIBRConfig(max_disparity=0)
+
+        with pytest.raises(ValueError, match="max_disparity must be positive"):
+            DIBRConfig(max_disparity=-1)
+
+    def test_invalid_depth_scale(self, mock_logger: MagicMock) -> None:
+        """Test that invalid depth_scale raises error."""
+        with pytest.raises(ValueError, match="depth_scale must be positive"):
+            DIBRConfig(depth_scale=0)
+
+        with pytest.raises(ValueError, match="depth_scale must be positive"):
+            DIBRConfig(depth_scale=-0.5)
 
 # ---------------------------------------------------------------------------
 # DIBREngine Tests
@@ -637,6 +652,247 @@ class TestEdgeCases:
         depth[1, 1] = 1.0
 
         left, right = engine.render(sample_image, depth)
+
+        assert left.shape == sample_image.shape
+        assert right.shape == sample_image.shape
+
+    def test_minimum_dimension_validation(
+        self,
+        mock_logger: MagicMock,
+    ) -> None:
+        """Test that zero-dimension images raise error."""
+        engine = DIBREngine()
+
+        # Create image with zero dimension (edge case)
+        zero_image = np.zeros((0, 100, 3), dtype=np.uint8)
+        zero_depth = np.zeros((0, 100), dtype=np.float32)
+
+        with pytest.raises(DIBRError, match="dimensions must be at least"):
+            engine.render(zero_image, zero_depth)
+
+    def test_direct_depth_interpretation(
+        self,
+        mock_logger: MagicMock,
+        sample_image: np.ndarray,
+    ) -> None:
+        """Test rendering with direct depth interpretation."""
+        config = DIBRConfig(depth_interpretation="direct")
+        engine = DIBREngine(config=config)
+
+        # With direct interpretation: high value = close
+        depth = np.random.random(sample_image.shape[:2]).astype(np.float32)
+
+        left, right = engine.render(sample_image, depth)
+
+        assert left.shape == sample_image.shape
+        assert right.shape == sample_image.shape
+
+    def test_float32_image_input(
+        self,
+        mock_logger: MagicMock,
+        sample_depth_map: np.ndarray,
+    ) -> None:
+        """Test rendering with float32 image input."""
+        engine = DIBREngine()
+
+        # Create float32 image (normalized 0-1)
+        float_image = np.random.random((100, 100, 3)).astype(np.float32)
+
+        left, right = engine.render(float_image, sample_depth_map)
+
+        assert left.shape == float_image.shape
+        assert right.shape == float_image.shape
+
+
+class TestAdditionalCoverage:
+    """Additional tests for improved code coverage."""
+
+    def test_inpaint_hole_filling(
+        self,
+        mock_logger: MagicMock,
+        sample_image: np.ndarray,
+        sample_depth_map: np.ndarray,
+    ) -> None:
+        """Test rendering with inpaint hole filling method."""
+        engine = DIBREngine(hole_filling="inpaint")
+        left, right = engine.render(sample_image, sample_depth_map)
+
+        assert left.shape == sample_image.shape
+        assert right.shape == sample_image.shape
+
+    def test_linear_hole_filling_single_valid_pixel(
+        self,
+        mock_logger: MagicMock,
+    ) -> None:
+        """Test linear hole filling with only one valid pixel per row."""
+        engine = DIBREngine(hole_filling="linear")
+
+        # Create small test image and depth
+        image = np.ones((10, 10, 3), dtype=np.uint8) * 128
+        # Create depth that causes large holes
+        depth = np.zeros((10, 10), dtype=np.float32)
+        depth[:, 5:] = 0.9  # Far region
+
+        left, right = engine.render(image, depth)
+
+        assert left.shape == image.shape
+        assert right.shape == image.shape
+
+    def test_half_width_mode(
+        self,
+        mock_logger: MagicMock,
+        sample_image: np.ndarray,
+    ) -> None:
+        """Test side-by-side generator with half-width mode."""
+        generator = SideBySideGenerator(
+            half_width=True,
+            layout="horizontal"
+        )
+
+        left = sample_image.copy()
+        right = sample_image.copy()
+
+        sbs = generator.combine_to_side_by_side(left, right)
+
+        h, w, c = sample_image.shape
+        # With half_width, each eye is resized to half width
+        assert sbs.shape == (h, w, c)  # Total width = w/2 + w/2 = w
+
+    def test_half_width_mode_vertical(
+        self,
+        mock_logger: MagicMock,
+        sample_image: np.ndarray,
+    ) -> None:
+        """Test side-by-side generator with half-width and vertical layout."""
+        generator = SideBySideGenerator(
+            half_width=True,
+            layout="vertical"
+        )
+
+        left = sample_image.copy()
+        right = sample_image.copy()
+
+        sbs = generator.combine_to_side_by_side(left, right)
+
+        h, w, c = sample_image.shape
+        # Vertical layout stacks images, half-width doesn't affect vertical dimension
+        assert sbs.shape == (h * 2, w // 2, c)
+
+    def test_constant_depth_normalization(
+        self,
+        mock_logger: MagicMock,
+        sample_image: np.ndarray,
+    ) -> None:
+        """Test rendering with constant depth map that needs normalization."""
+        engine = DIBREngine()
+
+        # Create depth map with values outside [0, 1] range, all same value
+        constant_depth = np.full(sample_image.shape[:2], 50.0, dtype=np.float32)
+
+        left, right = engine.render(sample_image, constant_depth)
+
+        assert left.shape == sample_image.shape
+        assert right.shape == sample_image.shape
+
+    def test_dibr_error_operation_and_original_exception(
+        self,
+        mock_logger: MagicMock,
+    ) -> None:
+        """Test DIBRError with operation and original_exception attributes."""
+        original = ValueError("Original error")
+        error = DIBRError(
+            "Test error",
+            operation="test_op",
+            original_exception=original
+        )
+
+        assert str(error) == "Test error"
+        assert error.operation == "test_op"
+        assert error.original_exception == original
+
+    def test_stereo_generator_with_dibr_config(
+        self,
+        mock_logger: MagicMock,
+        sample_image: np.ndarray,
+        sample_depth_map: np.ndarray,
+    ) -> None:
+        """Test StereoGenerator initialization with DIBRConfig."""
+        config = DIBRConfig(
+            baseline=0.08,
+            convergence=0.4,
+            hole_filling="linear"
+        )
+        generator = StereoGenerator(dibr_config=config)
+
+        # DIBRConfig overrides individual parameters
+        assert generator.baseline == 0.05  # Default, not from config
+        # But the engine uses the config values
+        left, right = generator.generate_stereo_pair(sample_image, sample_depth_map)
+
+        assert left.shape == sample_image.shape
+        assert right.shape == sample_image.shape
+
+    def test_grayscale_anaglyph_combination(
+        self,
+        mock_logger: MagicMock,
+    ) -> None:
+        """Test anaglyph combination with grayscale input."""
+        generator = AnaglyphGenerator(color_method="color")
+
+        # Create grayscale images
+        left_gray = (np.random.random((50, 50)) * 255).astype(np.uint8)
+        right_gray = (np.random.random((50, 50)) * 255).astype(np.uint8)
+
+        anaglyph = generator.combine_to_anaglyph(left_gray, right_gray)
+
+        assert anaglyph.shape == (50, 50, 3)
+        assert anaglyph.dtype == np.uint8
+
+    def test_float_image_anaglyph(
+        self,
+        mock_logger: MagicMock,
+    ) -> None:
+        """Test anaglyph combination with float images."""
+        generator = AnaglyphGenerator(color_method="dubois")
+
+        # Create float images (normalized 0-1)
+        left_float = np.random.random((50, 50, 3)).astype(np.float32)
+        right_float = np.random.random((50, 50, 3)).astype(np.float32)
+
+        anaglyph = generator.combine_to_anaglyph(left_float, right_float)
+
+        assert anaglyph.shape == (50, 50, 3)
+        assert anaglyph.dtype == np.uint8
+
+    def test_custom_max_disparity(
+        self,
+        mock_logger: MagicMock,
+        sample_image: np.ndarray,
+        sample_depth_map: np.ndarray,
+    ) -> None:
+        """Test that custom max_disparity limits disparity values."""
+        config = DIBRConfig(
+            baseline=0.1,
+            max_disparity=10
+        )
+        engine = DIBREngine(config=config)
+
+        disparity = engine.compute_disparity(sample_depth_map, image_width=100)
+
+        # Check that disparity is clamped to max_disparity
+        assert np.all(disparity <= 10)
+
+    def test_custom_depth_scale(
+        self,
+        mock_logger: MagicMock,
+        sample_image: np.ndarray,
+        sample_depth_map: np.ndarray,
+    ) -> None:
+        """Test rendering with custom depth scale."""
+        config = DIBRConfig(depth_scale=2.0)
+        engine = DIBREngine(config=config)
+
+        left, right = engine.render(sample_image, sample_depth_map)
 
         assert left.shape == sample_image.shape
         assert right.shape == sample_image.shape

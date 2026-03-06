@@ -1,0 +1,21 @@
+{
+  "id": "interactive-depth-editor",
+  "category": "UI",
+  "title": "Interactive Depth Editor",
+  "description": "Implement graphical depth editor allowing users to paint depth adjustments, add depth layers, and define depth planes interactively.",
+  "status": "backlog",
+  "priority": 3,
+  "complexity": "complex",
+  "dependencies": [
+    "web-ui-dashboard"
+  ],
+  "createdAt": "2026-03-06T15:23:01.933Z",
+  "updatedAt": "2026-03-06T15:23:01.933Z",
+  "model": "zai-coding-plan/glm-5",
+  "thinkingLevel": "none",
+  "planningMode": "spec",
+  "requirePlanApproval": true,
+  "skipTests": false,
+  "branchName": "main",
+  "descriptionHistory": []
+}

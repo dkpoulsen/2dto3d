@@ -1,0 +1,21 @@
+{
+  "id": "side-by-side-encoder",
+  "category": "Output",
+  "title": "Side-by-Side 3D Format Encoder",
+  "description": "Create an encoder that combines left and right eye views into side-by-side format (half-width or full-width) compatible with most 3D TVs and VR headsets.",
+  "status": "pipeline_step_mmcc38tb_z6cxyk",
+  "priority": 1,
+  "complexity": "moderate",
+  "dependencies": [
+    "occlusion-handling"
+  ],
+  "createdAt": "2026-03-04T17:29:57.352Z",
+  "updatedAt": "2026-03-04T21:24:14.635Z",
+  "model": "zai-coding-plan/glm-5",
+  "thinkingLevel": "none",
+  "planningMode": "spec",
+  "requirePlanApproval": true,
+  "skipTests": false,
+  "branchName": "main",
+  "descriptionHistory": []
+}

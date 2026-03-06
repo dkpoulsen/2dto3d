@@ -1,0 +1,11 @@
+{
+  "id": "evt-1772652592324-1e3f44bc",
+  "trigger": "feature_error",
+  "timestamp": "2026-03-04T19:29:52.324Z",
+  "projectPath": "/home/dkp/Documents/Automaker/2dto3d",
+  "projectName": "2dto3d",
+  "featureId": "gpu-acceleration",
+  "featureName": "GPU Acceleration Support",
+  "error": "Agent execution ended with: error",
+  "errorType": "execution"
+}

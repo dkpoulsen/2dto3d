@@ -1,0 +1,21 @@
+{
+  "id": "telemetry-collection",
+  "category": "Operations",
+  "title": "Telemetry and Analytics",
+  "description": "Implement anonymous telemetry collection for usage statistics, performance metrics, and crash reports to improve the product.",
+  "status": "backlog",
+  "priority": 5,
+  "complexity": "moderate",
+  "dependencies": [
+    "health-monitoring"
+  ],
+  "createdAt": "2026-03-06T15:23:01.937Z",
+  "updatedAt": "2026-03-06T15:23:01.937Z",
+  "model": "zai-coding-plan/glm-5",
+  "thinkingLevel": "none",
+  "planningMode": "spec",
+  "requirePlanApproval": true,
+  "skipTests": false,
+  "branchName": "main",
+  "descriptionHistory": []
+}
