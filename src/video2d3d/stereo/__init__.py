@@ -42,6 +42,11 @@ from video2d3d.stereo.checkerboard import (
     CheckerboardPattern,
     encode_checkerboard,
 )
+from video2d3d.stereo.interlaced import (
+    InterlacedEncoder,
+    InterlacedPattern,
+    encode_interlaced,
+)
 
 from video2d3d.utils.logger import (
     get_logger,
@@ -547,6 +552,9 @@ __all__ = [
     # Checkerboard classes
     "CheckerboardEncoder",
     "CheckerboardPattern",
+    # Interlaced classes
+    "InterlacedEncoder",
+    "InterlacedPattern",
     # DIBR classes (re-exported for convenience)
     "DIBREngine",
     "DIBRConfig",
@@ -560,6 +568,8 @@ __all__ = [
     "encode_side_by_side",
     "encode_checkerboard",
     "create_checkerboard_encoder",
+    "encode_interlaced",
+    "create_interlaced_encoder",
     # Logger
     "_get_stereo_logger",
 ]
