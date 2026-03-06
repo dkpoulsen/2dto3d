@@ -78,6 +78,10 @@ from video2d3d.utils.error_recovery import (
     DEFAULT_MODEL_FALLBACK_CHAIN,
     DEFAULT_CPU_FALLBACK_ENABLED,
     DEFAULT_SKIP_ON_MAX_RETRIES,
+    # Error Detection Constants
+    OOM_ERROR_SUBSTRINGS,
+    CUDA_ERROR_SUBSTRINGS,
+    TIMEOUT_ERROR_SUBSTRINGS,
 )
 
 __all__ = [
@@ -152,4 +156,8 @@ __all__ = [
     "DEFAULT_MODEL_FALLBACK_CHAIN",
     "DEFAULT_CPU_FALLBACK_ENABLED",
     "DEFAULT_SKIP_ON_MAX_RETRIES",
+    # Error Detection Constants
+    "OOM_ERROR_SUBSTRINGS",
+    "CUDA_ERROR_SUBSTRINGS",
+    "TIMEOUT_ERROR_SUBSTRINGS",
 ]

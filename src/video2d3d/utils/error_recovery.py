@@ -84,6 +84,29 @@ CUDA_ERROR_SUBSTRINGS: tuple[str, ...] = ("cuda", "gpu", "cuda error")
 TIMEOUT_ERROR_SUBSTRINGS: tuple[str, ...] = ("timeout", "timed out")
 
 
+def _fibonacci(n: int) -> int:
+    """Calculate the nth Fibonacci number iteratively.
+    
+    Args:
+        n: The index in the Fibonacci sequence (0-indexed).
+        
+    Returns:
+        The nth Fibonacci number.
+        
+    Note:
+        Uses iterative approach to avoid recursion overhead.
+        Sequence: 0, 1, 1, 2, 3, 5, 8, 13, 21...
+    """
+    if n <= 0:
+        return 0
+    if n == 1:
+        return 1
+    a, b = 1, 1
+    for _ in range(2, n + 1):
+        a, b = b, a + b
+    return b
+
+
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
@@ -236,10 +259,9 @@ class ErrorRecoveryConfig:
 
         elif self.backoff_strategy == BackoffStrategy.FIBONACCI:
             # Fibonacci sequence starting from 1, 1, 2, 3, 5...
-            fib = [1, 1]
-            for _ in range(attempt):
-                fib.append(fib[-1] + fib[-2])
-            delay = self.retry_delay_seconds * fib[min(attempt, len(fib) - 1)]
+            # Use iterative calculation to avoid list building overhead
+            fib_n = _fibonacci(attempt + 1)
+            delay = self.retry_delay_seconds * fib_n
 
         else:
             delay = self.retry_delay_seconds
@@ -308,6 +330,29 @@ class RecoveryStats:
             return 0.0
         return (self.successful_recoveries / self.total_attempts) * 100
 
+    def __repr__(self) -> str:
+        """Return a detailed string representation for debugging."""
+        return (
+            f"RecoveryStats(attempts={self.total_attempts}, "
+            f"recoveries={self.successful_recoveries}, "
+            f"failures={self.permanent_failures}, "
+            f"rate={self.recovery_rate:.1f}%)"
+        )
+
+    def summary(self) -> str:
+        """Return a human-readable summary of recovery statistics."""
+        return (
+            f"Recovery Statistics:\n"
+            f"  Total attempts: {self.total_attempts}\n"
+            f"  Successful recoveries: {self.successful_recoveries}\n"
+            f"  Permanent failures: {self.permanent_failures}\n"
+            f"  Recovery rate: {self.recovery_rate:.1f}%\n"
+            f"  Model switches: {self.model_switches}\n"
+            f"  CPU fallbacks: {self.cpu_fallbacks}\n"
+            f"  Skipped frames: {self.skipped_frames}\n"
+            f"  Total retry time: {self.total_retry_time_seconds:.2f}s"
+        )
+
 
 # ---------------------------------------------------------------------------
 # Frame Recovery Manager
@@ -332,17 +377,8 @@ class FrameRecoveryManager(Generic[InputT, OutputT]):
             process_fn=depth_estimator.estimate_depth
         )
         ```
-    Example usage:
-        ```python
-        config = ErrorRecoveryConfig(max_retries=3)
-        manager = FrameRecoveryManager(config)
 
-        # Process with recovery
-        result = manager.process_with_recovery(
-            frame,
-            process_fn=depth_estimator.estimate_depth
-        )
-        ```
+    Thread Safety:
     
     Thread Safety:
         This class uses locks to protect shared state and is safe for use
@@ -557,20 +593,9 @@ class ModelFallbackChain:
         # Process with fallback
         depth_map = fallback_chain.estimate_with_fallback(frame)
         ```
-    Example usage:
-        ```python
-        fallback_chain = ModelFallbackChain(
-            models=["midas_small", "dpt_hybrid", "dpt_large"]
-        )
-
-        # Create estimators for each model
-        fallback_chain.initialize_estimators(
-            estimator_factory=lambda model_type: DepthEstimator(model_type=model_type)
-        )
-
-        # Process with fallback
-        depth_map = fallback_chain.estimate_with_fallback(frame)
         ```
+
+    Thread Safety:
     
     Thread Safety:
         This class uses reentrant locks to protect model switching state
@@ -1021,9 +1046,25 @@ class RecoveryContext:
         self,
         exc_type: Optional[type[BaseException]],
         exc_val: Optional[BaseException],
-        exc_tb: Any,
-    ) -> None:
-        pass
+        exc_tb: Optional[Any],
+    ) -> bool:
+        """Exit the recovery context.
+        
+        Args:
+            exc_type: The exception type if an exception was raised.
+            exc_val: The exception instance if an exception was raised.
+            exc_tb: The traceback if an exception was raised.
+            
+        Returns:
+            False to propagate any exception that occurred.
+        """
+        # Log any exception that occurred within the context
+        if exc_type is not None and exc_val is not None:
+            logger = _get_recovery_logger()
+            logger.error(
+                f"Exception in RecoveryContext: {exc_type.__name__}: {exc_val}"
+            )
+        return False  # Do not suppress exceptions
 
 
 # ---------------------------------------------------------------------------
@@ -1064,6 +1105,7 @@ def create_recovery_config_from_dict(config_dict: dict[str, Any]) -> ErrorRecove
         ),
         enable_cpu_fallback=config_dict.get("enable_cpu_fallback", DEFAULT_CPU_FALLBACK_ENABLED),
         skip_on_max_retries=config_dict.get("skip_on_max_retries", DEFAULT_SKIP_ON_MAX_RETRIES),
+        track_failures=config_dict.get("track_failures", True),
     )
 
 
@@ -1099,4 +1141,8 @@ __all__ = [
     "DEFAULT_MODEL_FALLBACK_CHAIN",
     "DEFAULT_CPU_FALLBACK_ENABLED",
     "DEFAULT_SKIP_ON_MAX_RETRIES",
+    # Error Detection Constants
+    "OOM_ERROR_SUBSTRINGS",
+    "CUDA_ERROR_SUBSTRINGS",
+    "TIMEOUT_ERROR_SUBSTRINGS",
 ]
