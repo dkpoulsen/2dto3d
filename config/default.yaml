@@ -266,3 +266,34 @@ batch_queue:
     stable_time_seconds: 5.0
     process_existing: true
     recursive: true
+
+# Error Recovery Settings
+error_recovery:
+  # Maximum number of retry attempts per operation
+  max_retries: 3
+  
+  # Initial delay between retries in seconds
+  retry_delay_seconds: 0.1
+  
+  # Backoff multiplier for retry delays
+  backoff_factor: 2.0
+  
+  # Maximum delay between retries in seconds
+  max_retry_delay_seconds: 30.0
+  
+  # Backoff strategy: fixed, linear, exponential, fibonacci
+  backoff_strategy: exponential
+  
+  # Model fallback chain (in order of preference)
+  model_fallback_chain:
+    - midas_small
+    - dpt_hybrid
+  
+  # Fall back to CPU if GPU errors occur
+  enable_cpu_fallback: true
+  
+  # Skip failed frames instead of raising errors
+  skip_on_max_retries: false
+  
+  # Track failed frames for later retry
+  track_failures: true

@@ -50,6 +50,35 @@ from video2d3d.utils.gpu import (
     configure_cudnn,
     setup_device,
 )
+from video2d3d.utils.error_recovery import (
+    # Configuration
+    ErrorRecoveryConfig,
+    RecoveryStats,
+    RecoveryStrategy,
+    BackoffStrategy,
+    # Exceptions
+    RecoveryError,
+    MaxRetriesExceededError,
+    AllModelsFailedError,
+    FrameRecoveryFailedError,
+    # Classes
+    FrameRecoveryManager,
+    ModelFallbackChain,
+    RecoveryContext,
+    # Decorators
+    recovery_with_fallback,
+    create_recovery_decorator,
+    # Functions
+    create_recovery_config_from_dict,
+    # Constants
+    DEFAULT_MAX_RETRIES,
+    DEFAULT_RETRY_DELAY_SECONDS,
+    DEFAULT_BACKOFF_FACTOR,
+    DEFAULT_MAX_RETRY_DELAY_SECONDS,
+    DEFAULT_MODEL_FALLBACK_CHAIN,
+    DEFAULT_CPU_FALLBACK_ENABLED,
+    DEFAULT_SKIP_ON_MAX_RETRIES,
+)
 
 __all__ = [
     # Config
@@ -96,4 +125,31 @@ __all__ = [
     "with_oom_retry",
     "configure_cudnn",
     "setup_device",
+    # Error Recovery - Configuration
+    "ErrorRecoveryConfig",
+    "RecoveryStats",
+    "RecoveryStrategy",
+    "BackoffStrategy",
+    # Error Recovery - Exceptions
+    "RecoveryError",
+    "MaxRetriesExceededError",
+    "AllModelsFailedError",
+    "FrameRecoveryFailedError",
+    # Error Recovery - Classes
+    "FrameRecoveryManager",
+    "ModelFallbackChain",
+    "RecoveryContext",
+    # Error Recovery - Decorators
+    "recovery_with_fallback",
+    "create_recovery_decorator",
+    # Error Recovery - Functions
+    "create_recovery_config_from_dict",
+    # Error Recovery - Constants
+    "DEFAULT_MAX_RETRIES",
+    "DEFAULT_RETRY_DELAY_SECONDS",
+    "DEFAULT_BACKOFF_FACTOR",
+    "DEFAULT_MAX_RETRY_DELAY_SECONDS",
+    "DEFAULT_MODEL_FALLBACK_CHAIN",
+    "DEFAULT_CPU_FALLBACK_ENABLED",
+    "DEFAULT_SKIP_ON_MAX_RETRIES",
 ]
