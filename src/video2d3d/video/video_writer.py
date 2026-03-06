@@ -154,6 +154,11 @@ class VideoWriterConfig:
         audio_bitrate: Audio bitrate in bits per second.
         audio_sample_rate: Audio sample rate in Hz.
         audio_channels: Number of audio channels.
+        enable_spatial_audio: Enable 3D spatial audio processing.
+        spatial_audio_format: Spatial audio format ('binaural', 'ambisonics_1st', 'ambisonics_2nd').
+        preserve_all_audio_tracks: Preserve all audio tracks from source.
+        audio_normalization: Enable loudness normalization (EBU R128).
+        audio_normalization_target: Target loudness in LUFS.
         metadata: Video metadata to embed.
         faststart: Move atom to start of file (for web streaming).
         threads: Number of encoding threads (0 = auto).
@@ -171,6 +176,13 @@ class VideoWriterConfig:
     audio_bitrate: int = 192000
     audio_sample_rate: int = 48000
     audio_channels: int = 2
+    # Advanced audio processing options
+    enable_spatial_audio: bool = False
+    spatial_audio_format: str = "binaural"  # 'binaural', 'ambisonics_1st', 'ambisonics_2nd'
+    preserve_all_audio_tracks: bool = False
+    audio_normalization: bool = True
+    audio_normalization_target: float = -14.0  # LUFS
+    # Other options
     metadata: dict[str, str] = field(default_factory=dict)
     faststart: bool = True
     threads: int = 0
@@ -205,6 +217,21 @@ class VideoWriterConfig:
                 f"Invalid preset '{self.preset}'. Valid presets: {', '.join(valid_presets)}"
             )
 
+        # Validate spatial audio format
+        valid_spatial_formats = ["binaural", "ambisonics_1st", "ambisonics_2nd", "ambisonics_3rd"]
+        if self.spatial_audio_format not in valid_spatial_formats:
+            raise ValueError(
+                f"Invalid spatial_audio_format '{self.spatial_audio_format}'. "
+                f"Valid formats: {', '.join(valid_spatial_formats)}"
+            )
+
+        # Validate audio normalization target
+        if not -70 <= self.audio_normalization_target <= 0:
+            raise ValueError(
+                f"audio_normalization_target must be between -70 and 0 LUFS, "
+                f"got {self.audio_normalization_target}"
+            )
+
     def get_file_extension(self) -> str:
         """Get the file extension for the container format."""
         extensions = {
@@ -215,6 +242,45 @@ class VideoWriterConfig:
             "webm": ".webm",
         }
         return extensions.get(self.container_format, f".{self.container_format}")
+
+    def get_audio_config(self) -> "AudioConfig":
+        """Get audio configuration for the AudioProcessor.
+
+        Returns:
+            AudioConfig instance based on this video writer config.
+        """
+        from video2d3d.audio.config import (
+            AudioConfig,
+            AudioFormatConfig,
+            SpatialAudioConfig,
+            SpatialAudioFormat,
+        )
+
+        # Map spatial format string to enum
+        spatial_format_map = {
+            "binaural": SpatialAudioFormat.BINAURAL,
+            "ambisonics_1st": SpatialAudioFormat.AMBISONICS_1ST,
+            "ambisonics_2nd": SpatialAudioFormat.AMBISONICS_2ND,
+            "ambisonics_3rd": SpatialAudioFormat.AMBISONICS_3RD,
+        }
+
+        return AudioConfig(
+            preserve_tracks=self.preserve_all_audio_tracks,
+            format_config=AudioFormatConfig(
+                codec=self.audio_codec,
+                bitrate=self.audio_bitrate,
+                sample_rate=self.audio_sample_rate,
+                channels=self.audio_channels,
+            ),
+            spatial_config=SpatialAudioConfig(
+                enable_spatial=self.enable_spatial_audio,
+                spatial_format=spatial_format_map.get(
+                    self.spatial_audio_format, SpatialAudioFormat.BINAURAL
+                ),
+            ),
+            normalize=self.audio_normalization,
+            normalization_target=self.audio_normalization_target,
+        )
 
 
 @dataclass
