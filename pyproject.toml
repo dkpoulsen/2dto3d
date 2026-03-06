@@ -75,12 +75,9 @@ web = [
 viz = [
     "matplotlib>=3.5.0",
 ]
-docs = [
-    "sphinx>=4.4.0",
-    "sphinx-rtd-theme>=1.0.0",
-    "myst-parser>=0.17.0",
+gui = [
+    "PyQt6>=6.4.0",
 ]
-
 [project.scripts]
 video2d3d = "video2d3d.cli:main"
 v2d3d = "video2d3d.cli:main"

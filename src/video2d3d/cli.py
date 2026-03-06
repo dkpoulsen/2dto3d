@@ -849,6 +849,34 @@ def config_import(
         raise typer.Exit(code=1)
 
 
+@app.command("gui")
+def gui() -> None:
+    """Launch the desktop GUI application.
+
+    This command starts the graphical user interface for video conversion.
+    The GUI provides an easy-to-use interface for single and batch video conversion.
+
+    Examples:
+        video2d3d gui
+    """
+    logger = get_logger("gui")
+    logger.info("Launching GUI application")
+
+    try:
+        from video2d3d.gui import run_gui
+
+        exit_code = run_gui()
+        raise typer.Exit(code=exit_code)
+    except ImportError as e:
+        console.print("[red]Error: PyQt6 is not installed.[/red]")
+        console.print("[yellow]Install with: pip install PyQt6[/yellow]")
+        console.print(f"[dim]{e}[/dim]")
+        raise typer.Exit(code=1)
+    except Exception as e:
+        log_exception("Failed to launch GUI", exception=e)
+        console.print(f"[red]Error launching GUI: {e}[/red]")
+        raise typer.Exit(code=1)
+
 
 def main() -> None:
     """Main entry point for the CLI application.
