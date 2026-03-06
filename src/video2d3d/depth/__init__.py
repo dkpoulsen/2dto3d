@@ -974,6 +974,16 @@ from video2d3d.depth.model_selector import (
     estimate_depth_auto,
 )
 
+# Import ensemble components
+from video2d3d.depth.ensemble import (
+    EnsemblePredictor,
+    EnsembleConfig,
+    EnsembleMethod,
+    WeightStrategy,
+    EnsembleError,
+    create_ensemble_predictor,
+    estimate_depth_ensemble,
+)
 logger = _get_depth_logger()
 
 __all__ = [
@@ -1003,12 +1013,16 @@ __all__ = [
     "DepthModelConfig",
     "UnifiedDepthModelType",
     "SceneType",
+    # Ensemble classes
+    "EnsemblePredictor",
+    "EnsembleConfig",
     # Enums
     "NormalizationMethod",
-    "HoleFillingMethod",
-    "ColorMapType",
     "EdgeAwareFilterType",
     "TemporalSmoothingMethod",
+    # Ensemble enums
+    "EnsembleMethod",
+    "WeightStrategy",
     # Exceptions
     "DepthEstimationError",
     "ModelLoadError",
@@ -1024,6 +1038,8 @@ __all__ = [
     # Selector exceptions
     "SelectorLoadError",
     "SelectorInferenceError",
+    # Ensemble exceptions
+    "EnsembleError",
     # Functions
     "create_estimator",
     "estimate_depth_single",
@@ -1044,6 +1060,9 @@ __all__ = [
     # Model selector functions
     "create_model_selector",
     "estimate_depth_auto",
+    # Ensemble functions
+    "create_ensemble_predictor",
+    "estimate_depth_ensemble",
     # Constants
     "_DEFAULT_GUIDED_FILTER_RADIUS",
     "_DEFAULT_GUIDED_FILTER_EPS",
