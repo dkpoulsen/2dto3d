@@ -6,6 +6,11 @@ It supports:
 - IP-based whitelisting
 - In-memory or Redis storage backends
 - Rate limit headers in responses
+
+Constants:
+    UNKNOWN_IP: Default IP string when client IP cannot be determined
+    UNKNOWN_LIMIT: Default limit string when limit info is unavailable
+    DEFAULT_RATE_LIMIT_MESSAGE: Standard error message for rate limit exceeded
 """
 
 from __future__ import annotations
@@ -13,6 +18,11 @@ from __future__ import annotations
 from typing import Optional
 
 from fastapi import FastAPI, Request, Response
+
+# Constants for rate limiting (defined before imports that reference them)
+UNKNOWN_IP = "unknown"
+UNKNOWN_LIMIT = "unknown"
+DEFAULT_RATE_LIMIT_MESSAGE = "Rate limit exceeded. Please slow down your requests."
 
 try:
     from slowapi import Limiter
@@ -25,14 +35,16 @@ except ImportError:
     Limiter = None  # type: ignore
     RateLimitExceeded = Exception  # type: ignore
     SlowAPIMiddleware = None  # type: ignore
-    get_remote_address = lambda r: "unknown"  # type: ignore
+
+    def get_remote_address(request: Request) -> str:  # type: ignore
+        """Fallback function when slowapi is not available."""
+        return UNKNOWN_IP
 
 from video2d3d.utils.config import get_config
 from video2d3d.utils.logger import get_logger
 from video2d3d.web.exceptions import RateLimitExceededError
 
 logger = get_logger("web.rate_limit")
-
 
 def get_client_ip(request: Request) -> str:
     """Get client IP address from request.
@@ -132,23 +144,24 @@ def rate_limit_exceeded_handler(request: Request, exc: RateLimitExceeded) -> Res
     from video2d3d.web.schemas import ErrorResponse
 
     # Extract limit info from the exception
-    limit = str(exc.detail) if exc.detail else "unknown"
+    limit = str(exc.detail) if exc.detail else UNKNOWN_LIMIT
 
     # Calculate retry-after from the rate limit
-    retry_after = None
+    retry_after: Optional[int] = None
     if hasattr(exc, "headers") and exc.headers:
         retry_after_str = exc.headers.get("Retry-After")
         if retry_after_str:
             try:
                 retry_after = int(retry_after_str)
             except ValueError:
-                pass
+                logger.warning(f"Invalid Retry-After header value: {retry_after_str}")
 
-    logger.warning(f"Rate limit exceeded for {get_client_ip(request)}: {limit}")
+    client_ip = get_client_ip(request)
+    logger.warning(f"Rate limit exceeded for {client_ip}: {limit}")
 
     error_response = ErrorResponse(
         error="rate_limit_exceeded",
-        message="Rate limit exceeded. Please slow down your requests.",
+        message=DEFAULT_RATE_LIMIT_MESSAGE,
         detail={
             "limit": limit,
             "retry_after": retry_after,
@@ -208,11 +221,8 @@ def get_limiter() -> Optional[Limiter]:
     """
     from video2d3d.web.state import app_state
 
-    # Check if app has limiter in state
-    if hasattr(app_state, "limiter"):
-        return app_state.limiter
-
-    return None
+    # Check if app has limiter in state using getattr with default
+    return getattr(app_state, "limiter", None)
 
 
 # Rate limit decorators for different endpoint types

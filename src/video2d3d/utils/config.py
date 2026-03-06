@@ -152,7 +152,16 @@ class LoggingConfig:
 
 @dataclass
 class RateLimitConfig:
-    """Rate limiting configuration settings."""
+    """Rate limiting configuration settings.
+
+    Attributes:
+        enabled: Whether rate limiting is enabled.
+        requests_per_minute: Maximum requests allowed per minute per client.
+        requests_per_hour: Maximum requests allowed per hour per client.
+        upload_requests_per_minute: Maximum upload requests per minute (stricter).
+        storage_uri: Storage backend URI (memory:// or redis://host:port).
+        whitelist_ips: List of IP addresses exempt from rate limiting.
+    """
 
     enabled: bool = True
     requests_per_minute: int = 60
@@ -161,6 +170,18 @@ class RateLimitConfig:
     storage_uri: str = "memory://"
     whitelist_ips: List[str] = field(default_factory=list)
 
+    def __post_init__(self) -> None:
+        """Validate configuration values after initialization."""
+        if self.requests_per_minute <= 0:
+            raise ValueError("requests_per_minute must be positive")
+        if self.requests_per_hour <= 0:
+            raise ValueError("requests_per_hour must be positive")
+        if self.upload_requests_per_minute <= 0:
+            raise ValueError("upload_requests_per_minute must be positive")
+        if self.requests_per_hour < self.requests_per_minute:
+            raise ValueError(
+                "requests_per_hour must be >= requests_per_minute"
+            )
 
 @dataclass
 class WebApiConfig:
