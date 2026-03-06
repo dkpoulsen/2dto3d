@@ -1,0 +1,117 @@
+# =============================================================================
+# 2Dto3D Video Converter - Resource Quotas and Limit Ranges
+# =============================================================================
+# Namespace-level resource controls for production deployments
+# 
+# Usage:
+#   kubectl apply -f resource-quota.yaml
+# 
+# NOTE: Adjust values based on your cluster capacity and requirements
+# =============================================================================
+
+---
+# Resource Quota - Limits total resources in the namespace
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: video2d3d-quota
+  namespace: video2d3d
+  labels:
+    app.kubernetes.io/name: video2d3d
+    app.kubernetes.io/component: resource-quota
+spec:
+  hard:
+    # Compute resources
+    requests.cpu: "20"          # Total CPU requests allowed
+    requests.memory: "128Gi"    # Total memory requests allowed
+    limits.cpu: "40"            # Total CPU limits allowed
+    limits.memory: "256Gi"      # Total memory limits allowed
+    
+    # GPU resources (if using NVIDIA device plugin)
+    requests.nvidia.com/gpu: "10"
+    limits.nvidia.com/gpu: "10"
+    
+    # Storage resources
+    requests.storage: "500Gi"   # Total PVC storage
+    
+    # Object counts
+    count/pods: "20"            # Maximum pods
+    count/services: "10"        # Maximum services
+    count/secrets: "20"         # Maximum secrets
+    count/configmaps: "20"      # Maximum configmaps
+    count/persistentvolumeclaims: "10"  # Maximum PVCs
+    
+    # Ingress/Network
+    count/ingresses: "5"        # Maximum ingresses
+    count/services.nodeports: "2"  # Maximum NodePort services
+    count/services.loadbalancers: "2"  # Maximum LoadBalancer services
+
+---
+# Resource Quota - GPU-specific (optional, for GPU workload separation)
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: video2d3d-gpu-quota
+  namespace: video2d3d
+  labels:
+    app.kubernetes.io/name: video2d3d
+    app.kubernetes.io/component: resource-quota
+spec:
+  hard:
+    requests.nvidia.com/gpu: "10"
+    limits.nvidia.com/gpu: "10"
+
+---
+# Limit Range - Default resource limits for pods/containers
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: video2d3d-limits
+  namespace: video2d3d
+  labels:
+    app.kubernetes.io/name: video2d3d
+    app.kubernetes.io/component: limit-range
+spec:
+  limits:
+    # Container defaults
+    - type: Container
+      default:
+        cpu: "2"           # Default CPU limit
+        memory: "8Gi"      # Default memory limit
+      defaultRequest:
+        cpu: "500m"        # Default CPU request
+        memory: "2Gi"      # Default memory request
+      max:
+        cpu: "8"           # Maximum CPU limit
+        memory: "32Gi"     # Maximum memory limit
+      min:
+        cpu: "100m"        # Minimum CPU request
+        memory: "256Mi"    # Minimum memory request
+      maxLimitRequestRatio:
+        cpu: "4"           # Limit can be at most 4x request
+        memory: "4"        # Limit can be at most 4x request
+    
+    # Pod defaults
+    - type: Pod
+      max:
+        cpu: "16"          # Maximum total CPU per pod
+        memory: "64Gi"     # Maximum total memory per pod
+    
+    # PVC defaults
+    - type: PersistentVolumeClaim
+      max:
+        storage: "200Gi"   # Maximum PVC size
+      min:
+        storage: "1Gi"     # Minimum PVC size
+    
+    # Init container defaults (typically lower)
+    - type: InitContainer
+      default:
+        cpu: "500m"
+        memory: "512Mi"
+      defaultRequest:
+        cpu: "100m"
+        memory: "128Mi"
+      max:
+        cpu: "2"
+        memory: "2Gi"

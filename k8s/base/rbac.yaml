@@ -1,0 +1,108 @@
+# =============================================================================
+# 2Dto3D Video Converter - Service Account and RBAC
+# =============================================================================
+# Service account and role-based access control for the API pods
+# 
+# Usage:
+#   kubectl apply -f rbac.yaml
+# =============================================================================
+
+---
+# Service Account
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: video2d3d-api
+  namespace: video2d3d
+  labels:
+    app.kubernetes.io/name: video2d3d
+    app.kubernetes.io/component: service-account
+automountServiceAccountToken: false  # Only mount if needed
+
+---
+# Cluster Role (for reading cluster-level resources)
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: video2d3d-api-reader
+  labels:
+    app.kubernetes.io/name: video2d3d
+    app.kubernetes.io/component: rbac
+rules:
+  # Read nodes for GPU information
+  - apiGroups: [""]
+    resources: ["nodes"]
+    verbs: ["get", "list", "watch"]
+  
+  # Read pods for horizontal scaling info
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list"]
+  
+  # Read metrics (if metrics-server is installed)
+  - apiGroups: ["metrics.k8s.io"]
+    resources: ["pods", "nodes"]
+    verbs: ["get", "list"]
+
+---
+# Role (namespace-scoped permissions)
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: video2d3d-api-role
+  namespace: video2d3d
+  labels:
+    app.kubernetes.io/name: video2d3d
+    app.kubernetes.io/component: rbac
+rules:
+  # Read and update configmaps
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    verbs: ["get", "list", "watch"]
+  
+  # Read secrets (for API keys, etc.)
+  - apiGroups: [""]
+    resources: ["secrets"]
+    verbs: ["get", "list"]
+  
+  # Read PVCs
+  - apiGroups: [""]
+    resources: ["persistentvolumeclaims"]
+    verbs: ["get", "list"]
+
+---
+# Cluster Role Binding
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: video2d3d-api-cluster-binding
+  labels:
+    app.kubernetes.io/name: video2d3d
+    app.kubernetes.io/component: rbac
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: video2d3d-api-reader
+subjects:
+  - kind: ServiceAccount
+    name: video2d3d-api
+    namespace: video2d3d
+
+---
+# Role Binding
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: video2d3d-api-binding
+  namespace: video2d3d
+  labels:
+    app.kubernetes.io/name: video2d3d
+    app.kubernetes.io/component: rbac
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: video2d3d-api-role
+subjects:
+  - kind: ServiceAccount
+    name: video2d3d-api
+    namespace: video2d3d

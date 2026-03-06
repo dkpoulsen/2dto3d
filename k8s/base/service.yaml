@@ -1,0 +1,115 @@
+# =============================================================================
+# 2Dto3D Video Converter - Kubernetes Service
+# =============================================================================
+# Service for load balancing and service discovery
+# 
+# Usage:
+#   kubectl apply -f service.yaml
+# =============================================================================
+
+---
+# Main API Service (ClusterIP)
+# Primary service for internal cluster communication
+apiVersion: v1
+kind: Service
+metadata:
+  name: video2d3d-api
+  namespace: video2d3d
+  labels:
+    app.kubernetes.io/name: video2d3d
+    app.kubernetes.io/component: api-service
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "8000"
+    prometheus.io/path: "/metrics"
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: video2d3d
+    app.kubernetes.io/component: api
+  ports:
+    - name: http
+      port: 80
+      targetPort: http
+      protocol: TCP
+
+---
+# Headless Service for StatefulSet (if needed)
+# Allows direct pod-to-pod communication
+apiVersion: v1
+kind: Service
+metadata:
+  name: video2d3d-api-headless
+  namespace: video2d3d
+  labels:
+    app.kubernetes.io/name: video2d3d
+    app.kubernetes.io/component: api-headless
+spec:
+  type: ClusterIP
+  clusterIP: None  # Headless service
+  selector:
+    app.kubernetes.io/name: video2d3d
+    app.kubernetes.io/component: api
+  ports:
+    - name: http
+      port: 8000
+      targetPort: http
+      protocol: TCP
+
+---
+# NodePort Service (for external access without Ingress)
+# Use for development/testing or when Ingress is not available
+# WARNING: NodePort is allocated dynamically if not specified
+# Uncomment to use:
+# apiVersion: v1
+# kind: Service
+# metadata:
+#   name: video2d3d-api-nodeport
+#   namespace: video2d3d
+#   labels:
+#     app.kubernetes.io/name: video2d3d
+#     app.kubernetes.io/component: api-nodeport
+# spec:
+#   type: NodePort
+#   selector:
+#     app.kubernetes.io/name: video2d3d
+#     app.kubernetes.io/component: api
+#   ports:
+#     - name: http
+#       port: 80
+#       targetPort: http
+#       nodePort: 30800  # Remove to let Kubernetes allocate dynamically
+#       protocol: TCP
+
+---
+# LoadBalancer Service (for cloud environments)
+# Use for production deployments on cloud providers
+# Uncomment to use:
+# apiVersion: v1
+# kind: Service
+# metadata:
+#   name: video2d3d-api-lb
+#   namespace: video2d3d
+#   labels:
+#     app.kubernetes.io/name: video2d3d
+#     app.kubernetes.io/component: api-loadbalancer
+#   annotations:
+#     # AWS Load Balancer annotations
+#     service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
+#     service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled: "true"
+#     
+#     # GCP Load Balancer annotations
+#     # cloud.google.com/load-balancer-type: "Internal"
+#     
+#     # Azure Load Balancer annotations
+#     # service.beta.kubernetes.io/azure-load-balancer-internal: "true"
+# spec:
+#   type: LoadBalancer
+#   selector:
+#     app.kubernetes.io/name: video2d3d
+#     app.kubernetes.io/component: api
+#   ports:
+#     - name: http
+#       port: 80
+#       targetPort: http
+#       protocol: TCP

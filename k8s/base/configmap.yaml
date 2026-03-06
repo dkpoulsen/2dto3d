@@ -1,0 +1,121 @@
+# =============================================================================
+# 2Dto3D Video Converter - Kubernetes ConfigMap
+# =============================================================================
+# Application configuration for the 2Dto3D service
+# 
+# Usage:
+#   kubectl apply -f configmap.yaml
+# =============================================================================
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: video2d3d-config
+  namespace: video2d3d
+  labels:
+    app.kubernetes.io/name: video2d3d
+    app.kubernetes.io/component: config
+data:
+  # Environment settings
+  VIDEO2D3D_ENV: "production"
+  VIDEO2D3D_LOG_LEVEL: "INFO"
+  
+  # API Server Configuration
+  API_HOST: "0.0.0.0"
+  API_PORT: "8000"
+  
+  # Processing Configuration
+  VIDEO2D3D_BATCH_SIZE: "4"
+  VIDEO2D3D_NUM_WORKERS: "4"
+  
+  # GPU Configuration (set via pod spec, but can be overridden)
+  CUDA_VISIBLE_DEVICES: "0"
+  VIDEO2D3D_USE_GPU: "true"
+  
+  # Paths (must match volume mounts in deployment)
+  INPUT_DIR: "/app/inputs"
+  OUTPUT_DIR: "/app/outputs"
+  UPLOAD_DIR: "/app/uploads"
+  LOGS_DIR: "/app/logs"
+  MODELS_DIR: "/app/models"
+  CONFIG_DIR: "/app/config"
+  TMP_DIR: "/tmp"
+  
+  # Processing limits
+  MAX_VIDEO_SIZE_MB: "500"
+  MAX_CONCURRENT_JOBS: "10"
+  JOB_TIMEOUT_SECONDS: "3600"
+
+---
+# =============================================================================
+# Depth Estimation Model Configuration
+# =============================================================================
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: video2d3d-models-config
+  namespace: video2d3d
+  labels:
+    app.kubernetes.io/name: video2d3d
+    app.kubernetes.io/component: config
+data:
+  # Default depth model
+  DEFAULT_DEPTH_MODEL: "midas_small"
+  
+  # Available models
+  AVAILABLE_MODELS: "midas_small,midas_hybrid,dpt_large,dpt_hybrid"
+  
+  # Model cache settings
+  MODEL_CACHE_DIR: "/app/models"
+
+---
+# =============================================================================
+# Application YAML Configuration (mounted as file)
+# =============================================================================
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: video2d3d-app-config
+  namespace: video2d3d
+  labels:
+    app.kubernetes.io/name: video2d3d
+    app.kubernetes.io/component: config
+data:
+  config.yaml: |
+    # 2Dto3D Production Configuration
+    processing:
+      batch_size: 4
+      use_gpu: true
+      num_workers: 4
+      max_video_size_mb: 500
+      max_concurrent_jobs: 10
+      job_timeout_seconds: 3600
+    
+    depth_estimation:
+      model: midas_small
+      output_width: 384
+      output_height: 384
+    
+    stereo_generation:
+      format: side_by_side
+      baseline: 0.05
+    
+    web_api:
+      host: "0.0.0.0"
+      port: 8000
+      cors_origins:
+        - "*"
+      max_upload_size: 500
+      upload_dir: "/app/uploads"
+      prefix: "/api/v1"
+    
+    logging:
+      level: "INFO"
+      format: "json"
+      output_dir: "/app/logs"
+    
+    storage:
+      input_dir: "/app/inputs"
+      output_dir: "/app/outputs"
+      models_dir: "/app/models"
+      temp_dir: "/tmp"

@@ -1,0 +1,131 @@
+# =============================================================================
+# 2Dto3D Video Converter - Kubernetes Persistent Volume Claims
+# =============================================================================
+# Persistent storage for application data
+# 
+# Usage:
+#   kubectl apply -f pvc.yaml
+# 
+# IMPORTANT: ReadWriteMany (RWX) Requirements
+# ============================================
+# ReadWriteMany access mode is NOT supported by all storage classes!
+# 
+# Storage classes that support RWX:
+#   - NFS
+#   - AWS EFS (Elastic File System)
+#   - Azure File
+#   - GCP Filestore
+#   - CephFS
+#   - GlusterFS
+# 
+# Storage classes that DO NOT support RWX:
+#   - AWS EBS (gp2, gp3, io1, io2)
+#   - Azure Disk
+#   - GCP Persistent Disk
+#   - Local persistent volumes
+# 
+# If your storage class doesn't support RWX, change to ReadWriteOnce (RWO)
+# and consider using a different architecture (e.g., shared object storage)
+# =============================================================================
+
+---
+# Models Storage - For caching pre-trained depth estimation models
+# These can be large (several GB), so use ReadWriteMany if possible
+# to share across pods
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: video2d3d-models
+  namespace: video2d3d
+  labels:
+    app.kubernetes.io/name: video2d3d
+    app.kubernetes.io/component: storage
+    storage-type: models
+spec:
+  accessModes:
+    - ReadWriteMany  # NOTE: Requires RWX-capable storage class
+  resources:
+    requests:
+      storage: 20Gi  # Models can be large (MiDaS, DPT, etc.)
+  # storageClassName: standard  # Uncomment and set to your storage class
+  # volumeMode: Filesystem  # Default
+
+---
+# Input Storage - For uploaded video files
+# Use ReadWriteMany for shared access across worker pods
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: video2d3d-inputs
+  namespace: video2d3d
+  labels:
+    app.kubernetes.io/name: video2d3d
+    app.kubernetes.io/component: storage
+    storage-type: inputs
+spec:
+  accessModes:
+    - ReadWriteMany  # NOTE: Requires RWX-capable storage class
+  resources:
+    requests:
+      storage: 100Gi  # Adjust based on expected upload volume
+  # storageClassName: standard
+
+---
+# Output Storage - For converted 3D video files
+# Use ReadWriteMany for shared access across worker pods
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: video2d3d-outputs
+  namespace: video2d3d
+  labels:
+    app.kubernetes.io/name: video2d3d
+    app.kubernetes.io/component: storage
+    storage-type: outputs
+spec:
+  accessModes:
+    - ReadWriteMany  # NOTE: Requires RWX-capable storage class
+  resources:
+    requests:
+      storage: 200Gi  # Output files can be large
+  # storageClassName: standard
+
+---
+# Logs Storage - For application logs (optional, if not using centralized logging)
+# Uses ReadWriteOnce since logs are typically local to each pod
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: video2d3d-logs
+  namespace: video2d3d
+  labels:
+    app.kubernetes.io/name: video2d3d
+    app.kubernetes.io/component: storage
+    storage-type: logs
+spec:
+  accessModes:
+    - ReadWriteOnce  # RWO - supported by most storage classes
+  resources:
+    requests:
+      storage: 10Gi
+  # storageClassName: standard
+
+---
+# Upload/Temp Storage - Temporary storage for file uploads
+# Use ReadWriteMany for shared access
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: video2d3d-uploads
+  namespace: video2d3d
+  labels:
+    app.kubernetes.io/name: video2d3d
+    app.kubernetes.io/component: storage
+    storage-type: uploads
+spec:
+  accessModes:
+    - ReadWriteMany  # NOTE: Requires RWX-capable storage class
+  resources:
+    requests:
+      storage: 50Gi
+  # storageClassName: standard

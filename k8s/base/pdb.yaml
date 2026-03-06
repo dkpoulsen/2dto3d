@@ -1,0 +1,23 @@
+# =============================================================================
+# 2Dto3D Video Converter - Pod Disruption Budget
+# =============================================================================
+# Ensures minimum availability during voluntary disruptions
+# 
+# Usage:
+#   kubectl apply -f pdb.yaml
+# =============================================================================
+
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: video2d3d-api-pdb
+  namespace: video2d3d
+  labels:
+    app.kubernetes.io/name: video2d3d
+    app.kubernetes.io/component: pdb
+spec:
+  minAvailable: 1  # Always keep at least 1 pod running
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: video2d3d
+      app.kubernetes.io/component: api

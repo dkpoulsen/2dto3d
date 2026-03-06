@@ -1,0 +1,186 @@
+# =============================================================================
+# 2Dto3D Video Converter - Horizontal Pod Autoscaler
+# =============================================================================
+# Auto-scaling configuration based on CPU, memory, and custom metrics
+# 
+# Prerequisites:
+#   - Kubernetes Metrics Server installed
+#   - For custom metrics: Prometheus Adapter
+# 
+# Usage:
+#   kubectl apply -f hpa.yaml
+# =============================================================================
+
+---
+# CPU and Memory-based HPA (Default)
+# This is the primary HPA - only ONE HPA can target a deployment
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: video2d3d-api-hpa
+  namespace: video2d3d
+  labels:
+    app.kubernetes.io/name: video2d3d
+    app.kubernetes.io/component: autoscaler
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: video2d3d-api
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+    # CPU utilization target
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70  # Scale when CPU > 70%
+    
+    # Memory utilization target
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80  # Scale when memory > 80%
+  
+  # Scaling behavior
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300  # Wait 5 minutes before scaling down
+      policies:
+        - type: Percent
+          value: 10  # Scale down max 10% of pods at a time
+          periodSeconds: 60
+        - type: Pods
+          value: 1  # Or scale down max 1 pod at a time
+          periodSeconds: 60
+      selectPolicy: Min  # Use the more conservative policy
+    
+    scaleUp:
+      stabilizationWindowSeconds: 60  # Wait 1 minute before scaling up again
+      policies:
+        - type: Percent
+          value: 100  # Double the pods when needed
+          periodSeconds: 15
+        - type: Pods
+          value: 4  # Or add max 4 pods at a time
+          periodSeconds: 15
+      selectPolicy: Max  # Use the more aggressive policy
+
+---
+# =============================================================================
+# Custom Metrics HPA (ALTERNATIVE - Requires Prometheus Adapter)
+# =============================================================================
+# WARNING: Only ONE HPA can target a deployment at a time!
+# To use this instead of the default HPA:
+#   1. Comment out or delete the video2d3d-api-hpa above
+#   2. Uncomment this section
+#   3. Ensure Prometheus Adapter is installed and configured
+# =============================================================================
+# apiVersion: autoscaling/v2
+# kind: HorizontalPodAutoscaler
+# metadata:
+#   name: video2d3d-api-hpa
+#   namespace: video2d3d
+#   labels:
+#     app.kubernetes.io/name: video2d3d
+#     app.kubernetes.io/component: autoscaler
+# spec:
+#   scaleTargetRef:
+#     apiVersion: apps/v1
+#     kind: Deployment
+#     name: video2d3d-api
+#   minReplicas: 2
+#   maxReplicas: 20
+#   metrics:
+#     # CPU utilization target
+#     - type: Resource
+#       resource:
+#         name: cpu
+#         target:
+#           type: Utilization
+#           averageUtilization: 70
+#     
+#     # Memory utilization target
+#     - type: Resource
+#       resource:
+#         name: memory
+#         target:
+#           type: Utilization
+#           averageUtilization: 80
+#     
+#     # Queue depth (custom metric from Prometheus)
+#     - type: Pods
+#       pods:
+#         metric:
+#           name: video2d3d_queue_depth
+#         target:
+#           type: AverageValue
+#           averageValue: "10"  # Scale when avg queue depth > 10
+#     
+#     # GPU memory utilization (custom metric)
+#     - type: Pods
+#       pods:
+#         metric:
+#           name: nvidia_gpu_memory_utilization
+#         target:
+#           type: AverageValue
+#           averageValue: "0.8"  # Scale when GPU memory > 80%
+#     
+#     # Request rate (custom metric)
+#     - type: Pods
+#       pods:
+#         metric:
+#           name: http_requests_per_second
+#         target:
+#           type: AverageValue
+#           averageValue: "100"  # Scale when requests > 100/sec per pod
+#   
+#   behavior:
+#     scaleDown:
+#       stabilizationWindowSeconds: 300
+#       policies:
+#         - type: Percent
+#           value: 10
+#           periodSeconds: 60
+#         - type: Pods
+#           value: 1
+#           periodSeconds: 60
+#       selectPolicy: Min
+#     
+#     scaleUp:
+#       stabilizationWindowSeconds: 60
+#       policies:
+#         - type: Percent
+#           value: 100
+#           periodSeconds: 15
+#         - type: Pods
+#           value: 4
+#           periodSeconds: 15
+#       selectPolicy: Max
+
+---
+# GPU-aware scaling with PriorityClass
+# For clusters with limited GPU resources
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: video2d3d-gpu-high-priority
+  labels:
+    app.kubernetes.io/name: video2d3d
+value: 1000000
+globalDefault: false
+description: "High priority for video2d3d GPU workloads"
+---
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: video2d3d-gpu-preemptible
+  labels:
+    app.kubernetes.io/name: video2d3d
+value: 100
+globalDefault: false
+description: "Low priority for preemptible video2d3d GPU workloads"

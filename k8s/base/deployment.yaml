@@ -1,0 +1,364 @@
+# =============================================================================
+# 2Dto3D Video Converter - Kubernetes Deployment (GPU)
+# =============================================================================
+# Main deployment for the 2Dto3D API server with GPU support
+# 
+# Prerequisites:
+#   - Kubernetes cluster with NVIDIA GPU operator or device plugin
+#   - NVIDIA container toolkit on nodes
+#   - GPU nodes with appropriate labels
+# 
+# Usage:
+#   kubectl apply -f deployment.yaml
+# =============================================================================
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: video2d3d-api
+  namespace: video2d3d
+  labels:
+    app.kubernetes.io/name: video2d3d
+    app.kubernetes.io/component: api
+    app.kubernetes.io/version: "0.1.0"
+spec:
+  replicas: 2  # Start with 2 replicas for HA
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: video2d3d
+      app.kubernetes.io/component: api
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0  # Zero downtime deployments
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: video2d3d
+        app.kubernetes.io/component: api
+        app.kubernetes.io/version: "0.1.0"
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8000"
+        prometheus.io/path: "/metrics"
+    spec:
+      # Service account for RBAC
+      serviceAccountName: video2d3d-api
+      automountServiceAccountToken: false
+      
+      # Security context - Pod level
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      
+      # Topology spread constraints for better HA distribution
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/name: video2d3d
+              app.kubernetes.io/component: api
+        - maxSkew: 1
+          topologyKey: topology.kubernetes.io/zone
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/name: video2d3d
+              app.kubernetes.io/component: api
+      
+      # Image pull secrets for private registries
+      imagePullSecrets: []
+      # - name: docker-registry-secret
+      
+      # Pod anti-affinity for HA (supplemental to topology spread)
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app.kubernetes.io/name: video2d3d
+                    app.kubernetes.io/component: api
+                topologyKey: kubernetes.io/hostname
+        # Node affinity for GPU nodes
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: nvidia.com/gpu.present
+                    operator: Exists
+      
+      # Tolerations for GPU nodes (if tainted)
+      tolerations:
+        - key: "nvidia.com/gpu"
+          operator: "Exists"
+          effect: "NoSchedule"
+      
+      # Init container for model pre-loading (optional)
+      initContainers:
+        - name: init-models
+          image: video2d3d:gpu
+          imagePullPolicy: IfNotPresent
+          command:
+            - python
+            - -c
+            - |
+              # Pre-download models if not present
+              import os
+              models_dir = "/app/models"
+              os.makedirs(models_dir, exist_ok=True)
+              print(f"Models directory ready: {models_dir}")
+          volumeMounts:
+            - name: models-storage
+              mountPath: /app/models
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+      
+      # Main container
+      containers:
+        - name: video2d3d-api
+          image: video2d3d:gpu  # Replace with your registry
+          imagePullPolicy: IfNotPresent
+          
+          # Container security
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false  # Required for temp files
+            capabilities:
+              drop:
+                - ALL
+          
+          # Startup command
+          command:
+            - /entrypoint.sh
+          args:
+            - serve
+            - --host
+            - "0.0.0.0"
+            - --port
+            - "8000"
+          
+          # Environment variables
+          envFrom:
+            - configMapRef:
+                name: video2d3d-config
+            - secretRef:
+                name: video2d3d-secrets
+                optional: true
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+          
+          # Ports
+          ports:
+            - name: http
+              containerPort: 8000
+              protocol: TCP
+          
+          # Resource requests and limits
+          resources:
+            requests:
+              cpu: "1000m"       # 1 CPU core
+              memory: "4Gi"      # 4GB RAM
+              nvidia.com/gpu: 1  # 1 GPU
+            limits:
+              cpu: "4000m"       # 4 CPU cores
+              memory: "16Gi"     # 16GB RAM
+              nvidia.com/gpu: 1  # 1 GPU
+          
+          # Health checks
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 120  # Allow time for model loading
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 3
+          
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 60   # Allow time for startup
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          
+          startupProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 30  # Allow up to 5 minutes for startup
+          
+          # Volume mounts
+          volumeMounts:
+            - name: models-storage
+              mountPath: /app/models
+              readOnly: false
+            - name: inputs-storage
+              mountPath: /app/inputs
+              readOnly: true
+            - name: outputs-storage
+              mountPath: /app/outputs
+              readOnly: false
+            - name: logs-storage
+              mountPath: /app/logs
+              readOnly: false
+            - name: uploads-storage
+              mountPath: /app/uploads
+              readOnly: false
+            - name: app-config
+              mountPath: /app/config/config.yaml
+              subPath: config.yaml
+              readOnly: true
+            - name: tmp-storage
+              mountPath: /tmp
+      
+      # Volumes
+      volumes:
+        - name: models-storage
+          persistentVolumeClaim:
+            claimName: video2d3d-models
+        - name: inputs-storage
+          persistentVolumeClaim:
+            claimName: video2d3d-inputs
+        - name: outputs-storage
+          persistentVolumeClaim:
+            claimName: video2d3d-outputs
+        - name: logs-storage
+          persistentVolumeClaim:
+            claimName: video2d3d-logs
+        - name: uploads-storage
+          persistentVolumeClaim:
+            claimName: video2d3d-uploads
+        - name: app-config
+          configMap:
+            name: video2d3d-app-config
+        - name: tmp-storage
+          emptyDir:
+            sizeLimit: 10Gi
+      
+      # Graceful termination
+      terminationGracePeriodSeconds: 300  # 5 minutes for in-flight jobs
+
+---
+# =============================================================================
+# CPU-Only Deployment (Alternative)
+# =============================================================================
+# For environments without GPU support or for CPU-only processing
+# Uncomment to use instead of GPU deployment
+# =============================================================================
+# apiVersion: apps/v1
+# kind: Deployment
+# metadata:
+#   name: video2d3d-api-cpu
+#   namespace: video2d3d
+#   labels:
+#     app.kubernetes.io/name: video2d3d
+#     app.kubernetes.io/component: api
+#     app.kubernetes.io/variant: cpu
+# spec:
+#   replicas: 3  # More replicas for CPU-only
+#   selector:
+#     matchLabels:
+#       app.kubernetes.io/name: video2d3d
+#       app.kubernetes.io/component: api
+#       app.kubernetes.io/variant: cpu
+#   template:
+#     metadata:
+#       labels:
+#         app.kubernetes.io/name: video2d3d
+#         app.kubernetes.io/component: api
+#         app.kubernetes.io/variant: cpu
+#     spec:
+#       serviceAccountName: video2d3d-api
+#       securityContext:
+#         runAsNonRoot: true
+#         runAsUser: 1000
+#         fsGroup: 1000
+#       containers:
+#         - name: video2d3d-api
+#           image: video2d3d:cpu
+#           imagePullPolicy: IfNotPresent
+#           command: ["/entrypoint.sh"]
+#           args: ["serve", "--host", "0.0.0.0", "--port", "8000", "--no-gpu"]
+#           envFrom:
+#             - configMapRef:
+#                 name: video2d3d-config
+#           env:
+#             - name: VIDEO2D3D_USE_GPU
+#               value: "false"
+#           ports:
+#             - name: http
+#               containerPort: 8000
+#           resources:
+#             requests:
+#               cpu: "2000m"
+#               memory: "8Gi"
+#             limits:
+#               cpu: "8000m"
+#               memory: "32Gi"
+#           livenessProbe:
+#             httpGet:
+#               path: /health
+#               port: http
+#             initialDelaySeconds: 60
+#             periodSeconds: 30
+#           readinessProbe:
+#             httpGet:
+#               path: /health
+#               port: http
+#             initialDelaySeconds: 30
+#             periodSeconds: 10
+#           volumeMounts:
+#             - name: models-storage
+#               mountPath: /app/models
+#             - name: inputs-storage
+#               mountPath: /app/inputs
+#             - name: outputs-storage
+#               mountPath: /app/outputs
+#       volumes:
+#         - name: models-storage
+#           persistentVolumeClaim:
+#             claimName: video2d3d-models
+#         - name: inputs-storage
+#           persistentVolumeClaim:
+#             claimName: video2d3d-inputs
+#         - name: outputs-storage
+#           persistentVolumeClaim:
+#             claimName: video2d3d-outputs

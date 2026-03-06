@@ -1,0 +1,87 @@
+# =============================================================================
+# 2Dto3D Video Converter - Production Overlay
+# =============================================================================
+# Production environment configuration with high availability,
+# increased resources, and strict security
+# 
+# Usage:
+#   kubectl apply -k k8s/overlays/prod/
+# =============================================================================
+
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# Reference base
+resources:
+  - ../../base
+
+# Production namespace
+namespace: video2d3d-prod
+
+# Production labels
+commonLabels:
+  environment: production
+  app.kubernetes.io/instance: prod
+
+# Production images
+images:
+  - name: video2d3d
+    newName: video2d3d
+    newTag: "0.1.0-gpu"
+
+# ConfigMap overrides
+configMapGenerator:
+  - name: video2d3d-config
+    behavior: merge
+    literals:
+      - VIDEO2D3D_ENV=production
+      - VIDEO2D3D_LOG_LEVEL=INFO
+      - VIDEO2D3D_BATCH_SIZE=8
+      - VIDEO2D3D_NUM_WORKERS=8
+
+# Patches for production
+patches:
+  # Increase replicas
+  - patch: |-
+      - op: replace
+        path: /spec/replicas
+        value: 3
+    target:
+      kind: Deployment
+      name: video2d3d-api
+  
+  # Increase resource limits
+  - patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/cpu
+        value: "8000m"
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/memory
+        value: "32Gi"
+    target:
+      kind: Deployment
+      name: video2d3d-api
+  
+  # Increase HPA limits
+  - patch: |-
+      - op: replace
+        path: /spec/minReplicas
+        value: 3
+      - op: replace
+        path: /spec/maxReplicas
+        value: 20
+    target:
+      kind: HorizontalPodAutoscaler
+      name: video2d3d-api-hpa
+  
+  # Increase PDB
+  - patch: |-
+      - op: replace
+        path: /spec/minAvailable
+        value: 2
+    target:
+      kind: PodDisruptionBudget
+      name: video2d3d-api-pdb
+
+# Production-specific resources
+# (add production-only resources here, e.g., TLS secrets)

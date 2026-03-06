@@ -1,0 +1,72 @@
+# =============================================================================
+# 2Dto3D Video Converter - Kustomization (Base)
+# =============================================================================
+# Base configuration for Kustomize deployments
+# 
+# Usage:
+#   kubectl apply -k k8s/base/
+#   # Or with overlays:
+#   kubectl apply -k k8s/overlays/dev/
+#   kubectl apply -k k8s/overlays/prod/
+# =============================================================================
+
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# Namespace for all resources
+namespace: video2d3d
+
+# Common labels applied to all resources
+commonLabels:
+  app.kubernetes.io/name: video2d3d
+  app.kubernetes.io/managed-by: kustomize
+
+# Common annotations
+commonAnnotations:
+  app.kubernetes.io/version: "0.1.0"
+
+# Resources to include (order matters for dependencies)
+resources:
+  # Namespace (must be first)
+  - namespace.yaml
+  
+  # Configuration
+  - configmap.yaml
+  - secrets.yaml
+  
+  # Storage
+  - pvc.yaml
+  
+  # RBAC
+  - rbac.yaml
+  
+  # Workloads
+  - deployment.yaml
+  
+  # Networking
+  - service.yaml
+  - ingress.yaml
+  
+  # Scaling and availability
+  - hpa.yaml
+  - pdb.yaml
+  
+  # Resource management
+  - resource-quota.yaml
+
+# Image configuration (override in overlays)
+images:
+  - name: video2d3d
+    newName: video2d3d
+    newTag: "gpu"
+
+# Config generation (alternative to static configmaps)
+# configMapGenerator:
+#   - name: video2d3d-config
+#     behavior: merge
+#     literals:
+#       - VIDEO2D3D_ENV=production
+
+# Patches (common patches)
+# patches:
+#   - path: patches/common-patch.yaml

@@ -1,0 +1,19 @@
+# =============================================================================
+# 2Dto3D Video Converter - Kubernetes Namespace
+# =============================================================================
+# Isolated namespace for all 2Dto3D resources
+# 
+# Usage:
+#   kubectl apply -f namespace.yaml
+# =============================================================================
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: video2d3d
+  labels:
+    app.kubernetes.io/name: video2d3d
+    app.kubernetes.io/component: namespace
+    app.kubernetes.io/managed-by: kustomize
+  annotations:
+    description: "Namespace for 2Dto3D Video Converter workloads"
