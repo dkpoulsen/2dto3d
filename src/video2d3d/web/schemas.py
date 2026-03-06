@@ -60,6 +60,68 @@ class DepthModel(str, Enum):
 # ============================================================================
 
 
+class CurveControlPointRequest(BaseModel):
+    """A single control point on the depth curve."""
+
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {"x": 0.5, "y": 0.5},
+        }
+    )
+
+    x: float = Field(
+        ...,
+        ge=0.0,
+        le=1.0,
+        description="Input depth value (normalized 0-1)",
+    )
+    y: float = Field(
+        ...,
+        ge=0.0,
+        le=1.0,
+        description="Output depth value (normalized 0-1)",
+    )
+
+
+class DepthCurveRequest(BaseModel):
+    """Depth curve configuration for non-linear depth mapping.
+
+    Allows artistic control over 3D effect strength by adjusting
+    how input depth values map to output depth values.
+    """
+
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "enabled": True,
+                "preset": "s_curve",
+                "control_points": [
+                    {"x": 0.0, "y": 0.0},
+                    {"x": 0.25, "y": 0.15},
+                    {"x": 0.5, "y": 0.5},
+                    {"x": 0.75, "y": 0.85},
+                    {"x": 1.0, "y": 1.0},
+                ],
+            },
+        }
+    )
+
+    enabled: bool = Field(
+        default=False,
+        description="Whether depth curve adjustment is enabled",
+    )
+    preset: Optional[str] = Field(
+        default=None,
+        description="Preset curve name: linear, s_curve, contrast_boost, soft_curve, inverse_s, shadow_lift, highlight_compress",
+    )
+    control_points: list[CurveControlPointRequest] = Field(
+        default_factory=lambda: [
+            CurveControlPointRequest(x=0.0, y=0.0),
+            CurveControlPointRequest(x=1.0, y=1.0),
+        ],
+        description="Control points defining the curve (ignored if preset is set)",
+    )
+
 class JobConfigRequest(BaseModel):
     """Configuration options for a video conversion job."""
 
@@ -637,6 +699,160 @@ class APIInfoResponse(BaseModel):
     )
 
 
+# ============================================================================
+# Crash Report Models
+# ============================================================================
+
+
+class CrashTypeResponse(str, Enum):
+    """Types of crashes that can be detected."""
+
+    UNCAUGHT_EXCEPTION = "uncaught_exception"
+    SIGNAL_RECEIVED = "signal_received"
+    MANUAL_REPORT = "manual_report"
+    OOM_ERROR = "oom_error"
+    GPU_ERROR = "gpu_error"
+    TIMEOUT_ERROR = "timeout_error"
+    PROCESSING_ERROR = "processing_error"
+
+
+class CrashSeverityResponse(str, Enum):
+    """Severity levels for crash reports."""
+
+    LOW = "low"
+    MEDIUM = "medium"
+    HIGH = "high"
+    CRITICAL = "critical"
+
+
+class ActiveJobInfoResponse(BaseModel):
+    """Information about an active job at crash time."""
+
+    job_id: str = Field(..., description="Job identifier")
+    status: str = Field(..., description="Job status")
+    input_file: Optional[str] = Field(None, description="Input file path")
+    output_file: Optional[str] = Field(None, description="Output file path")
+    progress_percent: float = Field(default=0.0, description="Progress percentage")
+    current_stage: Optional[str] = Field(None, description="Current processing stage")
+    started_at: Optional[str] = Field(None, description="Job start time")
+    frames_processed: int = Field(default=0, description="Frames processed")
+    total_frames: int = Field(default=0, description="Total frames")
+    error_message: Optional[str] = Field(None, description="Error message if any")
+
+
+class GPUInfoResponse(BaseModel):
+    """GPU state at crash time."""
+
+    available: bool = Field(default=False, description="GPU availability")
+    device_name: Optional[str] = Field(None, description="GPU device name")
+    memory_used_mb: float = Field(default=0.0, description="Memory used in MB")
+    memory_total_mb: float = Field(default=0.0, description="Total memory in MB")
+    memory_utilization_percent: float = Field(default=0.0, description="Memory utilization")
+
+
+class MemoryInfoResponse(BaseModel):
+    """System memory state at crash time."""
+
+    total_mb: float = Field(default=0.0, description="Total memory in MB")
+    available_mb: float = Field(default=0.0, description="Available memory in MB")
+    used_mb: float = Field(default=0.0, description="Used memory in MB")
+    utilization_percent: float = Field(default=0.0, description="Memory utilization")
+
+
+class ProcessInfoResponse(BaseModel):
+    """Process state at crash time."""
+
+    pid: int = Field(default=0, description="Process ID")
+    cpu_percent: float = Field(default=0.0, description="CPU usage percentage")
+    memory_rss_mb: float = Field(default=0.0, description="RSS memory in MB")
+    num_threads: int = Field(default=1, description="Number of threads")
+    uptime_seconds: float = Field(default=0.0, description="Process uptime")
+
+
+class SystemStateResponse(BaseModel):
+    """Complete system state captured at crash time."""
+
+    timestamp: str = Field(..., description="Timestamp of state capture")
+    uptime_seconds: float = Field(default=0.0, description="Application uptime")
+    platform_system: str = Field(default="", description="Operating system")
+    platform_python_version: str = Field(default="", description="Python version")
+    gpu: GPUInfoResponse = Field(default_factory=GPUInfoResponse, description="GPU state")
+    memory: MemoryInfoResponse = Field(default_factory=MemoryInfoResponse, description="Memory state")
+    process: ProcessInfoResponse = Field(default_factory=ProcessInfoResponse, description="Process state")
+    active_jobs: list[ActiveJobInfoResponse] = Field(default_factory=list, description="Active jobs")
+    queue_stats: dict[str, Any] = Field(default_factory=dict, description="Queue statistics")
+    app_version: str = Field(default="", description="Application version")
+
+
+class CrashReportResponse(BaseModel):
+    """Complete crash report with all captured data."""
+
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "report_id": "550e8400-e29b-41d4-a716-446655440000",
+                "created_at": "2024-01-15T10:30:00Z",
+                "crash_type": "uncaught_exception",
+                "severity": "high",
+                "exception_type": "RuntimeError",
+                "exception_message": "CUDA out of memory",
+                "exception_traceback": "Traceback...",
+                "recovered": False,
+            }
+        }
+    )
+
+    report_id: str = Field(..., description="Unique crash report identifier")
+    created_at: str = Field(..., description="Timestamp when crash was reported")
+    crash_type: CrashTypeResponse = Field(..., description="Type of crash")
+    severity: CrashSeverityResponse = Field(..., description="Severity level")
+    exception_type: str = Field(default="", description="Exception class name")
+    exception_message: str = Field(default="", description="Exception message")
+    exception_traceback: str = Field(default="", description="Full traceback")
+    exception_module: str = Field(default="", description="Exception module")
+    signal_number: Optional[int] = Field(None, description="Signal number if signal-based")
+    signal_name: Optional[str] = Field(None, description="Signal name if signal-based")
+    context: dict[str, Any] = Field(default_factory=dict, description="Additional context")
+    tags: list[str] = Field(default_factory=list, description="Tags for categorization")
+    user_message: Optional[str] = Field(None, description="User-provided message")
+    system_state: Optional[SystemStateResponse] = Field(None, description="System state at crash")
+    log_excerpts: list[str] = Field(default_factory=list, description="Recent log lines")
+    recovered: bool = Field(default=False, description="Whether crash was recovered")
+    recovery_action: Optional[str] = Field(None, description="Recovery action taken")
+
+
+class CrashReportSummaryResponse(BaseModel):
+    """Lightweight summary of a crash report for listing."""
+
+    report_id: str = Field(..., description="Crash report identifier")
+    created_at: str = Field(..., description="When crash was reported")
+    crash_type: CrashTypeResponse = Field(..., description="Type of crash")
+    severity: CrashSeverityResponse = Field(..., description="Severity level")
+    exception_type: str = Field(default="", description="Exception type")
+    exception_message: str = Field(default="", description="Exception message (truncated)")
+    recovered: bool = Field(default=False, description="Whether crash was recovered")
+
+
+class CrashReportListResponse(BaseModel):
+    """List of crash report summaries with metadata."""
+
+    reports: list[CrashReportSummaryResponse] = Field(default_factory=list, description="Crash report summaries")
+    total_count: int = Field(default=0, description="Total number of reports")
+    page: int = Field(default=1, description="Current page number")
+    page_size: int = Field(default=20, description="Items per page")
+
+
+class ManualCrashReportRequest(BaseModel):
+    """Request to create a manual crash report."""
+
+    message: str = Field(..., description="Description of the issue", min_length=1)
+    context: Optional[dict[str, Any]] = Field(None, description="Additional context")
+    tags: Optional[list[str]] = Field(None, description="Tags for categorization")
+    severity: CrashSeverityResponse = Field(
+        default=CrashSeverityResponse.MEDIUM,
+        description="Severity level",
+    )
+
 __all__ = [
     # Enums
     "JobStatusResponse",
@@ -664,5 +880,16 @@ __all__ = [
     "GPUStatusResponse",
     "SystemMemoryResponse",
     "QueueHealthResponse",
-    "APIInfoResponse",
+    # Crash report models
+    "CrashTypeResponse",
+    "CrashSeverityResponse",
+    "ActiveJobInfoResponse",
+    "GPUInfoResponse",
+    "MemoryInfoResponse",
+    "ProcessInfoResponse",
+    "SystemStateResponse",
+    "CrashReportResponse",
+    "CrashReportSummaryResponse",
+    "CrashReportListResponse",
+    "ManualCrashReportRequest",
 ]

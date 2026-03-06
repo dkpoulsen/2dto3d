@@ -23,6 +23,7 @@ from fastapi.responses import FileResponse, Response
 from fastapi.staticfiles import StaticFiles
 from video2d3d import __version__
 from video2d3d.batch import BatchQueueConfig, BatchVideoQueue
+from video2d3d.crash import init_crash_reporting, set_crash_reporter_queue, shutdown_crash_reporting
 from video2d3d.utils.config import get_config
 from video2d3d.utils.logger import get_logger
 
@@ -38,7 +39,7 @@ from video2d3d.web.schemas import (
 from video2d3d.web.health import get_comprehensive_health, get_gpu_status
 
 # Import routers (will be created)
-from video2d3d.web.routers import downloads, jobs, uploads
+from video2d3d.web.routers import crash, downloads, jobs, uploads
 
 from video2d3d.web.state import AppState, app_state
 from video2d3d.web.exceptions import register_exception_handlers
@@ -96,11 +97,24 @@ async def lifespan(app: FastAPI):
     # Startup
     logger.info("Starting 2Dto3D API server...")
 
+    # Initialize crash reporting first
+    config = get_config()
+    crash_dir = Path(config.web_api.upload_dir).parent / "crashes"
+    init_crash_reporting(
+        app_version=__version__,
+        app_start_time=app_state.start_time,
+    )
+    logger.info(f"Crash reporting initialized. Reports saved to {crash_dir}")
+
     # Create directories
     create_upload_dirs()
 
     # Initialize queue
     app_state.queue = initialize_queue()
+
+    # Update crash reporter with queue reference
+    if app_state.queue:
+        set_crash_reporter_queue(app_state.queue)
 
     logger.info("API server ready")
 
@@ -108,10 +122,13 @@ async def lifespan(app: FastAPI):
 
     # Shutdown
     logger.info("Shutting down API server...")
+
+    # Shutdown crash reporting
+    shutdown_crash_reporting()
+
     if app_state.queue:
         app_state.queue.stop(wait=True)
         logger.info("Batch queue stopped")
-
 
 def create_app(
     title: str = "2Dto3D Video Converter API",
@@ -191,6 +208,11 @@ Currently, this API does not require authentication. All endpoints are publicly 
         {
             "name": "Queue",
             "description": "Monitor and manage the processing queue. View queue statistics.",
+        },
+        {
+            "name": "Crash Reports",
+            "description": "View and manage crash reports for debugging and diagnostics. "
+            "Includes crash history, system state at crash time, and manual reporting.",
         },
     ]
 
@@ -281,6 +303,11 @@ Currently, this API does not require authentication. All endpoints are publicly 
         downloads.router,
         prefix=f"{api_prefix}/download",
         tags=["Download"],
+    )
+    app.include_router(
+        crash.router,
+        prefix=f"{api_prefix}/crash-reports",
+        tags=["Crash Reports"],
     )
 
     # Health check endpoint (basic)
