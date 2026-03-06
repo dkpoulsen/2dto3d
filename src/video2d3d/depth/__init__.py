@@ -932,6 +932,11 @@ from video2d3d.depth.temporal import (
     TemporalSmoothingMethod,
     create_temporal_smoother,
     smooth_depth_temporal,
+    # Motion-compensated smoothing
+    MotionCompensatedSmoother,
+    MotionCompensatedConfig,
+    create_motion_compensated_smoother,
+    smooth_depth_motion_compensated,
 )
 
 # Import AdaBins (AdaDepth) components
@@ -969,6 +974,9 @@ __all__ = [
     "TemporalSmoother",
     "TemporalSmoothingConfig",
     "TemporalState",
+    # Motion-compensated smoothing
+    "MotionCompensatedSmoother",
+    "MotionCompensatedConfig",
     # AdaBins classes
     "AdaBinsEstimator",
     "AdaBinsConfig",
@@ -1003,6 +1011,9 @@ __all__ = [
     "process_depth_map",
     "create_temporal_smoother",
     "smooth_depth_temporal",
+    # Motion-compensated functions
+    "create_motion_compensated_smoother",
+    "smooth_depth_motion_compensated",
     "_get_depth_logger",
     # AdaBins functions
     "create_adabins_estimator",
