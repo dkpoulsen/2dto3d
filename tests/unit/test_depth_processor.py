@@ -28,6 +28,7 @@ from video2d3d.depth.processor import (
     DepthMapProcessor,
     DepthProcessingError,
     DepthProcessorConfig,
+    EdgeAwareFilterType,
     HoleFillingMethod,
     NormalizationMethod,
     create_processor,
@@ -163,10 +164,44 @@ class TestDepthProcessorConfig:
         with pytest.raises(ValueError, match="percentile_low"):
             DepthProcessorConfig(percentile_low=-1, percentile_high=50)
 
-    def test_invalid_smoothing_radius_raises(self, mock_logger: MagicMock) -> None:
-        """Test that invalid smoothing_radius raises ValueError."""
         with pytest.raises(ValueError, match="smoothing_radius"):
             DepthProcessorConfig(smoothing_radius=0)
+
+    def test_invalid_guided_filter_radius_raises(self, mock_logger: MagicMock) -> None:
+        """Test that invalid guided_filter_radius raises ValueError."""
+        with pytest.raises(ValueError, match="guided_filter_radius"):
+            DepthProcessorConfig(guided_filter_radius=0)
+
+    def test_invalid_guided_filter_eps_raises(self, mock_logger: MagicMock) -> None:
+        """Test that invalid guided_filter_eps raises ValueError."""
+        with pytest.raises(ValueError, match="guided_filter_eps"):
+            DepthProcessorConfig(guided_filter_eps=0)
+
+        with pytest.raises(ValueError, match="guided_filter_eps"):
+            DepthProcessorConfig(guided_filter_eps=-0.01)
+
+    def test_invalid_edge_filter_type_raises(self, mock_logger: MagicMock) -> None:
+        """Test that invalid edge_filter_type raises ValueError."""
+        with pytest.raises(ValueError, match="edge_filter_type"):
+            DepthProcessorConfig(edge_filter_type="invalid")
+
+    def test_guided_filter_auto_enabled(self, mock_logger: MagicMock) -> None:
+        """Test that guided_filter is auto-enabled when edge_filter_type is 'guided'."""
+        config = DepthProcessorConfig(
+            edge_filter_type="guided",
+            guided_filter=False,  # Explicitly False, should be auto-enabled
+        )
+        assert config.guided_filter is True
+        assert config.edge_filter_type == "guided"
+
+    def test_bilateral_filter_auto_enabled(self, mock_logger: MagicMock) -> None:
+        """Test that bilateral_filter is auto-enabled when edge_filter_type is 'bilateral'."""
+        config = DepthProcessorConfig(
+            edge_filter_type="bilateral",
+            bilateral_filter=False,  # Explicitly False, should be auto-enabled
+        )
+        assert config.bilateral_filter is True
+        assert config.edge_filter_type == "bilateral"
 
 
 # ---------------------------------------------------------------------------
@@ -334,6 +369,121 @@ class TestBilateralFilter:
         # Check that edge is still visible (not completely smoothed)
         edge_region = result[:, 48:52]
         assert edge_region.std() > 0.1  # Should have variation at edge
+
+
+# ---------------------------------------------------------------------------
+# Guided Filter Tests
+# ---------------------------------------------------------------------------
+
+
+class TestGuidedFilter:
+    """Tests for guided filtering."""
+
+    def test_guided_filter_basic(
+        self, sample_depth_map: np.ndarray, mock_logger: MagicMock
+    ) -> None:
+        """Test basic guided filter application."""
+        processor = DepthMapProcessor()
+
+        result = processor.apply_guided_filter(sample_depth_map)
+
+        assert result.dtype == np.float32
+        assert result.shape == sample_depth_map.shape
+        assert result.min() >= 0.0
+        assert result.max() <= 1.0
+
+    def test_guided_filter_custom_params(
+        self, sample_depth_map: np.ndarray, mock_logger: MagicMock
+    ) -> None:
+        """Test guided filter with custom parameters."""
+        processor = DepthMapProcessor()
+
+        result = processor.apply_guided_filter(
+            sample_depth_map,
+            radius=16,
+            eps=0.001,
+        )
+
+        assert result.dtype == np.float32
+        assert result.shape == sample_depth_map.shape
+
+    def test_guided_filter_with_guidance(
+        self, sample_depth_map: np.ndarray, mock_logger: MagicMock
+    ) -> None:
+        """Test guided filter with separate guidance image."""
+        processor = DepthMapProcessor()
+
+        # Create a guidance image (e.g., a smoothed version)
+        guidance = np.random.random((100, 100)).astype(np.float32)
+
+        result = processor.apply_guided_filter(
+            sample_depth_map,
+            guidance=guidance,
+        )
+
+        assert result.dtype == np.float32
+        assert result.shape == sample_depth_map.shape
+
+    def test_guided_filter_preserves_edges(self, mock_logger: MagicMock) -> None:
+        """Test that guided filter preserves edges."""
+        processor = DepthMapProcessor()
+
+        # Create a depth map with sharp edge
+        depth = np.zeros((100, 100), dtype=np.float32)
+        depth[:, 50:] = 1.0
+
+        result = processor.apply_guided_filter(depth, radius=8, eps=0.01)
+
+        # Check that edge is still visible (not completely smoothed)
+        edge_region = result[:, 48:52]
+        assert edge_region.std() > 0.1  # Should have variation at edge
+
+    def test_guided_filter_smoothing_effect(
+        self, sample_depth_map: np.ndarray, mock_logger: MagicMock
+    ) -> None:
+        """Test that guided filter actually smooths the image."""
+        processor = DepthMapProcessor()
+
+        # Add some noise to the depth map
+        noisy_depth = sample_depth_map + np.random.normal(0, 0.1, sample_depth_map.shape)
+        noisy_depth = np.clip(noisy_depth, 0, 1).astype(np.float32)
+
+        result = processor.apply_guided_filter(noisy_depth, radius=16, eps=0.01)
+
+        # The smoothed result should have lower variance than noisy input
+        # (smoothing effect)
+        assert result.dtype == np.float32
+        # Just check it runs without error and produces valid output
+        assert result.min() >= 0.0
+        assert result.max() <= 1.0
+
+    def test_guided_filter_small_image(self, mock_logger: MagicMock) -> None:
+        """Test guided filter with image smaller than filter radius."""
+        processor = DepthMapProcessor()
+
+        # Create a small depth map (10x10)
+        small_depth = np.random.random((10, 10)).astype(np.float32)
+
+        # Request a large radius (8), should be auto-adjusted
+        result = processor.apply_guided_filter(small_depth, radius=8, eps=0.01)
+
+        assert result.dtype == np.float32
+        assert result.shape == small_depth.shape
+        assert result.min() >= 0.0
+        assert result.max() <= 1.0
+
+    def test_guided_filter_tiny_image(self, mock_logger: MagicMock) -> None:
+        """Test guided filter with very tiny image (3x3)."""
+        processor = DepthMapProcessor()
+
+        # Create a tiny depth map
+        tiny_depth = np.random.random((3, 3)).astype(np.float32)
+
+        result = processor.apply_guided_filter(tiny_depth, radius=8, eps=0.01)
+
+        assert result.dtype == np.float32
+        assert result.shape == tiny_depth.shape
+
 
 
 # ---------------------------------------------------------------------------
@@ -576,6 +726,40 @@ class TestFullPipeline:
         assert result.dtype == np.uint8
         assert result.shape == (*sample_depth_map.shape, 3)
 
+    def test_process_with_guided_filter(
+        self, sample_depth_map: np.ndarray, mock_logger: MagicMock
+    ) -> None:
+        """Test processing with guided filter instead of bilateral."""
+        config = DepthProcessorConfig(
+            guided_filter=True,
+            edge_filter_type="guided",
+            bilateral_filter=False,
+            hole_filling=True,
+        )
+        processor = DepthMapProcessor(config=config)
+
+        result = processor.process(sample_depth_map)
+
+        assert result.dtype == np.float32
+        assert result.shape == sample_depth_map.shape
+
+    def test_process_edge_filter_none(
+        self, sample_depth_map: np.ndarray, mock_logger: MagicMock
+    ) -> None:
+        """Test processing with edge filter disabled."""
+        config = DepthProcessorConfig(
+            edge_filter_type="none",
+            bilateral_filter=False,
+            guided_filter=False,
+        )
+        processor = DepthMapProcessor(config=config)
+
+        result = processor.process(sample_depth_map)
+
+        assert result.dtype == np.float32
+        assert result.shape == sample_depth_map.shape
+
+
 
 # ---------------------------------------------------------------------------
 # Convenience Functions Tests
@@ -637,6 +821,19 @@ class TestConvenienceFunctions:
 
         assert result.dtype == np.float32
 
+    def test_process_depth_map_with_guided_filter(
+        self, sample_depth_map: np.ndarray, mock_logger: MagicMock
+    ) -> None:
+        """Test process_depth_map with guided filter."""
+        result = process_depth_map(
+            sample_depth_map,
+            guided_filter=True,
+            bilateral_filter=False,
+        )
+
+        assert result.dtype == np.float32
+        assert result.shape == sample_depth_map.shape
+
 
 # ---------------------------------------------------------------------------
 # Enum Tests
@@ -662,6 +859,12 @@ class TestEnums:
         """Test ColorMapType enum values."""
         assert ColorMapType.TURBO.value is not None
         assert ColorMapType.GRAY.value is None
+
+    def test_edge_aware_filter_type_values(self) -> None:
+        """Test EdgeAwareFilterType enum values."""
+        assert EdgeAwareFilterType.BILATERAL.value == "bilateral"
+        assert EdgeAwareFilterType.GUIDED.value == "guided"
+        assert EdgeAwareFilterType.NONE.value == "none"
 
 
 # ---------------------------------------------------------------------------

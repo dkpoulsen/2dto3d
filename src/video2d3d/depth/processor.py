@@ -2,7 +2,7 @@
 
 This module provides depth map post-processing functionality including:
 - Normalization (min-max, percentile, histogram equalization)
-- Edge-aware filtering (bilateral filter)
+- Edge-aware filtering (bilateral filter, guided filter)
 - Hole-filling (inpainting, nearest neighbor)
 - Color mapping for visualization
 
@@ -37,7 +37,8 @@ _DEFAULT_BILATERAL_SIGMA_SPACE: int = 5
 _DEFAULT_SHARPENING_AMOUNT: float = 0.5
 _DEFAULT_PERCENTILE_LOW: float = 2.0
 _DEFAULT_PERCENTILE_HIGH: float = 98.0
-
+_DEFAULT_GUIDED_FILTER_RADIUS: int = 8
+_DEFAULT_GUIDED_FILTER_EPS: float = 0.01
 
 class NormalizationMethod(Enum):
     """Available depth normalization methods."""
@@ -54,7 +55,6 @@ class HoleFillingMethod(Enum):
     NEAREST = "nearest"
     LINEAR = "linear"
 
-
 class ColorMapType(Enum):
     """Available color map types for visualization."""
 
@@ -67,6 +67,13 @@ class ColorMapType(Enum):
     GRAY = None  # Grayscale output
 
 
+class EdgeAwareFilterType(Enum):
+    """Available edge-aware filter types."""
+
+    BILATERAL = "bilateral"
+    GUIDED = "guided"
+    NONE = "none"
+
 @dataclass
 class DepthProcessorConfig:
     """Configuration for depth map post-processing.
@@ -77,6 +84,10 @@ class DepthProcessorConfig:
         bilateral_filter: Enable bilateral filtering.
         bilateral_sigma_color: Sigma for color space in bilateral filter.
         bilateral_sigma_space: Sigma for coordinate space in bilateral filter.
+        guided_filter: Enable guided filtering.
+        guided_filter_radius: Radius for guided filter window.
+        guided_filter_eps: Regularization parameter for guided filter.
+        edge_filter_type: Type of edge-aware filter to use ('bilateral', 'guided', 'none').
         hole_filling: Enable hole-filling for occlusions.
         hole_filling_method: Method to use for hole-filling.
         sharpening: Enable depth map sharpening.
@@ -92,6 +103,10 @@ class DepthProcessorConfig:
     bilateral_filter: bool = True
     bilateral_sigma_color: float = _DEFAULT_BILATERAL_SIGMA_COLOR
     bilateral_sigma_space: int = _DEFAULT_BILATERAL_SIGMA_SPACE
+    guided_filter: bool = False
+    guided_filter_radius: int = _DEFAULT_GUIDED_FILTER_RADIUS
+    guided_filter_eps: float = _DEFAULT_GUIDED_FILTER_EPS
+    edge_filter_type: str = "bilateral"
     hole_filling: bool = True
     hole_filling_method: str = "inpaint"
     sharpening: bool = False
@@ -100,7 +115,6 @@ class DepthProcessorConfig:
     percentile_low: float = _DEFAULT_PERCENTILE_LOW
     percentile_high: float = _DEFAULT_PERCENTILE_HIGH
     colormap: str = "turbo"
-
     def __post_init__(self) -> None:
         """Validate and normalize configuration."""
         # Validate normalization method
@@ -138,6 +152,33 @@ class DepthProcessorConfig:
 
         if self.smoothing_radius < 1:
             raise ValueError(f"smoothing_radius must be >= 1, got {self.smoothing_radius}")
+
+        # Validate guided filter parameters
+        if self.guided_filter_radius < 1:
+            raise ValueError(
+                f"guided_filter_radius must be >= 1, got {self.guided_filter_radius}"
+            )
+
+        if self.guided_filter_eps <= 0:
+            raise ValueError(
+                f"guided_filter_eps must be > 0, got {self.guided_filter_eps}"
+            )
+
+        # Validate edge filter type
+        valid_filter_types = [f.value for f in EdgeAwareFilterType]
+        if self.edge_filter_type not in valid_filter_types:
+            raise ValueError(
+                f"Invalid edge_filter_type '{self.edge_filter_type}'. "
+                f"Valid options: {valid_filter_types}"
+            )
+
+        # Warn about potential config inconsistencies
+        if self.edge_filter_type == EdgeAwareFilterType.GUIDED.value and not self.guided_filter:
+            # Auto-enable guided_filter if edge_filter_type is guided
+            object.__setattr__(self, 'guided_filter', True)
+        elif self.edge_filter_type == EdgeAwareFilterType.BILATERAL.value and not self.bilateral_filter:
+            # Auto-enable bilateral_filter if edge_filter_type is bilateral
+            object.__setattr__(self, 'bilateral_filter', True)
 
 
 class DepthProcessingError(Exception):
@@ -358,6 +399,93 @@ class DepthMapProcessor:
                 operation="bilateral_filter",
                 original_exception=e,
             ) from e
+
+    def apply_guided_filter(
+        self,
+        depth_map: np.ndarray,
+        guidance: Optional[np.ndarray] = None,
+        radius: Optional[int] = None,
+        eps: Optional[float] = None,
+    ) -> np.ndarray:
+        """Apply edge-preserving guided filter to depth map.
+
+        The guided filter uses a guidance image to preserve edges while
+        smoothing. It performs better than bilateral filter for edge preservation
+        and is computationally more efficient.
+
+        Based on: He et al., "Guided Image Filtering", PAMI 2010.
+
+        Args:
+            depth_map: Input depth map (values in [0, 1]).
+            guidance: Optional guidance image. If None, uses depth_map as guidance.
+            radius: Radius of the local window. If None, uses config.
+            eps: Regularization parameter. If None, uses config.
+                 Larger values = more smoothing, smaller = edge preservation.
+
+        Returns:
+            Filtered depth map.
+
+        Raises:
+            DepthProcessingError: If filtering fails.
+        """
+        r = radius if radius is not None else self.config.guided_filter_radius
+        epsilon = eps if eps is not None else self.config.guided_filter_eps
+
+        # Validate image size vs filter radius
+        min_dimension = min(depth_map.shape[0], depth_map.shape[1])
+        if min_dimension <= 2 * r:
+            # Image too small for the requested radius, adjust it
+            r = max(1, (min_dimension - 1) // 2)
+            self._logger.debug(
+                f"Adjusted guided filter radius from {radius} to {r} for image size {depth_map.shape}"
+            )
+
+        # Use depth map as guidance if not provided
+        if guidance is None:
+            I = depth_map.astype(np.float64)
+        else:
+            I = guidance.astype(np.float64)
+
+        p = depth_map.astype(np.float64)
+
+        try:
+            self._logger.debug(f"Applying guided filter: radius={r}, eps={epsilon}")
+            # Compute box filter (mean) using integral images
+            # This is a fast implementation using cv2.boxFilter
+            mean_I = cv2.boxFilter(I, -1, (2 * r + 1, 2 * r + 1), normalize=True)
+            mean_p = cv2.boxFilter(p, -1, (2 * r + 1, 2 * r + 1), normalize=True)
+
+            # Compute correlation
+            mean_Ip = cv2.boxFilter(I * p, -1, (2 * r + 1, 2 * r + 1), normalize=True)
+
+            # Compute covariance and variance
+            cov_Ip = mean_Ip - mean_I * mean_p
+            mean_II = cv2.boxFilter(I * I, -1, (2 * r + 1, 2 * r + 1), normalize=True)
+            var_I = mean_II - mean_I * mean_I
+
+            # Compute linear coefficients a and b
+            a = cov_Ip / (var_I + epsilon)
+            b = mean_p - a * mean_I
+
+            # Compute mean of a and b
+            mean_a = cv2.boxFilter(a, -1, (2 * r + 1, 2 * r + 1), normalize=True)
+            mean_b = cv2.boxFilter(b, -1, (2 * r + 1, 2 * r + 1), normalize=True)
+
+            # Compute output
+            q = mean_a * I + mean_b
+
+            # Clip to valid range and convert back to float32
+            result = np.clip(q, 0.0, 1.0).astype(np.float32)
+            return result
+
+        except Exception as e:
+            log_exception("Guided filter failed", exception=e)
+            raise DepthProcessingError(
+                f"Guided filter failed: {e}",
+                operation="guided_filter",
+                original_exception=e,
+            ) from e
+
 
     def fill_holes(
         self,
@@ -603,7 +731,7 @@ class DepthMapProcessor:
         The pipeline applies operations in the following order:
         1. Normalization
         2. Hole filling (if enabled)
-        3. Bilateral filtering (if enabled)
+        3. Edge-aware filtering (bilateral or guided, based on edge_filter_type)
         4. Sharpening (if enabled)
         5. Colormap (if requested)
 
@@ -629,11 +757,14 @@ class DepthMapProcessor:
                 result = self.fill_holes(result)
 
             # Step 3: Apply edge-aware smoothing
-            if self.config.bilateral_filter:
-                result = self.apply_bilateral_filter(result)
-
-            # Step 4: Sharpen
-            if self.config.sharpening:
+            if self.config.edge_filter_type == EdgeAwareFilterType.BILATERAL.value:
+                if self.config.bilateral_filter:
+                    self._logger.debug("Applying bilateral filter for edge-aware smoothing")
+                    result = self.apply_bilateral_filter(result)
+            elif self.config.edge_filter_type == EdgeAwareFilterType.GUIDED.value:
+                if self.config.guided_filter:
+                    self._logger.debug("Applying guided filter for edge-aware smoothing")
+                    result = self.apply_guided_filter(result)
                 result = self.sharpen(result)
 
             # Step 5: Apply colormap for visualization
@@ -647,7 +778,9 @@ class DepthMapProcessor:
                 operations={
                     "normalization": self.config.normalization_method,
                     "hole_filling": self.config.hole_filling,
+                    "edge_filter_type": self.config.edge_filter_type,
                     "bilateral_filter": self.config.bilateral_filter,
+                    "guided_filter": self.config.guided_filter,
                     "sharpening": self.config.sharpening,
                     "colormap": apply_colormap,
                 },
@@ -697,8 +830,10 @@ def create_processor(
 
     Args:
         bilateral_filter: Enable bilateral filtering.
+        guided_filter: Enable guided filtering.
         hole_filling: Enable hole-filling.
         colormap: Default color map for visualization.
+        edge_filter_type: Type of edge-aware filter ('bilateral', 'guided', 'none').
         **kwargs: Additional DepthProcessorConfig field values.
 
     Returns:
@@ -706,6 +841,8 @@ def create_processor(
     """
     config = DepthProcessorConfig(
         bilateral_filter=bilateral_filter,
+        guided_filter=kwargs.pop("guided_filter", False),
+        edge_filter_type=kwargs.pop("edge_filter_type", "bilateral"),
         hole_filling=hole_filling,
         colormap=colormap,
         **kwargs,  # type: ignore[arg-type]
@@ -719,6 +856,7 @@ def process_depth_map(
     normalize: bool = True,
     fill_holes: bool = True,
     bilateral_filter: bool = True,
+    guided_filter: bool = False,
     colormap: Optional[str] = None,
 ) -> np.ndarray:
     """Process a depth map with default settings (convenience function).
@@ -728,14 +866,18 @@ def process_depth_map(
         normalize: Apply normalization.
         fill_holes: Fill holes in the depth map.
         bilateral_filter: Apply bilateral filtering.
+        guided_filter: Apply guided filtering (takes precedence if both enabled).
         colormap: If provided, apply this colormap and return RGB image.
 
     Returns:
         Processed depth map.
     """
+    edge_filter_type = "guided" if guided_filter else ("bilateral" if bilateral_filter else "none")
     config = DepthProcessorConfig(
-        edge_aware_smoothing=False,  # Use bilateral instead
+        edge_aware_smoothing=False,
         bilateral_filter=bilateral_filter,
+        guided_filter=guided_filter,
+        edge_filter_type=edge_filter_type,
         hole_filling=fill_holes,
         normalization_method="min_max" if normalize else "min_max",
     )
@@ -743,8 +885,6 @@ def process_depth_map(
     processor = DepthMapProcessor(config=config)
     return processor.process(depth_map, apply_colormap=colormap is not None)
 
-
-# Module-level exports
 __all__ = [
     # Classes
     "DepthMapProcessor",
@@ -754,6 +894,7 @@ __all__ = [
     "NormalizationMethod",
     "HoleFillingMethod",
     "ColorMapType",
+    "EdgeAwareFilterType",
     # Functions
     "create_processor",
     "process_depth_map",
@@ -762,4 +903,6 @@ __all__ = [
     "_DEFAULT_BILATERAL_SIGMA_COLOR",
     "_DEFAULT_BILATERAL_SIGMA_SPACE",
     "_DEFAULT_SHARPENING_AMOUNT",
+    "_DEFAULT_GUIDED_FILTER_RADIUS",
+    "_DEFAULT_GUIDED_FILTER_EPS",
 ]

@@ -915,8 +915,11 @@ from video2d3d.depth.processor import (
     NormalizationMethod,
     HoleFillingMethod,
     ColorMapType,
+    EdgeAwareFilterType,
     create_processor,
     process_depth_map,
+    _DEFAULT_GUIDED_FILTER_RADIUS,
+    _DEFAULT_GUIDED_FILTER_EPS,
 )
 
 
@@ -929,6 +932,29 @@ from video2d3d.depth.temporal import (
     TemporalSmoothingMethod,
     create_temporal_smoother,
     smooth_depth_temporal,
+)
+
+# Import AdaBins (AdaDepth) components
+from video2d3d.depth.adadepth import (
+    AdaBinsEstimator,
+    AdaBinsConfig,
+    AdaBinsModelType,
+    AdaBinsLoadError,
+    AdaBinsInferenceError,
+    create_adabins_estimator,
+    estimate_depth_adabins,
+)
+
+# Import model selector components
+from video2d3d.depth.model_selector import (
+    DepthModelSelector,
+    DepthModelConfig,
+    DepthModelType as UnifiedDepthModelType,
+    SceneType,
+    ModelLoadError as SelectorLoadError,
+    ModelInferenceError as SelectorInferenceError,
+    create_model_selector,
+    estimate_depth_auto,
 )
 # Module-level logger for backward compatibility
 logger = _get_depth_logger()
@@ -943,10 +969,20 @@ __all__ = [
     "TemporalSmoother",
     "TemporalSmoothingConfig",
     "TemporalState",
+    # AdaBins classes
+    "AdaBinsEstimator",
+    "AdaBinsConfig",
+    "AdaBinsModelType",
+    # Model selector classes
+    "DepthModelSelector",
+    "DepthModelConfig",
+    "UnifiedDepthModelType",
+    "SceneType",
     # Enums
     "NormalizationMethod",
     "HoleFillingMethod",
     "ColorMapType",
+    "EdgeAwareFilterType",
     "TemporalSmoothingMethod",
     # Exceptions
     "DepthEstimationError",
@@ -954,6 +990,12 @@ __all__ = [
     "InferenceError",
     "DepthProcessingError",
     "TemporalSmoothingError",
+    # AdaBins exceptions
+    "AdaBinsLoadError",
+    "AdaBinsInferenceError",
+    # Selector exceptions
+    "SelectorLoadError",
+    "SelectorInferenceError",
     # Functions
     "create_estimator",
     "estimate_depth_single",
@@ -962,4 +1004,13 @@ __all__ = [
     "create_temporal_smoother",
     "smooth_depth_temporal",
     "_get_depth_logger",
+    # AdaBins functions
+    "create_adabins_estimator",
+    "estimate_depth_adabins",
+    # Model selector functions
+    "create_model_selector",
+    "estimate_depth_auto",
+    # Constants
+    "_DEFAULT_GUIDED_FILTER_RADIUS",
+    "_DEFAULT_GUIDED_FILTER_EPS",
 ]
