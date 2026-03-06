@@ -41,6 +41,9 @@ from video2d3d.web.schemas import (
     SubmitBatchRequest,
     SubmitJobRequest,
     SubmitJobResponse,
+    ThumbnailFrameResponse,
+    ThumbnailGridRequest,
+    ThumbnailGridResponse,
 )
 
 logger = get_logger("web.jobs")
@@ -227,16 +230,7 @@ async def submit_job(request: SubmitJobRequest) -> SubmitJobResponse:
     if request.config.depth_focus:
         job_config["depth_focus"] = request.config.depth_focus.model_dump()
 
-    job_config = {
-        "stereo_format": request.config.stereo_format.value,
-        "depth_model": request.config.depth_model.value,
-        "use_gpu": request.config.use_gpu,
-        "quality_preset": request.config.quality_preset,
-        "output_codec": request.config.output_codec,
-        "output_crf": request.config.output_crf,
-        **request.config.extra_options,
-    }
-
+    # Add callback URL if provided
     # Add callback URL if provided
     if request.callback_url:
         job_config["callback_url"] = request.callback_url
@@ -603,6 +597,95 @@ async def get_queue_stats() -> QueueStatsResponse:
         total_processing_time_seconds=stats.total_processing_time,
         average_processing_time_seconds=stats.average_processing_time,
         success_rate_percent=stats.success_rate,
+    )
+
+
+@router.get(
+    "/{job_id}/thumbnails",
+    response_model=ThumbnailGridResponse,
+    summary="Get thumbnail grid for a job",
+    description="Get a grid of thumbnails showing frames at different timestamps with their depth maps.",
+    responses={
+        200: {"description": "Thumbnail grid data"},
+        404: {"model": ErrorResponse, "description": "Job not found"},
+    },
+)
+async def get_thumbnail_grid(
+    job_id: str,
+    count: Optional[int] = Query(default=24, ge=1, le=100, description="Number of thumbnails"),
+    start_frame: Optional[int] = Query(default=None, ge=0, description="Start frame index"),
+    end_frame: Optional[int] = Query(default=None, ge=0, description="End frame index"),
+) -> ThumbnailGridResponse:
+    """Get thumbnail grid data for a job.
+
+    Returns evenly distributed frame thumbnails with original frames and depth maps
+    for quick quality assessment.
+
+    Args:
+        job_id: Unique job identifier.
+        count: Number of thumbnails to return (evenly distributed).
+        start_frame: Optional start frame index.
+        end_frame: Optional end frame index.
+
+    Returns:
+        ThumbnailGridResponse with thumbnail frames.
+
+    Raises:
+        JobNotFoundError: If job doesn't exist.
+    """
+    if not app_state.queue:
+        raise QueueNotRunningError()
+
+    job = app_state.queue.get_job(job_id)
+
+    if not job:
+        raise JobNotFoundError(job_id=job_id)
+
+    # Get video metadata from job
+    total_frames = getattr(job, "total_frames", 0) or 0
+    fps = getattr(job, "fps", 30.0) or 30.0
+    duration_seconds = total_frames / fps if fps > 0 else 0.0
+
+    # Calculate frame indices for thumbnails
+    effective_start = start_frame or 0
+    effective_end = end_frame or total_frames
+    frame_range = effective_end - effective_start
+
+    if frame_range <= 0 or count <= 0:
+        return ThumbnailGridResponse(
+            job_id=job_id,
+            thumbnails=[],
+            total_frames=total_frames,
+            duration_seconds=duration_seconds,
+        )
+
+    # Distribute frames evenly across the range
+    step = frame_range / count if count > 0 else 1
+    frame_indices = [int(effective_start + i * step) for i in range(count)]
+    frame_indices = [idx for idx in frame_indices if idx < total_frames]
+
+    # Build thumbnail response
+    thumbnails = []
+    base_url = f"{API_PREFIX}/jobs/{job_id}"
+
+    for frame_idx in frame_indices:
+        timestamp = frame_idx / fps if fps > 0 else 0.0
+        thumbnails.append(
+            ThumbnailFrameResponse(
+                frame_index=frame_idx,
+                timestamp=round(timestamp, 3),
+                original_url=f"{base_url}/frames/{frame_idx}/original",
+                depth_map_url=f"{base_url}/frames/{frame_idx}/depth-map",
+                confidence_score=None,  # Would be populated from actual depth processing
+                validation_status="pending",  # Would be populated from validation state
+            )
+        )
+
+    return ThumbnailGridResponse(
+        job_id=job_id,
+        thumbnails=thumbnails,
+        total_frames=total_frames,
+        duration_seconds=round(duration_seconds, 2),
     )
 
 
