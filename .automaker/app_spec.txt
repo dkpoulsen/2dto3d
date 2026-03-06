@@ -140,6 +140,10 @@
       <name>API Rate Limiting</name>
       <description>Implement rate limiting on API endpoints to prevent abuse and ensure fair resource allocation among users.</description>
     </feature>
+    <feature>
+      <name>Automated End-to-End Testing</name>
+      <description>Implement automated test suite that runs full conversion pipeline on sample videos with expected output validation.</description>
+    </feature>
   </implemented_features>
 
   <additional_requirements>

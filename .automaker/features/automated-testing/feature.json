@@ -3,19 +3,20 @@
   "category": "Testing",
   "title": "Automated End-to-End Testing",
   "description": "Implement automated test suite that runs full conversion pipeline on sample videos with expected output validation.",
-  "status": "pipeline_step_mmcc3rzz_k0qltm",
+  "status": "verified",
   "priority": 2,
   "complexity": "moderate",
   "dependencies": [
     "video-output-writer"
   ],
   "createdAt": "2026-03-06T15:23:01.927Z",
-  "updatedAt": "2026-03-06T17:09:04.836Z",
+  "updatedAt": "2026-03-06T17:11:47.827Z",
   "model": "zai-coding-plan/glm-5",
   "thinkingLevel": "none",
   "planningMode": "spec",
   "requirePlanApproval": true,
   "skipTests": false,
   "branchName": "main",
-  "descriptionHistory": []
+  "descriptionHistory": [],
+  "summary": "## Summary: Commit Changes - Automated Testing Feature\n\n### Changes Committed\n- **261 files changed** with 29,137 insertions and 1,556 deletions\n- Commit hash: `92e36226f6db72327be879555f06e9a9a376d288`\n\n### Exact Commit Message Used\n```\ntest(testing): add automated end-to-end test suite for conversion pipeline\n\nImplement comprehensive automated testing framework with:\n\n- Batch queue verification tests for job lifecycle, retry logic, and serialization\n- Unit tests for batch config, models, file discovery, and exceptions\n- Integration tests for API endpoints (uploads, downloads, jobs)\n- Enhanced test coverage for checkpoint, DIBR, frame extraction, preview,\n  progress tracking, and video writer modules\n- Depth estimation integration tests\n- Web schemas and utilities tests\n\nAlso includes:\n- BatchVideoQueue implementation with concurrent job processing\n- Error recovery improvements\n- Updated feature metadata for pipeline tracking\n```\n\n### Key Files Modified/Added\n\n**New Source Code:**\n- `src/video2d3d/batch/queue.py` - BatchVideoQueue implementation\n\n**New Unit Tests:**\n- `tests/unit/test_batch_config.py`\n- `tests/unit/test_batch_exceptions.py`\n- `tests/unit/test_batch_file_discovery.py`\n- `tests/unit/test_batch_models.py`\n- `tests/unit/test_depth_midas.py`\n- `tests/unit/test_web_schemas.py`\n- `tests/unit/test_web_utils.py`\n\n**New Integration Tests:**\n- `tests/integration/test_api_downloads.py`\n- `tests/integration/test_api_jobs.py`\n- `tests/integration/test_api_uploads.py`\n- `tests/integration/test_depth_estimation.py`\n- `tests/integration/test_preview_integration.py`\n\n**Verification Test:**\n- `tests/verification/test_batch_queue.py`\n\n**Enhanced Existing Tests:**\n- `tests/unit/test_checkpoint.py`\n- `tests/unit/test_dibr.py`\n- `tests/unit/test_frame_extraction.py`\n- `tests/unit/test_preview.py`\n- `tests/unit/test_progress.py`\n- `tests/unit/test_video_writer.py`\n\n### Notes\n- This commit implements the automated end-to-end testing feature\n- Includes comprehensive test coverage for the full conversion pipeline\n- Adds BatchVideoQueue implementation with concurrent job processing support\n- Feature metadata files updated to track pipeline progress"
 }

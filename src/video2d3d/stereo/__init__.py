@@ -37,6 +37,12 @@ from video2d3d.stereo.side_by_side import (
     SideBySideLayout,
     encode_side_by_side,
 )
+from video2d3d.stereo.checkerboard import (
+    CheckerboardEncoder,
+    CheckerboardPattern,
+    encode_checkerboard,
+)
+
 from video2d3d.utils.logger import (
     get_logger,
     log_exception,
@@ -49,7 +55,7 @@ def _get_stereo_logger() -> "Logger":
     return get_logger("stereo")
 
 
-StereoFormat = Literal["side_by_side", "anaglyph", "interlaced", "vr"]
+StereoFormat = Literal["side_by_side", "anaglyph", "interlaced", "vr", "checkerboard"]
 
 
 class StereoGenerator:
@@ -538,6 +544,9 @@ __all__ = [
     # Side-by-side classes
     "SideBySideEncoder",
     "SideBySideLayout",
+    # Checkerboard classes
+    "CheckerboardEncoder",
+    "CheckerboardPattern",
     # DIBR classes (re-exported for convenience)
     "DIBREngine",
     "DIBRConfig",
@@ -549,6 +558,8 @@ __all__ = [
     "render_stereo_pair",
     "encode_anaglyph",
     "encode_side_by_side",
+    "encode_checkerboard",
+    "create_checkerboard_encoder",
     # Logger
     "_get_stereo_logger",
 ]

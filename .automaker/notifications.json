@@ -284,6 +284,28 @@
       "dismissed": false,
       "featureId": "api-rate-limiting",
       "projectPath": "/home/dkp/Documents/Automaker/2dto3d"
+    },
+    {
+      "id": "336ffe5a-c096-4484-968f-e6a18630249b",
+      "type": "feature_verified",
+      "title": "Feature Verified",
+      "message": "\"automated-testing\" has been verified and is complete.",
+      "createdAt": "2026-03-06T17:11:47.824Z",
+      "read": false,
+      "dismissed": false,
+      "featureId": "automated-testing",
+      "projectPath": "/home/dkp/Documents/Automaker/2dto3d"
+    },
+    {
+      "id": "5526fd7f-3476-46bf-a3ec-309f4ff432a7",
+      "type": "feature_verified",
+      "title": "Feature Verified",
+      "message": "\"error-recovery\" has been verified and is complete.",
+      "createdAt": "2026-03-06T17:15:11.201Z",
+      "read": false,
+      "dismissed": false,
+      "featureId": "error-recovery",
+      "projectPath": "/home/dkp/Documents/Automaker/2dto3d"
     }
   ]
 }

@@ -3,14 +3,14 @@
   "category": "Reliability",
   "title": "Intelligent Error Recovery",
   "description": "Add automatic error recovery mechanisms that retry failed frames, switch to alternative models, or apply fallback strategies.",
-  "status": "pipeline_step_mmcbz6pm_scmfew",
+  "status": "verified",
   "priority": 1,
   "complexity": "complex",
   "dependencies": [
     "checkpoint-resume"
   ],
   "createdAt": "2026-03-06T15:23:01.928Z",
-  "updatedAt": "2026-03-06T17:06:33.767Z",
+  "updatedAt": "2026-03-06T17:15:11.199Z",
   "model": "zai-coding-plan/glm-5",
   "thinkingLevel": "none",
   "planningMode": "spec",

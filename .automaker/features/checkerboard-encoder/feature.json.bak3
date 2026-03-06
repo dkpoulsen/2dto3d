@@ -3,19 +3,12 @@
   "category": "Output",
   "title": "Checkerboard 3D Pattern Encoder",
   "description": "Generate checkerboard pattern 3D format where left and right eye pixels are interleaved in a checkerboard pattern for specific 3D display technologies.",
-  "status": "in_progress",
+  "status": "backlog",
   "priority": 2,
   "complexity": "moderate",
   "dependencies": [
     "dibr-engine"
   ],
   "createdAt": "2026-03-06T15:23:01.921Z",
-  "updatedAt": "2026-03-06T17:11:50.893Z",
-  "model": "zai-coding-plan/glm-5",
-  "thinkingLevel": "none",
-  "planningMode": "spec",
-  "requirePlanApproval": true,
-  "skipTests": false,
-  "branchName": "main",
-  "descriptionHistory": []
+  "updatedAt": "2026-03-06T15:23:01.921Z"
 }
