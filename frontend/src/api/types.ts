@@ -72,6 +72,21 @@ export interface DepthCurveConfig {
 export interface JobConfigWithCurve extends JobConfig {
   depth_curve?: DepthCurveConfig | null;
 }
+
+// Depth Focus Types - controls which depth range appears at screen plane
+export interface DepthFocusConfig {
+  enabled: boolean;
+  /** Focus depth - normalized 0-1, where 0=closest, 1=farthest */
+  focus_depth: number;
+  /** Focus range - how much depth around focus point appears sharp (0-1) */
+  focus_range: number;
+}
+
+// Extended JobConfig with depth focus support
+export interface JobConfigWithFocus extends JobConfigWithCurve {
+  depth_focus?: DepthFocusConfig | null;
+}
+
 // Response types
 export interface UploadResponse {
   file_id: string;
@@ -264,4 +279,48 @@ export interface DepthMapCorrectionResponse {
   success: boolean;
   message: string;
   updated_depth_map_url?: string;
+}
+
+// Interactive Depth Editor Types
+
+/** A depth plane defines a named region with a specific depth value */
+export interface DepthPlane {
+  id: string;
+  name: string;
+  depth_value: number; // 0-1 normalized
+  color: string; // For visual identification
+  visible: boolean;
+  locked: boolean;
+  /** Polygon points defining the plane region (normalized 0-1) */
+  points: { x: number; y: number }[];
+}
+
+/** A depth layer contains raster depth data */
+export interface DepthLayer {
+  id: string;
+  name: string;
+  visible: boolean;
+  locked: boolean;
+  opacity: number; // 0-1
+  blend_mode: 'normal' | 'multiply' | 'screen' | 'overlay';
+  /** Base64 encoded PNG depth data (grayscale) */
+  data: string | null;
+}
+
+/** Configuration for the interactive depth editor */
+export interface InteractiveDepthEditorConfig {
+  width: number;
+  height: number;
+  layers: DepthLayer[];
+  planes: DepthPlane[];
+  active_layer_id: string | null;
+  active_plane_id: string | null;
+}
+
+/** Export format for depth map */
+export interface DepthMapExport {
+  width: number;
+  height: number;
+  data: string; // Base64 encoded PNG
+  planes: DepthPlane[];
 }

@@ -14,6 +14,9 @@ import type {
   CancelJobResponse,
   RetryJobResponse,
   ErrorResponse,
+  DepthValidationSession,
+  DepthMapCorrection,
+  DepthMapCorrectionResponse,
 } from './types';
 import { API_CONFIG } from '../utils/constants';
 
@@ -143,6 +146,39 @@ export const healthApi = {
   getQueueStats: async (): Promise<QueueStats> => {
     const response = await api.get<QueueStats>('/queue');
     return response.data;
+  },
+};
+
+export const depthValidationApi = {
+  getValidationSession: async (jobId: string): Promise<DepthValidationSession> => {
+    const response = await api.get<DepthValidationSession>(`/jobs/${jobId}/depth-validation`);
+    return response.data;
+  },
+
+  getFrameDepthMap: async (jobId: string, frameIndex: number): Promise<Blob> => {
+    const response = await api.get(`/jobs/${jobId}/frames/${frameIndex}/depth-map`, {
+      responseType: 'blob',
+    });
+    return response.data;
+  },
+
+  getFrameOriginal: async (jobId: string, frameIndex: number): Promise<Blob> => {
+    const response = await api.get(`/jobs/${jobId}/frames/${frameIndex}/original`, {
+      responseType: 'blob',
+    });
+    return response.data;
+  },
+
+  submitCorrection: async (correction: DepthMapCorrection): Promise<DepthMapCorrectionResponse> => {
+    const response = await api.post<DepthMapCorrectionResponse>(
+      `/jobs/${correction.job_id}/frames/${correction.frame_index}/depth-correction`,
+      correction
+    );
+    return response.data;
+  },
+
+  markFrameValidated: async (jobId: string, frameIndex: number): Promise<void> => {
+    await api.post(`/jobs/${jobId}/frames/${frameIndex}/validate`);
   },
 };
 

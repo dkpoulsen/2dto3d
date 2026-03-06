@@ -7,6 +7,7 @@ import {
   JobsPage,
   DownloadsPage,
   SystemPage,
+  DepthValidationPage,
 } from './pages';
 
 const queryClient = new QueryClient({
@@ -29,6 +30,7 @@ function App() {
             <Route path="jobs" element={<JobsPage />} />
             <Route path="downloads" element={<DownloadsPage />} />
             <Route path="system" element={<SystemPage />} />
+            <Route path="jobs/:jobId/validate" element={<DepthValidationPage />} />
           </Route>
         </Routes>
       </BrowserRouter>
