@@ -9,6 +9,7 @@ from __future__ import annotations
 import json
 import threading
 import time
+import uuid
 from concurrent.futures import Future, ThreadPoolExecutor
 from datetime import datetime
 from pathlib import Path
@@ -16,6 +17,8 @@ from typing import TYPE_CHECKING, Callable, Optional
 
 from video2d3d.batch.config import BatchQueueConfig, FileDiscoveryConfig, FolderWatcherConfig
 from video2d3d.batch.exceptions import (
+    CircularDependencyError,
+    DependencyFailedError,
     JobAlreadyExistsError,
     JobNotFoundError,
     QueueNotRunningError,
@@ -75,7 +78,9 @@ class BatchVideoQueue:
         self._progress_callbacks: list[Callable[[BatchJob], None]] = []
         self._completion_callbacks: list[Callable[[BatchJob], None]] = []
         self._error_callbacks: list[Callable[[BatchJob, Exception], None]] = []
+        self._dependency_callbacks: list[Callable[[BatchJob, str], None]] = []  # job, dependency_status
 
+        self._completed_jobs: set[str] = set()  # Job IDs that completed successfully
         self._state_dirty = False
         self._shutdown_event = threading.Event()
 
@@ -102,6 +107,76 @@ class BatchVideoQueue:
         with self._lock:
             return len(self._running_jobs)
 
+    def _validate_dependencies(
+        self,
+        job_id: str,
+        depends_on: list[str],
+    ) -> None:
+        """Validate job dependencies.
+
+        Args:
+            job_id: The job being added.
+            depends_on: List of job IDs this job depends on.
+
+        Raises:
+            JobNotFoundError: If a dependency job doesn't exist.
+            CircularDependencyError: If a circular dependency is detected.
+            DependencyFailedError: If a dependency has failed or been cancelled.
+        """
+        for dep_id in depends_on:
+            if dep_id not in self._jobs:
+                raise JobNotFoundError(job_id=dep_id)
+
+            dep_job = self._jobs[dep_id]
+
+            # Check if dependency has already failed or been cancelled
+            if dep_job.status == JobStatus.FAILED:
+                raise DependencyFailedError(job_id, dep_id, "failed")
+            if dep_job.status == JobStatus.CANCELLED:
+                raise DependencyFailedError(job_id, dep_id, "cancelled")
+
+            # Check for circular dependencies
+            if self._would_create_cycle(job_id, dep_id):
+                raise CircularDependencyError(job_id, dep_id)
+
+    def _would_create_cycle(self, job_id: str, dependency_id: str) -> bool:
+        """Check if adding this dependency would create a cycle.
+
+        A cycle exists if the new job depends on a job that (directly or
+        indirectly) depends on the new job.
+
+        Args:
+            job_id: The job being added.
+            dependency_id: The job that job_id wants to depend on.
+
+        Returns:
+            True if adding this dependency would create a cycle.
+        """
+        # Check if dependency_id directly depends on job_id
+        # (this can happen if we're re-adding a job)
+        dep_job = self._jobs.get(dependency_id)
+        if dep_job and job_id in dep_job.depends_on:
+            return True
+
+        # Check if any of dependency_id's dependencies depend on job_id
+        visited: set[str] = set()
+        to_check = list(dep_job.depends_on) if dep_job else []
+
+        while to_check:
+            current_id = to_check.pop(0)
+            if current_id in visited:
+                continue
+            visited.add(current_id)
+
+            current_job = self._jobs.get(current_id)
+            if current_id == job_id:
+                return True
+
+            if current_job:
+                to_check.extend(current_job.depends_on)
+
+        return False
+
     def add_job(
         self,
         input_path: Path,
@@ -109,12 +184,43 @@ class BatchVideoQueue:
         priority: JobPriority | None = None,
         config: dict | None = None,
         source: str = "manual",
+        scheduled_at: datetime | None = None,
+        depends_on: list[str] | None = None,
     ) -> BatchJob:
-        """Add a new job to the queue."""
+        """Add a new job to the queue.
+
+        Args:
+            input_path: Path to the input video file.
+            output_path: Path to the output file (optional, auto-generated if not provided).
+            priority: Job priority level.
+            config: Job-specific configuration.
+            source: Source of the job (manual, api, folder_watcher, etc.).
+            scheduled_at: When the job should start (None = immediate).
+            depends_on: List of job IDs that must complete before this job can run.
+
+        Returns:
+            The created BatchJob instance.
+
+        Raises:
+            FileNotFoundError: If input file doesn't exist.
+            JobNotFoundError: If a dependency job doesn't exist.
+            CircularDependencyError: If a circular dependency is detected.
+            DependencyFailedError: If a dependency has failed or been cancelled.
+        """
         input_path = Path(input_path)
 
         if not input_path.exists():
             raise FileNotFoundError(f"Input file not found: {input_path}")
+
+        # Create job first to get its ID for validation
+        depends_on = depends_on or []
+
+        # Validate dependencies
+        with self._lock:
+            # Create a temporary job_id for validation
+            temp_job_id = str(uuid.uuid4())
+            self._validate_dependencies(temp_job_id, depends_on)
+
 
         if output_path is None:
             output_path = self.config.get_output_path(input_path)
@@ -127,6 +233,8 @@ class BatchVideoQueue:
                 priority=priority or self.config.default_priority,
                 config=config or {},
                 source=source,
+                scheduled_at=scheduled_at,
+                depends_on=depends_on,
             )
             job.mark_skipped("Output file already exists")
             with self._lock:
@@ -140,7 +248,15 @@ class BatchVideoQueue:
             max_retries=self.config.max_retries,
             config=config or {},
             source=source,
+            scheduled_at=scheduled_at,
+            depends_on=depends_on,
         )
+
+        # Register reverse dependencies
+        with self._lock:
+            for dep_id in depends_on:
+                if dep_id in self._jobs:
+                    self._jobs[dep_id].dependent_jobs.append(job.job_id)
 
         with self._lock:
             self._jobs[job.job_id] = job
@@ -153,7 +269,6 @@ class BatchVideoQueue:
             self.start()
 
         return job
-
     def add_jobs_from_pattern(
         self,
         pattern: str,
@@ -411,13 +526,49 @@ class BatchVideoQueue:
                 )
 
     def _get_next_job(self) -> BatchJob | None:
-        """Get the next job to process."""
+        """Get the next job to process.
+
+        Jobs are selected based on:
+        1. Priority (higher priority first)
+        2. Scheduled time (must have passed)
+        3. Dependencies (must all be completed)
+        """
         with self._queue_lock:
+            # Try to find a job that's ready to run
+            skipped_jobs = []
             while self._job_queue:
                 job_id = self._job_queue.pop(0)
                 job = self._jobs.get(job_id)
-                if job and job.status.is_waiting:
-                    return job
+
+                if not job or not job.status.is_waiting:
+                    continue
+
+                # Check scheduled time
+                if not job.is_scheduled_time_reached:
+                    # Job is scheduled for later, put it back at the end
+                    skipped_jobs.append(job_id)
+                    continue
+
+                # Check dependencies
+                if not job.check_dependencies_met(self._completed_jobs):
+                    # Dependencies not met, skip for now
+                    skipped_jobs.append(job_id)
+                    pending_deps = job.get_pending_dependencies(self._completed_jobs)
+                    self._logger.debug(
+                        f"Job {job_id} waiting for dependencies: {pending_deps}"
+                    )
+                    continue
+
+                # Job is ready to run
+                # Put back any skipped jobs at the front of the queue
+                if skipped_jobs:
+                    self._job_queue = skipped_jobs + self._job_queue
+                return job
+
+            # No ready jobs, put skipped jobs back
+            if skipped_jobs:
+                self._job_queue = skipped_jobs
+
         return None
 
     def _process_loop(self) -> None:
@@ -516,6 +667,37 @@ class BatchVideoQueue:
             job.mark_failed(e)
 
         self._state_dirty = True
+
+        # Track completed jobs and handle dependent jobs
+        if job.status == JobStatus.COMPLETED:
+            self._completed_jobs.add(job_id)
+            self._notify_dependent_jobs(job)
+
+    def _notify_dependent_jobs(self, completed_job: BatchJob) -> None:
+        """Notify jobs that depend on a completed job.
+
+        Args:
+            completed_job: The job that just completed successfully.
+        """
+        if not completed_job.dependent_jobs:
+            return
+
+        for dep_job_id in completed_job.dependent_jobs:
+            dep_job = self._jobs.get(dep_job_id)
+            if not dep_job:
+                continue
+
+            # Check if all dependencies are now met
+            if dep_job.check_dependencies_met(self._completed_jobs):
+                self._logger.info(
+                    f"Job {dep_job_id} dependencies met, ready to run"
+                )
+                # Call any dependency callbacks
+                for callback in self._dependency_callbacks:
+                    try:
+                        callback(dep_job, "dependencies_met")
+                    except Exception as e:
+                        self._logger.error(f"Dependency callback error: {e}")
 
     def _start_folder_watcher(self) -> None:
         """Start folder monitoring."""

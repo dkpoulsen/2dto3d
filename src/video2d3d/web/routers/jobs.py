@@ -122,6 +122,9 @@ def job_to_response(job) -> JobResponse:
         retry_count=job.retry_count,
         result=result_response,
         config=job.config,
+        scheduled_at=job.scheduled_at,
+        depends_on=job.depends_on,
+        dependent_jobs=job.dependent_jobs,
     )
 
 
@@ -227,6 +230,8 @@ async def submit_job(request: SubmitJobRequest) -> SubmitJobResponse:
         priority=priority_to_model(request.priority),
         config=job_config,
         source="api",
+        scheduled_at=request.scheduled_at,
+        depends_on=request.depends_on,
     )
 
     logger.info(f"Submitted job {job.job_id} for file {input_path.name}")

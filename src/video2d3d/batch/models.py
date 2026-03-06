@@ -125,6 +125,7 @@ class BatchJob:
         created_at: When the job was created.
         started_at: When processing started.
         completed_at: When processing completed.
+        scheduled_at: When the job should start (None = immediate).
         progress: Current progress (0.0 to 1.0).
         current_stage: Current processing stage description.
         retry_count: Number of retry attempts.
@@ -133,6 +134,8 @@ class BatchJob:
         config: Job-specific configuration overrides.
         metadata: Additional job metadata.
         source: Source of the job (manual, folder_watcher, pattern, etc.).
+        depends_on: Job IDs this job depends on (must complete first).
+        dependent_jobs: Job IDs that depend on this job.
     """
 
     job_id: str = field(default_factory=lambda: str(uuid.uuid4()))
@@ -143,6 +146,7 @@ class BatchJob:
     created_at: datetime = field(default_factory=datetime.now)
     started_at: Optional[datetime] = None
     completed_at: Optional[datetime] = None
+    scheduled_at: Optional[datetime] = None  # When the job should start (None = immediate)
     progress: float = 0.0
     current_stage: str = ""
     retry_count: int = 0
@@ -151,6 +155,8 @@ class BatchJob:
     config: dict[str, Any] = field(default_factory=dict)
     metadata: dict[str, Any] = field(default_factory=dict)
     source: str = "manual"  # manual, folder_watcher, pattern, api
+    depends_on: list[str] = field(default_factory=list)  # Job IDs this job depends on
+    dependent_jobs: list[str] = field(default_factory=list)  # Job IDs that depend on this job
 
     def __post_init__(self) -> None:
         """Validate and normalize job data."""
@@ -182,6 +188,42 @@ class BatchJob:
             return None
         estimated_total = elapsed / self.progress
         return estimated_total - elapsed
+
+    @property
+    def is_scheduled_time_reached(self) -> bool:
+        """Check if the scheduled start time has been reached."""
+        if self.scheduled_at is None:
+            return True
+        return datetime.now() >= self.scheduled_at
+
+    @property
+    def has_dependencies(self) -> bool:
+        """Check if this job has dependencies."""
+        return len(self.depends_on) > 0
+
+    def check_dependencies_met(self, completed_job_ids: set[str]) -> bool:
+        """Check if all dependencies have been completed.
+
+        Args:
+            completed_job_ids: Set of job IDs that have completed successfully.
+
+        Returns:
+            True if all dependencies are met or there are no dependencies.
+        """
+        if not self.depends_on:
+            return True
+        return all(dep_id in completed_job_ids for dep_id in self.depends_on)
+
+    def get_pending_dependencies(self, completed_job_ids: set[str]) -> list[str]:
+        """Get list of dependency job IDs that haven't completed yet.
+
+        Args:
+            completed_job_ids: Set of job IDs that have completed successfully.
+
+        Returns:
+            List of job IDs that this job is still waiting on.
+        """
+        return [dep_id for dep_id in self.depends_on if dep_id not in completed_job_ids]
 
     def mark_started(self) -> None:
         """Mark job as started."""
@@ -266,6 +308,9 @@ class BatchJob:
             "config": self.config,
             "metadata": self.metadata,
             "source": self.source,
+            "scheduled_at": self.scheduled_at.isoformat() if self.scheduled_at else None,
+            "depends_on": self.depends_on,
+            "dependent_jobs": self.dependent_jobs,
         }
 
     @classmethod
@@ -296,6 +341,11 @@ class BatchJob:
             config=data.get("config", {}),
             metadata=data.get("metadata", {}),
             source=data.get("source", "manual"),
+            scheduled_at=datetime.fromisoformat(data["scheduled_at"])
+            if data.get("scheduled_at")
+            else None,
+            depends_on=data.get("depends_on", []),
+            dependent_jobs=data.get("dependent_jobs", []),
         )
 
 

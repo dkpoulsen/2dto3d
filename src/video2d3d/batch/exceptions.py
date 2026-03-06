@@ -70,6 +70,30 @@ class StatePersistenceError(BatchQueueError):
         super().__init__(message)
 
 
+class CircularDependencyError(BatchQueueError):
+    """Raised when a circular dependency is detected."""
+
+    def __init__(self, job_id: str, dependency_id: str) -> None:
+        self.job_id = job_id
+        self.dependency_id = dependency_id
+        super().__init__(
+            f"Circular dependency detected: job {job_id} depends on {dependency_id}"
+        )
+
+
+class DependencyFailedError(BatchQueueError):
+    """Raised when a dependency has failed or been cancelled."""
+
+    def __init__(self, job_id: str, dependency_id: str, dependency_status: str) -> None:
+        self.job_id = job_id
+        self.dependency_id = dependency_id
+        self.dependency_status = dependency_status
+        super().__init__(
+            f"Dependency {dependency_id} is in {dependency_status} state, "
+            f"job {job_id} cannot run"
+        )
+
+
 __all__ = [
     "BatchQueueError",
     "JobNotFoundError",
@@ -80,4 +104,6 @@ __all__ = [
     "FileDiscoveryError",
     "FolderWatcherError",
     "StatePersistenceError",
+    "CircularDependencyError",
+    "DependencyFailedError",
 ]

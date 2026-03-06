@@ -198,6 +198,18 @@ class SubmitJobRequest(BaseModel):
         "The callback payload includes job status, output file ID, and any error details.",
         examples=["https://example.com/webhook/video-complete"],
     )
+    scheduled_at: Optional[datetime] = Field(
+        default=None,
+        description="Optional UTC timestamp when the job should start processing. "
+        "If not provided, the job will start immediately (subject to queue availability).",
+        examples=["2024-01-15T14:30:00Z"],
+    )
+    depends_on: Optional[list[str]] = Field(
+        default=None,
+        description="Optional list of job IDs that must complete successfully before this job can start. "
+        "This creates a dependency chain, useful for sequential processing pipelines.",
+        examples=[["job_abc123", "job_def456"]],
+    )
 
     @field_validator("output_filename")
     @classmethod
@@ -409,6 +421,21 @@ class JobResponse(BaseModel):
         default_factory=dict,
         description="Job configuration used for processing.",
     )
+    scheduled_at: Optional[datetime] = Field(
+        default=None,
+        description="UTC timestamp when the job is scheduled to start. "
+        "Null if the job starts immediately.",
+    )
+    depends_on: list[str] = Field(
+        default_factory=list,
+        description="List of job IDs that this job depends on. "
+        "All dependencies must complete successfully before this job can run.",
+    )
+    dependent_jobs: list[str] = Field(
+        default_factory=list,
+        description="List of job IDs that depend on this job. "
+        "These jobs will be notified when this job completes.",
+    )
 
 class JobListResponse(BaseModel):
     """Response for job listing endpoint."""
@@ -484,8 +511,94 @@ class ErrorResponse(BaseModel):
     request_id: Optional[str] = Field(None, description="Request identifier for tracing")
 
 
+
+
+class GPUStatusResponse(BaseModel):
+    """GPU status information for health check."""
+
+    available: bool = Field(default=False, description="Whether GPU is available")
+    device_name: Optional[str] = Field(None, description="GPU device name")
+    device_count: int = Field(default=0, description="Number of available GPUs")
+    memory_used_mb: float = Field(default=0.0, description="GPU memory used in MB")
+    memory_free_mb: float = Field(default=0.0, description="GPU memory free in MB")
+    memory_total_mb: float = Field(default=0.0, description="Total GPU memory in MB")
+    memory_utilization_percent: float = Field(default=0.0, description="GPU memory utilization percentage")
+    compute_capability: Optional[str] = Field(None, description="GPU compute capability")
+
+
+class SystemMemoryResponse(BaseModel):
+    """System memory information for health check."""
+
+    total_mb: float = Field(..., description="Total system memory in MB")
+    available_mb: float = Field(..., description="Available system memory in MB")
+    used_mb: float = Field(..., description="Used system memory in MB")
+    utilization_percent: float = Field(..., description="Memory utilization percentage")
+
+
+class QueueHealthResponse(BaseModel):
+    """Queue health information for health check."""
+
+    running: bool = Field(..., description="Whether the queue is running")
+    paused: bool = Field(default=False, description="Whether the queue is paused")
+    total_jobs: int = Field(default=0, description="Total jobs in queue")
+    pending_jobs: int = Field(default=0, description="Pending jobs waiting to process")
+    running_jobs: int = Field(default=0, description="Currently running jobs")
+    completed_jobs: int = Field(default=0, description="Successfully completed jobs")
+    failed_jobs: int = Field(default=0, description="Failed jobs")
+    queue_depth: int = Field(default=0, description="Current queue depth (pending + running)")
+    success_rate_percent: float = Field(default=0.0, description="Job success rate percentage")
+
+
+class HealthStatus(str, Enum):
+    """Health status levels."""
+
+    HEALTHY = "healthy"
+    DEGRADED = "degraded"
+    UNHEALTHY = "unhealthy"
+
+
+class ComprehensiveHealthResponse(BaseModel):
+    """Comprehensive health check response with detailed system status."""
+
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "status": "healthy",
+                "version": "0.1.0",
+                "uptime_seconds": 3600.5,
+                "timestamp": "2024-01-15T10:30:00Z",
+                "gpu": {
+                    "available": True,
+                    "device_name": "NVIDIA RTX 3090",
+                    "memory_utilization_percent": 45.5,
+                },
+                "memory": {"utilization_percent": 60.0},
+                "queue": {"running": True, "total_jobs": 10, "running_jobs": 2},
+                "checks": {"queue": True, "gpu": True, "memory": True},
+            }
+        }
+    )
+
+    status: HealthStatus = Field(..., description="Overall health status")
+    version: str = Field(..., description="API version")
+    uptime_seconds: float = Field(..., description="Service uptime in seconds")
+    timestamp: datetime = Field(default_factory=datetime.utcnow, description="Health check timestamp")
+    gpu: GPUStatusResponse = Field(..., description="GPU status")
+    memory: SystemMemoryResponse = Field(..., description="System memory status")
+    queue: QueueHealthResponse = Field(..., description="Queue status")
+    checks: dict[str, bool] = Field(
+        default_factory=dict,
+        description="Individual component check results",
+    )
+
+
+
 class HealthCheckResponse(BaseModel):
-    """Health check response."""
+    """Health check response (basic/simplified).
+
+    For comprehensive health monitoring with GPU memory, system memory,
+    and queue statistics, use ComprehensiveHealthResponse instead.
+    """
 
     status: str = Field(default="healthy", description="Service status")
     version: str = Field(..., description="API version")
@@ -530,6 +643,7 @@ __all__ = [
     "JobPriorityRequest",
     "StereoFormat",
     "DepthModel",
+    "HealthStatus",
     # Request models
     "JobConfigRequest",
     "SubmitJobRequest",
@@ -546,5 +660,9 @@ __all__ = [
     "DownloadInfoResponse",
     "ErrorResponse",
     "HealthCheckResponse",
+    "ComprehensiveHealthResponse",
+    "GPUStatusResponse",
+    "SystemMemoryResponse",
+    "QueueHealthResponse",
     "APIInfoResponse",
 ]
