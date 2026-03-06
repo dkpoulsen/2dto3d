@@ -80,10 +80,9 @@ video_output:
   # Pixel format
   pixel_format: yuv420p
 
-# Depth Estimation Settings
 depth_estimation:
   # Model to use for depth estimation
-  model: midas_small  # Options: midas_small, midas_hybrid, dpt_large, dpt_hybrid
+  model: midas_small  # Options: midas_small, midas_hybrid, dpt_large, dpt_hybrid, adabins_nyu, adabins_kitti
   
   # Model path (relative to models/ directory or absolute path)
   model_path: ""
@@ -102,7 +101,34 @@ depth_estimation:
   # Enable temporal consistency between frames
   temporal_consistency: true
   temporal_smoothing_factor: 0.5
+  
+  # Model selector settings
+  model_selector:
+    # Primary model for depth estimation
+    primary_model: adabins_nyu
+    
+    # Fallback model if primary fails
+    fallback_model: midas_small
+    
+    # Enable automatic fallback on model errors
+    enable_auto_fallback: true
+    
+    # Enable scene-adaptive model selection (indoor/outdoor)
+    enable_scene_adaptation: false
+    
+    # Model fallback chain (in order of preference)
+    fallback_chain:
+      - adabins_nyu
+      - midas_small
+      - dpt_hybrid
 
+  # AdaBins-specific settings
+  adabins:
+    # AdaBins model variant (adabins_nyu for indoor, adabins_kitti for outdoor)
+    variant: adabins_nyu
+    
+    # Maximum depth value (10.0 for NYU, 80.0 for KITTI)
+    max_depth: 10.0
 # Depth Map Processing
 depth_processing:
   # Edge-aware smoothing
