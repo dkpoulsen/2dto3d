@@ -76,7 +76,7 @@ class ComponentStats:
         call_count: Number of times the component was called.
         min_time_ms: Minimum execution time.
         max_time_ms: Maximum execution time.
-        times: List of individual execution times (for calculating stdev).
+        times: List of individual execution times (bounded for memory efficiency).
     """
 
     name: str
@@ -85,6 +85,7 @@ class ComponentStats:
     min_time_ms: float = float("inf")
     max_time_ms: float = 0.0
     times: List[float] = field(default_factory=list)
+    _max_times: int = field(default=MAX_STORED_TIMES, repr=False)
 
     @property
     def avg_time_ms(self) -> float:
@@ -112,12 +113,26 @@ class ComponentStats:
 
         Args:
             time_ms: Execution time in milliseconds.
+
+        Raises:
+            ValueError: If time_ms is negative.
         """
+        if time_ms < 0:
+            raise ValueError(f"Time cannot be negative: {time_ms}")
+
         self.total_time_ms += time_ms
         self.call_count += 1
         self.min_time_ms = min(self.min_time_ms, time_ms)
         self.max_time_ms = max(self.max_time_ms, time_ms)
-        self.times.append(time_ms)
+
+        # Store times for stats calculation (bounded for memory)
+        if len(self.times) < self._max_times:
+            self.times.append(time_ms)
+        else:
+            # Replace a random older time to maintain sample
+            import random
+            idx = random.randint(0, self._max_times - 1)
+            self.times[idx] = time_ms
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary for serialization."""

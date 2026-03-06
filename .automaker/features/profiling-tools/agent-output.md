@@ -1042,3 +1042,111 @@ Input: {
   ],
   "filePath": "/home/dkp/Documents/Automaker/2dto3d/src/video2d3d/utils/profiler.py"
 }
+
+🔧 Tool: read
+Input: {
+  "filePath": "/home/dkp/Documents/Automaker/2dto3d/src/video2d3d/utils/profiler.py",
+  "offset": 60,
+  "limit": 80
+}
+
+🔧 Tool: edit
+Input: {
+  "edits": [
+    {
+      "end": "133#VR|",
+      "lines": [
+        "@dataclass",
+        "class ComponentStats:",
+        "    \"\"\"Statistics for a single profiled component.",
+        "",
+        "    Attributes:",
+        "        name: Component name.",
+        "        total_time_ms: Total accumulated time in milliseconds.",
+        "        call_count: Number of times the component was called.",
+        "        min_time_ms: Minimum execution time.",
+        "        max_time_ms: Maximum execution time.",
+        "        times: List of individual execution times (bounded for memory efficiency).",
+        "    \"\"\"",
+        "",
+        "    name: str",
+        "    total_time_ms: float = 0.0",
+        "    call_count: int = 0",
+        "    min_time_ms: float = float(\"inf\")",
+        "    max_time_ms: float = 0.0",
+        "    times: List[float] = field(default_factory=list)",
+        "    _max_times: int = field(default=MAX_STORED_TIMES, repr=False)",
+        "",
+        "    @property",
+        "    def avg_time_ms(self) -> float:",
+        "        \"\"\"Average execution time in milliseconds.\"\"\"",
+        "        if self.call_count == 0:",
+        "            return 0.0",
+        "        return self.total_time_ms / self.call_count",
+        "",
+        "    @property",
+        "    def std_dev_ms(self) -> float:",
+        "        \"\"\"Standard deviation of execution times in milliseconds.\"\"\"",
+        "        if len(self.times) < 2:",
+        "            return 0.0",
+        "        return stdev(self.times)",
+        "",
+        "    @property",
+        "    def median_time_ms(self) -> float:",
+        "        \"\"\"Median execution time in milliseconds.\"\"\"",
+        "        if not self.times:",
+        "            return 0.0",
+        "        return median(self.times)",
+        "",
+        "    def add_measurement(self, time_ms: float) -> None:",
+        "        \"\"\"Add a new timing measurement.",
+        "",
+        "        Args:",
+        "            time_ms: Execution time in milliseconds.",
+        "",
+        "        Raises:",
+        "            ValueError: If time_ms is negative.",
+        "        \"\"\"",
+        "        if time_ms < 0:",
+        "            raise ValueError(f\"Time cannot be negative: {time_ms}\")",
+        "",
+        "        self.total_time_ms += time_ms",
+        "        self.call_count += 1",
+        "        self.min_time_ms = min(self.min_time_ms, time_ms)",
+        "        self.max_time_ms = max(self.max_time_ms, time_ms)",
+        "",
+        "        # Store times for stats calculation (bounded for memory)",
+        "        if len(self.times) < self._max_times:",
+        "            self.times.append(time_ms)",
+        "        else:",
+        "            # Replace a random older time to maintain sample",
+        "            import random",
+        "            idx = random.randint(0, self._max_times - 1)",
+        "            self.times[idx] = time_ms",
+        "",
+        "    def to_dict(self) -> Dict[str, Any]:",
+        "        \"\"\"Convert to dictionary for serialization.\"\"\"",
+        "        return {",
+        "            \"name\": self.name,",
+        "            \"total_time_ms\": round(self.total_time_ms, 3),",
+        "            \"call_count\": self.call_count,",
+        "            \"avg_time_ms\": round(self.avg_time_ms, 3),",
+        "            \"min_time_ms\": round(self.min_time_ms, 3) if self.min_time_ms != float(\"inf\") else 0,",
+        "            \"max_time_ms\": round(self.max_time_ms, 3),",
+        "            \"median_time_ms\": round(self.median_time_ms, 3),",
+        "            \"std_dev_ms\": round(self.std_dev_ms, 3),",
+        "        }"
+      ],
+      "op": "replace",
+      "pos": "69#VQ|"
+    }
+  ],
+  "filePath": "/home/dkp/Documents/Automaker/2dto3d/src/video2d3d/utils/profiler.py"
+}
+
+🔧 Tool: read
+Input: {
+  "filePath": "/home/dkp/Documents/Automaker/2dto3d/src/video2d3d/utils/profiler.py",
+  "limit": 120,
+  "offset": 150
+}

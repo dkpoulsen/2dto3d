@@ -660,3 +660,100 @@ Input: {
   "description": "Verify frontend types compile",
   "timeout": 60000
 }
+<summary>
+## Summary: Integrate AI-based video upscaling models (ESRGAN, Real-ESRGAN)
+
+### Changes Implemented
+
+**Backend (Python)**
+1. **Created `src/video2d3d/upscaling/` module** - New module for AI-based video upscaling
+   - `__init__.py` - Module exports and documentation
+   - `config.py` - Configuration classes with support for multiple models (ESRGAN, Real-ESRGAN x4plus, x2plus, anime, general-x4v3)
+   - `base.py` - Abstract base class `BaseUpscaler`, `UpscaleResult` dataclass, and custom exceptions
+   - `esrgan.py` - Real-ESRGAN implementation using ONNX Runtime with GPU/CPU support
+   - `processor.py` - `VideoUpscaler` class for batch video frame processing with progress tracking
+
+2. **Key Features Implemented:**
+   - Multiple model types: ESRGAN, Real-ESRGAN x4plus, Real-ESRGAN x4plus-anime, Real-ESRGAN x2plus, Real-ESRGAN general-x4v3
+   - Tile-based processing for large images (configurable tile size and padding)
+   - GPU acceleration via CUDA/ROCm through ONNX Runtime
+   - Half-precision (FP16) inference for faster processing
+   - Denoising strength control (0.0 to 1.0)
+   - Batch processing with progress callbacks
+   - Memory-efficient frame generator processing
+   - Dummy upscaler for testing without model files
+
+3. **API Schema Updates (`web/schemas.py`):**
+   - Added `UpscalingConfigRequest` model for API requests
+   - Added `upscaling` field to `JobConfigRequest`
+
+**Frontend (TypeScript)**
+1. **Updated `frontend/src/api/types.ts`:**
+   - Added `UpscalingModelType` type with all available models
+   - Added `UpscalingConfig` interface with full configuration options
+   - Added `upscaling` field to `JobConfig` interface
+   - Added `upscaling` field to `JobConfigWithFocus` interface
+
+**Tests**
+1. **Unit Tests:**
+   - `tests/unit/test_upscaling_config.py` - Tests for configuration classes
+   - `tests/unit/test_upscaling_base.py` - Tests for base classes and dummy upscaler
+
+2. **Playwright Verification:**
+   - `frontend/tests/upscaler.spec.ts` - Verifies type exports and configuration validation
+
+### Files Modified
+- `src/video2d3d/upscaling/__init__.py` (new)
+- `src/video2d3d/upscaling/config.py` (new)
+- `src/video2d3d/upscaling/base.py` (new)
+- `src/video2d3d/upscaling/esrgan.py` (new)
+- `src/video2d3d/upscaling/processor.py` (new)
+- `src/video2d3d/web/schemas.py` (modified)
+- `frontend/src/api/types.ts` (modified)
+- `tests/unit/test_upscaling_config.py` (new)
+- `tests/unit/test_upscaling_base.py` (new)
+- `frontend/tests/upscaler.spec.ts` (new)
+
+### Notes for Developer
+1. **Model Files Required:** The upscaler requires ONNX model files to be downloaded. Models should be placed in `models/upscaling/` directory (e.g., `realesrgan-x4plus.onnx`). The system will auto-download or provide download URLs when models are missing.
+
+2. **Dependencies:** The upscaler requires `onnxruntime` or `onnxruntime-gpu` package. Install with:
+   - `pip install onnxruntime` for CPU
+   - `pip install onnxruntime-gpu` for GPU acceleration
+
+3. **Usage Example:**
+   ```python
+   from video2d3d.upscaling import UpscalerConfig, VideoUpscaler
+   
+   config = UpscalerConfig(
+       enabled=True,
+       model_type="realesrgan-x4plus",
+       scale=4,
+       tile_size=512,
+       use_gpu=True,
+   )
+   
+   with VideoUpscaler(config) as upscaler:
+       stats = upscaler.upscale_video("input.mp4", "output_4k.mp4")
+   ```
+
+4. **API Usage:** When submitting a job via the REST API, include:
+   ```json
+   {
+     "config": {
+       "upscaling": {
+         "enabled": true,
+         "model_type": "realesrgan-x4plus",
+         "scale": 4,
+         "tile_size": 0,
+         "denoise_strength": 0.5
+       }
+     }
+   }
+   ```
+
+### Verification Status
+- Python upscaler modules verified to import and function correctly
+- Frontend TypeScript types verified to compile without errors
+- Playwright test created at `frontend/tests/upscaler.spec.ts` to verify type exports and configuration validation
+</summary>

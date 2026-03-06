@@ -1025,3 +1025,41 @@ Input: {
   "limit": 30,
   "offset": 118
 }
+
+🔧 Tool: edit
+Input: {
+  "filePath": "/home/dkp/Documents/Automaker/2dto3d/src/video2d3d/web/auth/database.py",
+  "edits": [
+    {
+      "lines": "from __future__ import annotations\n\nimport uuid\nfrom contextlib import contextmanager\nfrom datetime import datetime, timezone\nfrom pathlib import Path\nfrom typing import Generator, Optional",
+      "op": "replace",
+      "pos": "7#ZQ|from __future__ import annotations",
+      "end": "12#VX|from typing import Optional"
+    },
+    {
+      "lines": "def get_session() -> Session:\n    \"\"\"Get a database session.\n\n    Returns:\n        SQLAlchemy Session instance.\n\n    Raises:\n        RuntimeError: If database is not initialized.\n    \"\"\"\n    if _session_factory is None:\n        init_database()\n    return _session_factory()\n\n\n@contextmanager\ndef session_scope() -> Generator[Session, None, None]:\n    \"\"\"Provide a transactional scope around a series of operations.\n    \n    This context manager ensures proper session handling with automatic\n    commit on success and rollback on error.\n\n    Yields:\n        SQLAlchemy Session instance.\n\n    Example:\n        with session_scope() as session:\n            user = session.query(UserModel).first()\n    \"\"\"\n    session = get_session()\n    try:\n        yield session\n        session.commit()\n    except Exception:\n        session.rollback()\n        raise\n    finally:\n        session.close()",
+      "op": "replace",
+      "pos": "122#PS|def get_session() -> Session:",
+      "end": "133#QK|    return _session_factory()"
+    },
+    {
+      "lines": "__all__ = [\n    \"Base\",\n    \"UserModel\",\n    \"init_database\",\n    \"get_session\",\n    \"session_scope\",\n    \"get_engine\",\n    \"get_database_path\",\n]",
+      "op": "replace",
+      "pos": "150#ZJ|__all__ = ["
+    }
+  ]
+}
+
+🔧 Tool: read
+Input: {
+  "filePath": "/home/dkp/Documents/Automaker/2dto3d/src/video2d3d/web/auth/__init__.py",
+  "limit": 30,
+  "offset": 30
+}
+
+🔧 Tool: read
+Input: {
+  "filePath": "/home/dkp/Documents/Automaker/2dto3d/src/video2d3d/web/auth/__init__.py",
+  "limit": 40,
+  "offset": 60
+}

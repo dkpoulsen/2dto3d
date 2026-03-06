@@ -668,3 +668,16 @@ Input: {
   "command": "cd /home/dkp/Documents/Automaker/2dto3d && python -c \"from video2d3d.denoising import VideoDenoiserSelector, DenoiserModelType, VideoDenoiserConfig; print('Import successful')\"",
   "description": "Test denoising module import"
 }
+
+🔧 Tool: bash
+Input: {
+  "command": "cd /home/dkp/Documents/Automaker/2dto3d && pip install -e . -q && python -c \"from video2d3d.denoising import VideoDenoiserSelector, DenoiserModelType, VideoDenoiserConfig; print('Import successful')\"",
+  "description": "Install package and test import",
+  "timeout": 120000
+}
+
+🔧 Tool: bash
+Input: {
+  "command": "cd /home/dkp/Documents/Automaker/2dto3d && source .venv/bin/activate && python -c \"from video2d3d.denoising import VideoDenoiserSelector, DenoiserModelType, VideoDenoiserConfig; print('Import successful')\"",
+  "description": "Test import with venv"
+}

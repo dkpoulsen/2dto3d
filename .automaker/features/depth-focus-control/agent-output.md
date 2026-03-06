@@ -591,3 +591,69 @@ The commit was created successfully. Let me provide the final summary:
 - The fix removes the problematic duplicate assignment, preserving the correct job_config that includes depth_focus and depth_curve
 - Tests for the depth_focus schema validation continue to pass
 </summary>
+
+---
+
+## Follow-up Session
+
+I'll complete the Testing pipeline step for the Depth-of-Focus Control feature. Let me first review the existing test coverage and identify gaps.
+
+🔧 Tool: todowrite
+Input: {
+  "todos": [
+    {
+      "content": "Review existing test coverage for depth-focus feature",
+      "status": "in_progress",
+      "priority": "high"
+    },
+    {
+      "content": "Identify test coverage gaps",
+      "status": "pending",
+      "priority": "high"
+    },
+    {
+      "content": "Write additional unit tests for backend",
+      "status": "pending",
+      "priority": "high"
+    },
+    {
+      "content": "Write additional unit tests for frontend",
+      "status": "pending",
+      "priority": "high"
+    },
+    {
+      "content": "Write integration tests for depth_focus API",
+      "status": "pending",
+      "priority": "high"
+    },
+    {
+      "content": "Run all tests to verify coverage",
+      "status": "pending",
+      "priority": "high"
+    }
+  ]
+}
+
+🔧 Tool: read
+Input: {
+  "filePath": "/home/dkp/Documents/Automaker/2dto3d/tests/unit/test_web_schemas.py"
+}
+
+🔧 Tool: read
+Input: {
+  "filePath": "/home/dkp/Documents/Automaker/2dto3d/tests/integration/test_api_jobs.py"
+}
+
+🔧 Tool: read
+Input: {
+  "filePath": "/home/dkp/Documents/Automaker/2dto3d/frontend/src/components/test/DepthFocusControl.test.tsx"
+}
+
+🔧 Tool: task
+Input: {
+  "subagent_type": "explore",
+  "run_in_background": true,
+  "load_skills": [],
+  "description": "Find existing depth focus tests",
+  "prompt": "I'm reviewing test coverage for the Depth-of-Focus Control feature. I need to find all existing tests.\n\nCONTEXT: This feature adds depth-of-focus adjustment to the 2dto3d video conversion application.\n\nGOAL: Find all test files that test depth_focus functionality - both frontend and backend.\n\nDOWNSTREAM: I will identify gaps in test coverage and write additional tests.\n\nREQUEST: Find all test files containing \"depth_focus\", \"DepthFocus\", \"depthFocus\", or related test patterns. List file paths with brief descriptions of what each test file covers."
+}
