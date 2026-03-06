@@ -69,16 +69,47 @@ video_output:
   format: mp4
   
   # Video codec
+  # Standard codecs: libx264, libx265, libvpx-vp9, mpeg4, prores_ks, mjpeg
+  # AV1 codecs (experimental): libaom-av1, libsvtav1, librav1e
+  # HEVC hardware-accelerated: hevc_nvenc (NVIDIA), hevc_vaapi (Linux), hevc_qsv (Intel), hevc_videotoolbox (macOS)
+  # VR-optimized: hevc_vr, av1_vr
   codec: libx264
   
   # Quality preset (ultrafast, superfast, veryfast, faster, fast, medium, slow, slower, veryslow)
+  # For AV1: numeric 0-13 (SVT-AV1) or 0-8 (libaom-av1)
+  # For NVENC: p1-p7
   preset: medium
   
-  # CRF quality (0-51, lower = better quality, 23 is default)
+  # CRF quality (0-51 for H.264/HEVC, 0-63 for VP9/AV1)
+  # Lower = better quality, larger file. 23 is default for H.264.
+  # Recommended: 18-28 for H.264, 20-30 for HEVC, 25-35 for AV1
   crf: 23
   
   # Pixel format
+  # yuv420p: Most compatible, 4:2:0 chroma
+  # yuv422p: 4:2:2 chroma
+  # yuv444p: No chroma subsampling
+  # yuv420p10le: 10-bit 4:2:0 (recommended for VR)
+  # yuv422p10le: 10-bit 4:2:2
+  # yuv444p10le: 10-bit 4:4:4
   pixel_format: yuv420p
+  
+  # Advanced codec options (optional)
+  # codec_options:
+  #   tune: film          # Tuning for specific content (film, animation, grain, etc.)
+  #   profile: high       # Codec profile (baseline, main, high, high10, etc.)
+  #   level: "4.0"        # Codec level
+  #   vr_mode: false      # Enable VR-specific optimizations
+  # 
+  # x265_params:          # x265/HEVC specific parameters
+  #   frame-threads: 2
+  #   pmode: 1
+  #   pme: 1
+  #   aq-mode: 3
+  #
+  # av1_params:           # AV1 specific parameters
+  #   cpu_used: 4         # Speed preset for libaom-av1 (0-8, higher = faster)
+  #   lag_in_frames: 35   # Lookahead frames
 
 depth_estimation:
   # Model to use for depth estimation
@@ -147,7 +178,21 @@ depth_processing:
   # Depth sharpening
   sharpening: false
   sharpening_amount: 0.5
-
+  
+  # Depth curve adjustment for non-linear depth mapping
+  # Allows artistic control over 3D effect strength
+  depth_curve:
+    enabled: false
+    # Preset curve name (linear, s_curve, contrast_boost, soft_curve, inverse_s, shadow_lift, highlight_compress)
+    # If preset is set, control_points are ignored
+    preset: null  # Set to a preset name or null for custom curve
+    # Custom control points (x = input depth, y = output depth), range [0, 1]
+    # Must include endpoints (0,0) and (1,1) - added automatically if missing
+    control_points:
+      - x: 0.0
+        y: 0.0
+      - x: 1.0
+        y: 1.0
 # Stereoscopic Generation Settings
 stereo_generation:
   # Output 3D format

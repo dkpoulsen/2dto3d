@@ -68,15 +68,41 @@ def _get_writer_logger():
 
 
 class VideoCodec(Enum):
-    """Supported video codecs for encoding."""
+    """Supported video codecs for encoding.
+    
+    Categories:
+    - Standard codecs: H264, H265/HEVC, VP9, MPEG4, MJPEG, PRORES
+    - AV1 codecs: AV1_AOM (libaom), AV1_SVT (SVT-AV1), AV1_RAV1E (Rav1e)
+    - HEVC variants: HEVC_LIB, HEVC_NVENC, HEVC_VAAPI, HEVC_QSV
+    - VR-optimized: HEVC_VR, AV1_VR (optimized for VR content)
+    """
 
+    # Standard codecs
     H264 = "libx264"
     H265 = "libx265"
     VP9 = "libvpx-vp9"
-    AV1 = "libaom-av1"
     MPEG4 = "mpeg4"
     PRORES = "prores_ks"
     MJPEG = "mjpeg"
+    
+    # AV1 codecs (next-generation, royalty-free)
+    AV1_AOM = "libaom-av1"  # AOMedia Video 1 (libaom)
+    AV1_SVT = "libsvtav1"   # SVT-AV1 (Scalable Video Technology)
+    AV1_RAV1E = "librav1e"  # Rav1e (Rust-based encoder)
+    
+    # HEVC/H.265 hardware-accelerated variants
+    HEVC_LIB = "libx265"       # Software encoder (alias for H265)
+    HEVC_NVENC = "hevc_nvenc"  # NVIDIA GPU hardware encoding
+    HEVC_VAAPI = "hevc_vaapi"  # VAAPI (Intel/AMD on Linux)
+    HEVC_QSV = "hevc_qsv"      # Intel Quick Sync Video
+    HEVC_VIDEOTOOLBOX = "hevc_videotoolbox"  # macOS VideoToolbox
+    
+    # VR-optimized codec presets
+    HEVC_VR = "hevc_vr"   # HEVC optimized for VR (high quality, 10-bit)
+    AV1_VR = "av1_vr"     # AV1 optimized for VR content
+    
+    # VP9 variants
+    VP9_LIBVPX = "libvpx-vp9"  # libvpx VP9 encoder
 
 
 class Preset(Enum):
@@ -107,20 +133,28 @@ class PixelFormat(Enum):
 
 # Codec-specific defaults
 CODEC_DEFAULTS: dict[str, dict[str, Any]] = {
+    # Standard codecs
     "libx264": {
         "preset": "medium",
         "crf": 23,
         "pixel_format": "yuv420p",
+        "tune": None,
+        "profile": None,
+        "level": None,
     },
     "libx265": {
         "preset": "medium",
         "crf": 28,
         "pixel_format": "yuv420p",
+        "tune": None,
+        "profile": None,
+        "x265_params": {},
     },
     "libvpx-vp9": {
         "crf": 31,
         "pixel_format": "yuv420p",
         "deadline": "good",
+        "cpu_used": 4,
     },
     "mpeg4": {
         "q": 5,
@@ -133,6 +167,72 @@ CODEC_DEFAULTS: dict[str, dict[str, Any]] = {
     "mjpeg": {
         "q": 5,
         "pixel_format": "yuv420p",
+    },
+    # AV1 codecs
+    "libaom-av1": {
+        "crf": 30,
+        "pixel_format": "yuv420p",
+        "cpu_used": 4,  # Speed preset (0-8, higher = faster)
+        "lag_in_frames": 35,
+        "usage_realtime": False,
+    },
+    "libsvtav1": {
+        "crf": 30,
+        "pixel_format": "yuv420p",
+        "preset": 6,  # SVT-AV1 preset (0-13, higher = faster)
+        "tile_columns": 0,
+        "tile_rows": 0,
+    },
+    "librav1e": {
+        "qp": 30,
+        "pixel_format": "yuv420p",
+        "speed": 6,  # Speed preset (0-10, higher = faster)
+        "tile_columns": 0,
+        "tile_rows": 0,
+    },
+    # HEVC hardware-accelerated variants
+    "hevc_nvenc": {
+        "preset": "p4",  # NVENC preset (p1-p7)
+        "cq": 23,  # Constant quality
+        "pixel_format": "yuv420p",
+        "rc": "vbr",  # Rate control
+        "profile": "main",
+    },
+    "hevc_vaapi": {
+        "qp": 23,
+        "pixel_format": "yuv420p",
+        "profile": "main",
+    },
+    "hevc_qsv": {
+        "preset": "medium",
+        "global_quality": 23,
+        "pixel_format": "yuv420p",
+        "profile": "main",
+    },
+    "hevc_videotoolbox": {
+        "q": 23,
+        "pixel_format": "yuv420p",
+        "profile": "main",
+    },
+    # VR-optimized presets
+    "hevc_vr": {
+        "preset": "slow",
+        "crf": 20,
+        "pixel_format": "yuv420p10le",  # 10-bit for better gradients
+        "tune": "grain",  # Preserve detail for VR
+        "x265_params": {
+            "frame-threads": 2,
+            "pmode": 1,
+            "pme": 1,
+            "aq-mode": 3,
+        },
+    },
+    "av1_vr": {
+        "crf": 25,
+        "pixel_format": "yuv420p10le",
+        "cpu_used": 3,
+        "lag_in_frames": 50,
+        "usage_realtime": False,
     },
 }
 
@@ -163,6 +263,15 @@ class VideoWriterConfig:
         faststart: Move atom to start of file (for web streaming).
         threads: Number of encoding threads (0 = auto).
         hwaccel: Enable hardware acceleration if available.
+        
+        # Custom codec options (NEW)
+        tune: Codec tuning option (e.g., 'film', 'animation', 'grain' for x264/x265).
+        profile: Codec profile (e.g., 'main', 'high', 'main10').
+        level: Codec level (e.g., '4.0', '5.1').
+        codec_params: Additional codec-specific parameters as dict.
+        x265_params: x265-specific parameters (for libx265/hevc_vr).
+        av1_params: AV1-specific parameters (for libaom-av1, libsvtav1).
+        vr_mode: Enable VR-specific encoding optimizations.
     """
 
     codec: str = "libx264"
@@ -187,6 +296,14 @@ class VideoWriterConfig:
     faststart: bool = True
     threads: int = 0
     hwaccel: bool = False
+    # Custom codec options (NEW)
+    tune: str | None = None
+    profile: str | None = None
+    level: str | None = None
+    codec_params: dict[str, Any] = field(default_factory=dict)
+    x265_params: dict[str, Any] = field(default_factory=dict)
+    av1_params: dict[str, Any] = field(default_factory=dict)
+    vr_mode: bool = False
 
     def __post_init__(self) -> None:
         """Validate and apply codec defaults after initialization."""
@@ -200,22 +317,66 @@ class VideoWriterConfig:
                 self.crf = defaults["crf"]
             if self.pixel_format is None and "pixel_format" in defaults:
                 self.pixel_format = defaults["pixel_format"]
+            # Apply tune from defaults if not set
+            if self.tune is None and "tune" in defaults:
+                self.tune = defaults["tune"]
+            # Apply profile from defaults if not set
+            if self.profile is None and "profile" in defaults:
+                self.profile = defaults["profile"]
+            # Apply x265_params from defaults if empty
+            if not self.x265_params and "x265_params" in defaults:
+                self.x265_params = defaults["x265_params"].copy()
+            # Apply av1_params from defaults if empty
+            if not self.av1_params and "av1_params" in defaults:
+                self.av1_params = defaults["av1_params"].copy()
+            # Apply codec_params from defaults if empty
+            if not self.codec_params and "codec_params" in defaults:
+                self.codec_params = defaults["codec_params"].copy()
 
-        # Validate CRF range
+        # Validate CRF range based on codec
         if self.crf is not None:
-            if self.codec in ("libx264", "libx265"):
+            # H.264/HEVC codecs (0-51 CRF range)
+            h264_hevc_codecs = (
+                "libx264", "libx265", "hevc_vr",
+                "hevc_nvenc", "hevc_vaapi", "hevc_qsv", "hevc_videotoolbox"
+            )
+            if self.codec in h264_hevc_codecs:
                 if not 0 <= self.crf <= 51:
                     raise ValueError(f"CRF must be 0-51 for {self.codec}, got {self.crf}")
-            elif self.codec == "libvpx-vp9":
+            # VP9/AV1 codecs (0-63 CRF range)
+            elif self.codec in ("libvpx-vp9", "vp9_libvpx", "libaom-av1",
+                                "libsvtav1", "av1_vr"):
                 if not 0 <= self.crf <= 63:
-                    raise ValueError(f"CRF must be 0-63 for VP9, got {self.crf}")
+                    raise ValueError(f"CRF must be 0-63 for {self.codec}, got {self.crf}")
+            # librav1e uses QP, not CRF - warn if CRF is set
+            elif self.codec == "librav1e":
+                import warnings
+                warnings.warn(
+                    "librav1e uses QP (Quantization Parameter), not CRF. "
+                    "Set av1_params['qp'] instead for best results.",
+                    UserWarning,
+                    stacklevel=2
+                )
 
-        # Validate preset
+        # Validate preset for standard codecs
         valid_presets = [p.value for p in Preset]
         if self.preset and self.preset not in valid_presets:
-            raise ValueError(
-                f"Invalid preset '{self.preset}'. Valid presets: {', '.join(valid_presets)}"
-            )
+            # Allow numeric presets for SVT-AV1 and NVENC
+            if self.codec in ("libsvtav1", "hevc_nvenc"):
+                try:
+                    preset_num = int(self.preset)
+                    if self.codec == "libsvtav1" and not 0 <= preset_num <= 13:
+                        raise ValueError(f"SVT-AV1 preset must be 0-13, got {preset_num}")
+                    if self.codec == "hevc_nvenc" and not 1 <= preset_num <= 7:
+                        raise ValueError(f"NVENC preset must be p1-p7, got {self.preset}")
+                except ValueError:
+                    raise ValueError(
+                        f"Invalid preset '{self.preset}' for {self.codec}"
+                    )
+            else:
+                raise ValueError(
+                    f"Invalid preset '{self.preset}'. Valid presets: {', '.join(valid_presets)}"
+                )
 
         # Validate spatial audio format
         valid_spatial_formats = ["binaural", "ambisonics_1st", "ambisonics_2nd", "ambisonics_3rd"]
@@ -420,30 +581,10 @@ class VideoOutputWriter:
             cmd.extend(["-i", str(self._temp_audio_file)])
 
         # Video encoding settings
-        cmd.extend(["-c:v", self.config.codec])
+        cmd.extend(["-c:v", self._get_actual_codec()])
 
         # Codec-specific options
-        if self.config.codec in ("libx264", "libx265"):
-            if self.config.preset:
-                cmd.extend(["-preset", self.config.preset])
-            if self.config.crf is not None and self.config.bitrate is None:
-                cmd.extend(["-crf", str(self.config.crf)])
-            elif self.config.bitrate is not None:
-                cmd.extend(["-b:v", str(self.config.bitrate)])
-            if self.config.codec == "libx265":
-                cmd.extend(["-tag:v", "hvc1"])  # Better compatibility
-
-        elif self.config.codec == "libvpx-vp9":
-            if self.config.crf is not None:
-                cmd.extend(["-crf", str(self.config.crf)])
-            cmd.extend(["-b:v", "0"])  # Use CRF mode
-
-        elif self.config.codec == "prores_ks":
-            profile = CODEC_DEFAULTS.get("prores_ks", {}).get("profile", 3)
-            cmd.extend(["-profile:v", str(profile)])
-
-        elif self.config.codec == "mjpeg":
-            cmd.extend(["-q:v", str(CODEC_DEFAULTS.get("mjpeg", {}).get("q", 5))])
+        self._add_codec_options(cmd)
 
         # Pixel format
         cmd.extend(["-pix_fmt", self.config.pixel_format])
@@ -484,6 +625,225 @@ class VideoOutputWriter:
 
         _get_writer_logger().debug(f"FFmpeg command: {' '.join(cmd)}")
         return cmd
+
+    def _get_actual_codec(self) -> str:
+        """Get the actual FFmpeg codec name for encoding.
+        
+        Maps VR-optimized preset names to their actual codec implementations.
+        """
+        codec_map = {
+            "hevc_vr": "libx265",  # VR-optimized HEVC uses libx265
+            "av1_vr": "libaom-av1",  # VR-optimized AV1 uses libaom
+        }
+        return codec_map.get(self.config.codec, self.config.codec)
+
+    def _add_codec_options(self, cmd: list[str]) -> None:
+        """Add codec-specific options to the FFmpeg command.
+        
+        Args:
+            cmd: The FFmpeg command list to append options to.
+        """
+        codec = self.config.codec
+        actual_codec = self._get_actual_codec()
+        
+        # H.264 / x264
+        if actual_codec == "libx264":
+            self._add_x264_options(cmd)
+        
+        # H.265 / HEVC / x265
+        elif actual_codec == "libx265":
+            self._add_x265_options(cmd)
+        
+        # VP9
+        elif actual_codec == "libvpx-vp9":
+            self._add_vp9_options(cmd)
+        
+        # AV1 codecs
+        elif actual_codec == "libaom-av1":
+            self._add_aom_av1_options(cmd)
+        elif actual_codec == "libsvtav1":
+            self._add_svtav1_options(cmd)
+        elif actual_codec == "librav1e":
+            self._add_rav1e_options(cmd)
+        
+        # HEVC hardware-accelerated
+        elif actual_codec == "hevc_nvenc":
+            self._add_nvenc_hevc_options(cmd)
+        elif actual_codec == "hevc_vaapi":
+            self._add_vaapi_hevc_options(cmd)
+        elif actual_codec == "hevc_qsv":
+            self._add_qsv_hevc_options(cmd)
+        elif actual_codec == "hevc_videotoolbox":
+            self._add_videotoolbox_hevc_options(cmd)
+        
+        # ProRes
+        elif actual_codec == "prores_ks":
+            profile = CODEC_DEFAULTS.get("prores_ks", {}).get("profile", 3)
+            cmd.extend(["-profile:v", str(profile)])
+        
+        # MJPEG
+        elif actual_codec == "mjpeg":
+            cmd.extend(["-q:v", str(CODEC_DEFAULTS.get("mjpeg", {}).get("q", 5))])
+        
+        # MPEG4
+        elif actual_codec == "mpeg4":
+            cmd.extend(["-q:v", str(CODEC_DEFAULTS.get("mpeg4", {}).get("q", 5))])
+        
+        # Apply any custom codec_params
+        for key, value in self.config.codec_params.items():
+            cmd.extend([f"-{key}", str(value)])
+
+    def _add_x264_options(self, cmd: list[str]) -> None:
+        """Add x264-specific options."""
+        if self.config.preset:
+            cmd.extend(["-preset", self.config.preset])
+        if self.config.crf is not None and self.config.bitrate is None:
+            cmd.extend(["-crf", str(self.config.crf)])
+        elif self.config.bitrate is not None:
+            cmd.extend(["-b:v", str(self.config.bitrate)])
+        if self.config.tune:
+            cmd.extend(["-tune", self.config.tune])
+        if self.config.profile:
+            cmd.extend(["-profile:v", self.config.profile])
+        if self.config.level:
+            cmd.extend(["-level", self.config.level])
+
+    def _add_x265_options(self, cmd: list[str]) -> None:
+        """Add x265-specific options."""
+        if self.config.preset:
+            cmd.extend(["-preset", self.config.preset])
+        if self.config.crf is not None and self.config.bitrate is None:
+            cmd.extend(["-crf", str(self.config.crf)])
+        elif self.config.bitrate is not None:
+            cmd.extend(["-b:v", str(self.config.bitrate)])
+        if self.config.tune:
+            cmd.extend(["-tune", self.config.tune])
+        if self.config.profile:
+            cmd.extend(["-profile:v", self.config.profile])
+        
+        # Add x265-params
+        params = []
+        if self.config.vr_mode or self.config.codec == "hevc_vr":
+            # VR-optimized settings
+            params.append("frame-threads=2")
+            params.append("pmode=1")
+            params.append("pme=1")
+            params.append("aq-mode=3")
+        # Add custom x265 params
+        for key, value in self.config.x265_params.items():
+            params.append(f"{key}={value}")
+        if params:
+            cmd.extend(["-x265-params", ":".join(params)])
+        
+        # Better compatibility for HEVC
+        cmd.extend(["-tag:v", "hvc1"])
+
+    def _add_vp9_options(self, cmd: list[str]) -> None:
+        """Add VP9-specific options."""
+        if self.config.crf is not None:
+            cmd.extend(["-crf", str(self.config.crf)])
+        cmd.extend(["-b:v", "0"])  # Use CRF mode
+        
+        # VP9 speed/quality tradeoff
+        deadline = CODEC_DEFAULTS.get("libvpx-vp9", {}).get("deadline", "good")
+        cpu_used = CODEC_DEFAULTS.get("libvpx-vp9", {}).get("cpu_used", 4)
+        cmd.extend(["-deadline", deadline])
+        cmd.extend(["-cpu-used", str(cpu_used)])
+
+    def _add_aom_av1_options(self, cmd: list[str]) -> None:
+        """Add libaom-av1 specific options."""
+        if self.config.crf is not None:
+            cmd.extend(["-crf", str(self.config.crf)])
+        cmd.extend(["-b:v", "0"])  # Use CRF mode
+        
+        # CPU used (speed preset, 0-8, higher = faster but lower quality)
+        cpu_used = self.config.av1_params.get("cpu_used", 
+            CODEC_DEFAULTS.get("libaom-av1", {}).get("cpu_used", 4))
+        cmd.extend(["-cpu-used", str(cpu_used)])
+        
+        # Lag in frames (lookahead)
+        lag_in_frames = self.config.av1_params.get("lag_in_frames",
+            CODEC_DEFAULTS.get("libaom-av1", {}).get("lag_in_frames", 35))
+        cmd.extend(["-lag-in-frames", str(lag_in_frames)])
+        
+        # VR mode optimizations
+        if self.config.vr_mode or self.config.codec == "av1_vr":
+            cmd.extend(["-lag-in-frames", "50"])
+            cmd.extend(["-cpu-used", "3"])
+
+    def _add_svtav1_options(self, cmd: list[str]) -> None:
+        """Add SVT-AV1 specific options."""
+        if self.config.crf is not None:
+            cmd.extend(["-crf", str(self.config.crf)])
+        
+        # SVT-AV1 preset (0-13, higher = faster)
+        preset = self.config.preset if self.config.preset else str(
+            CODEC_DEFAULTS.get("libsvtav1", {}).get("preset", 6))
+        cmd.extend(["-preset", preset])
+
+    def _add_rav1e_options(self, cmd: list[str]) -> None:
+        """Add Rav1e specific options."""
+        # Rav1e uses -qp instead of -crf
+        qp = self.config.av1_params.get("qp",
+            CODEC_DEFAULTS.get("librav1e", {}).get("qp", 30))
+        cmd.extend(["-qp", str(qp)])
+        
+        # Speed preset (0-10, higher = faster)
+        speed = self.config.av1_params.get("speed",
+            CODEC_DEFAULTS.get("librav1e", {}).get("speed", 6))
+        cmd.extend(["-speed", str(speed)])
+
+    def _add_nvenc_hevc_options(self, cmd: list[str]) -> None:
+        """Add NVIDIA NVENC HEVC options."""
+        # NVENC preset (p1-p7)
+        preset = self.config.preset if self.config.preset else "p4"
+        cmd.extend(["-preset", preset])
+        
+        # Rate control
+        rc = CODEC_DEFAULTS.get("hevc_nvenc", {}).get("rc", "vbr")
+        cmd.extend(["-rc", rc])
+        
+        # Quality (cq for constant quality)
+        if self.config.crf is not None:
+            cmd.extend(["-cq", str(self.config.crf)])
+        elif self.config.bitrate is not None:
+            cmd.extend(["-b:v", str(self.config.bitrate)])
+        
+        # Profile
+        if self.config.profile:
+            cmd.extend(["-profile:v", self.config.profile])
+
+    def _add_vaapi_hevc_options(self, cmd: list[str]) -> None:
+        """Add VAAPI HEVC options."""
+        if self.config.crf is not None:
+            cmd.extend(["-qp", str(self.config.crf)])
+        elif self.config.bitrate is not None:
+            cmd.extend(["-b:v", str(self.config.bitrate)])
+        if self.config.profile:
+            cmd.extend(["-profile:v", self.config.profile])
+
+    def _add_qsv_hevc_options(self, cmd: list[str]) -> None:
+        """Add Intel QSV HEVC options."""
+        preset = self.config.preset if self.config.preset else "medium"
+        cmd.extend(["-preset", preset])
+        
+        if self.config.crf is not None:
+            cmd.extend(["-global_quality", str(self.config.crf)])
+        elif self.config.bitrate is not None:
+            cmd.extend(["-b:v", str(self.config.bitrate)])
+        if self.config.profile:
+            cmd.extend(["-profile:v", self.config.profile])
+
+    def _add_videotoolbox_hevc_options(self, cmd: list[str]) -> None:
+        """Add macOS VideoToolbox HEVC options."""
+        if self.config.crf is not None:
+            cmd.extend(["-q:v", str(self.config.crf)])
+        elif self.config.bitrate is not None:
+            cmd.extend(["-b:v", str(self.config.bitrate)])
+        if self.config.profile:
+            cmd.extend(["-profile:v", self.config.profile])
+
+    def _extract_audio(self) -> None:
 
     def _extract_audio(self) -> None:
         """Extract audio from source video to a temporary file."""
@@ -794,6 +1154,205 @@ def create_video_writer(
         crf=crf,
         **kwargs,
     )
+    return VideoOutputWriter(
+        output_path=output_path,
+        config=config,
+        width=width,
+        height=height,
+        fps=fps,
+        source_video=source_video,
+    )
+
+
+def create_vr_video_writer(
+    output_path: str | Path,
+    width: int,
+    height: int,
+    fps: float = 30.0,
+    codec: str = "hevc_vr",
+    quality: str = "high",
+    source_video: str | Path | None = None,
+    **kwargs: Any,
+) -> VideoOutputWriter:
+    """Create a VR-optimized video writer.
+
+    This convenience function creates a VideoOutputWriter pre-configured
+    for VR content with optimal settings for 360° video.
+
+    Args:
+        output_path: Path to the output video file.
+        width: Output video width in pixels.
+        height: Output video height in pixels.
+        fps: Frames per second.
+        codec: VR codec - 'hevc_vr' (recommended) or 'av1_vr'.
+        quality: Quality preset - 'fast', 'balanced', or 'high'.
+        source_video: Optional source video to copy audio from.
+        **kwargs: Additional arguments passed to VideoWriterConfig.
+
+    Returns:
+        Configured VideoOutputWriter instance for VR.
+
+    Example:
+        ```python
+        # High-quality VR video
+        writer = create_vr_video_writer("vr_output.mp4", 3840, 1080, fps=30, quality="high")
+        writer.write_frames(frames)
+        writer.close()
+        ```
+    """
+    quality_settings = {
+        "fast": {"crf": 25, "preset": "fast"},
+        "balanced": {"crf": 22, "preset": "medium"},
+        "high": {"crf": 18, "preset": "slow"},
+    }
+    
+    settings = quality_settings.get(quality, quality_settings["balanced"])
+    
+    config = VideoWriterConfig(
+        codec=codec,
+        preset=settings["preset"],
+        crf=settings["crf"],
+        pixel_format="yuv420p10le",  # 10-bit for better VR gradients
+        vr_mode=True,
+        metadata={
+            "spherical": "1",
+            "stitched": "1",
+            "projection": "equirectangular",
+        },
+        **kwargs,
+    )
+    
+    return VideoOutputWriter(
+        output_path=output_path,
+        config=config,
+        width=width,
+        height=height,
+        fps=fps,
+        source_video=source_video,
+    )
+
+
+def create_av1_video_writer(
+    output_path: str | Path,
+    width: int,
+    height: int,
+    fps: float = 30.0,
+    codec: str = "libaom-av1",
+    speed: int = 4,
+    crf: int = 30,
+    source_video: str | Path | None = None,
+    **kwargs: Any,
+) -> VideoOutputWriter:
+    """Create an AV1 video writer with optimal settings.
+
+    AV1 is a royalty-free, next-generation codec offering excellent
+    compression efficiency at the cost of slower encoding speed.
+
+    Args:
+        output_path: Path to the output video file.
+        width: Output video width in pixels.
+        height: Output video height in pixels.
+        fps: Frames per second.
+        codec: AV1 codec - 'libaom-av1', 'libsvtav1', or 'librav1e'.
+        speed: Encoding speed (0-8 for libaom, 0-13 for SVT-AV1).
+               Lower = slower but better quality.
+        crf: Constant Rate Factor (0-63, lower = better quality).
+        source_video: Optional source video to copy audio from.
+        **kwargs: Additional arguments passed to VideoWriterConfig.
+
+    Returns:
+        Configured VideoOutputWriter instance for AV1.
+
+    Example:
+        ```python
+        # High-quality AV1 encoding
+        writer = create_av1_video_writer("output.webm", 1920, 1080, speed=2, crf=25)
+        writer.write_frames(frames)
+        writer.close()
+        ```
+    """
+    config = VideoWriterConfig(
+        codec=codec,
+        crf=crf,
+        pixel_format="yuv420p",
+        av1_params={"cpu_used": speed},
+        **kwargs,
+    )
+    
+    return VideoOutputWriter(
+        output_path=output_path,
+        config=config,
+        width=width,
+        height=height,
+        fps=fps,
+        source_video=source_video,
+    )
+
+
+def create_hevc_video_writer(
+    output_path: str | Path,
+    width: int,
+    height: int,
+    fps: float = 30.0,
+    hwaccel: str | None = None,
+    preset: str = "medium",
+    crf: int = 28,
+    source_video: str | Path | None = None,
+    **kwargs: Any,
+) -> VideoOutputWriter:
+    """Create an HEVC/H.265 video writer with optional hardware acceleration.
+
+    HEVC provides better compression than H.264 with support for hardware
+    acceleration on modern GPUs.
+
+    Args:
+        output_path: Path to the output video file.
+        width: Output video width in pixels.
+        height: Output video height in pixels.
+        fps: Frames per second.
+        hwaccel: Hardware acceleration type - 'nvenc' (NVIDIA),
+                 'vaapi' (Intel/AMD Linux), 'qsv' (Intel),
+                 'videotoolbox' (macOS), or None for software encoding.
+        preset: Encoding preset (ultrafast to veryslow).
+        crf: Constant Rate Factor (0-51, lower = better quality).
+        source_video: Optional source video to copy audio from.
+        **kwargs: Additional arguments passed to VideoWriterConfig.
+
+    Returns:
+        Configured VideoOutputWriter instance for HEVC.
+
+    Example:
+        ```python
+        # Software HEVC encoding
+        writer = create_hevc_video_writer("output.mp4", 1920, 1080, preset="slow", crf=20)
+        
+        # NVIDIA hardware-accelerated encoding
+        writer = create_hevc_video_writer("output.mp4", 1920, 1080, hwaccel="nvenc")
+        
+        writer.write_frames(frames)
+        writer.close()
+        ```
+    """
+    # Map hwaccel option to codec
+    codec_map = {
+        None: "libx265",
+        "nvenc": "hevc_nvenc",
+        "vaapi": "hevc_vaapi",
+        "qsv": "hevc_qsv",
+        "videotoolbox": "hevc_videotoolbox",
+    }
+    
+    codec = codec_map.get(hwaccel, "libx265")
+    
+    config = VideoWriterConfig(
+        codec=codec,
+        preset=preset,
+        crf=crf,
+        pixel_format="yuv420p",
+        hwaccel=hwaccel is not None,
+        **kwargs,
+    )
+    
     return VideoOutputWriter(
         output_path=output_path,
         config=config,

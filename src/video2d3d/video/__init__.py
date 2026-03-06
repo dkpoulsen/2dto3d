@@ -77,6 +77,9 @@ from video2d3d.video.video_writer import (
     VideoWriterConfig,
     WriterStats,
     create_video_writer,
+    create_vr_video_writer,
+    create_av1_video_writer,
+    create_hevc_video_writer,
 )
 
 __all__ = [
@@ -101,6 +104,9 @@ __all__ = [
     "Preset",
     "WriterStats",
     "create_video_writer",
+    "create_vr_video_writer",
+    "create_av1_video_writer",
+    "create_hevc_video_writer",
     # Exceptions
     "VideoError",
     "VideoFileNotFoundError",
