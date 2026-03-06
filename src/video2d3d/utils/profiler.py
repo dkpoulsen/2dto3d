@@ -39,7 +39,7 @@ import time
 from contextlib import contextmanager
 from dataclasses import dataclass, field
 from functools import wraps
-from statistics import mean, median, stdev
+from statistics import median, stdev
 from threading import Lock
 from typing import (
     TYPE_CHECKING,
@@ -50,8 +50,20 @@ from typing import (
     List,
     Optional,
     TypeVar,
-    Union,
 )
+
+from video2d3d.utils.logger import get_logger, log_performance
+
+if TYPE_CHECKING:
+    from loguru import Logger
+
+
+# Constants
+DEFAULT_BOTTLENECK_THRESHOLD = 15.0  # Percentage of total time
+DEFAULT_TOP_N_COMPONENTS = 10
+MAX_STORED_TIMES = 10000  # Maximum times to store per component for stats
+
+F = TypeVar("F", bound=Callable[..., Any])
 
 from video2d3d.utils.logger import get_logger, log_performance
 

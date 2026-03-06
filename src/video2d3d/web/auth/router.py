@@ -12,7 +12,7 @@ from __future__ import annotations
 from datetime import timedelta
 from typing import Annotated, Optional
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 from video2d3d.utils.logger import get_logger
@@ -35,6 +35,7 @@ from video2d3d.web.auth.schemas import (
     UserRole,
 )
 from video2d3d.web.schemas import ErrorResponse
+from video2d3d.web.rate_limit import limit_auth
 
 logger = get_logger("web.auth.router")
 
@@ -233,7 +234,8 @@ def create_token_response(user: UserModel) -> TokenResponse:
         422: {"model": ErrorResponse, "description": "Validation error"},
     },
 )
-async def register(user_data: UserCreate) -> TokenResponse:
+@limit_auth()
+async def register(request: Request, user_data: UserCreate) -> TokenResponse:
     """Register a new user.
 
     Args:
@@ -262,7 +264,6 @@ async def register(user_data: UserCreate) -> TokenResponse:
 
     return create_token_response(user)
 
-
 @router.post(
     "/login",
     response_model=TokenResponse,
@@ -272,8 +273,9 @@ async def register(user_data: UserCreate) -> TokenResponse:
         200: {"description": "Login successful"},
         401: {"model": ErrorResponse, "description": "Invalid credentials"},
     },
-)
-async def login(credentials: UserLogin) -> TokenResponse:
+    )
+@limit_auth()
+async def login(request: Request, credentials: UserLogin) -> TokenResponse:
     """Authenticate a user and return tokens.
 
     Args:
@@ -312,11 +314,16 @@ async def login(credentials: UserLogin) -> TokenResponse:
         401: {"model": ErrorResponse, "description": "Invalid or expired refresh token"},
     },
 )
-async def refresh_token(request: TokenRefreshRequest) -> TokenResponse:
+@limit_auth()
+async def refresh_token(
+    http_request: Request,
+    token_request: TokenRefreshRequest,
+) -> TokenResponse:
     """Refresh an access token using a refresh token.
 
     Args:
-        request: Refresh token request.
+        http_request: FastAPI request object (for rate limiting).
+        token_request: Refresh token request.
 
     Returns:
         New TokenResponse with fresh tokens.
@@ -324,7 +331,7 @@ async def refresh_token(request: TokenRefreshRequest) -> TokenResponse:
     Raises:
         HTTPException: 401 if refresh token is invalid.
     """
-    payload = decode_token(request.refresh_token)
+    payload = decode_token(token_request.refresh_token)
 
     if payload is None:
         raise HTTPException(

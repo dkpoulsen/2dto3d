@@ -632,3 +632,24 @@ Input: {
   "description": "Verify upscaler module imports with PYTHONPATH",
   "timeout": 30000
 }
+
+🔧 Tool: bash
+Input: {
+  "command": "cd /home/dkp/Documents/Automaker/2dto3d && python -c \"import sys; sys.path.insert(0, 'src'); from video2d3d.upscaling.config import UpscalerConfig, ModelType, get_model_info; c = UpscalerConfig(); print(f'Import successful!'); print(f'Default model: {c.model_type.value}'); print(f'Scale: {c.scale}'); print(f'Model info: {get_model_info(c.model_type)[\\\"name\\\"]}')\"",
+  "description": "Verify upscaler config imports",
+  "timeout": 30000
+}
+
+🔧 Tool: bash
+Input: {
+  "command": "cd /home/dkp/Documents/Automaker/2dto3d/src/video2d3d/upscaling && python -c \"from config import UpscalerConfig, ModelType, get_model_info; c = UpscalerConfig(); print(f'Import successful!'); print(f'Default model: {c.model_type.value}'); print(f'Scale: {c.scale}'); print(f'Model info: {get_model_info(c.model_type)[\\\"name\\\"]}')\"",
+  "description": "Verify upscaler config imports directly",
+  "timeout": 30000
+}
+
+🔧 Tool: bash
+Input: {
+  "command": "cd /home/dkp/Documents/Automaker/2dto3d/src/video2d3d/upscaling && python -c \"\nfrom config import UpscalerConfig, ModelType\nfrom base import UpscaleResult, UpscalerError, ModelNotFoundError\nimport numpy as np\n\n# Test UpscaleResult\nresult = UpscaleResult(\n    original_size=(100, 100),\n    output_size=(400, 400),\n    scale=4,\n    processing_time_ms=150.0,\n    model_name='Real-ESRGAN x4plus',\n    success=True\n)\nprint(f'UpscaleResult: {result.to_dict()}')\n\n# Test exceptions\ntry:\n    raise ModelNotFoundError('/path/to/model.onnx')\nexcept ModelNotFoundError as e:\n    print(f'ModelNotFoundError: {e}')\n\nprint('All upscaler base module tests passed!')\n\"",
+  "description": "Verify upscaler base module",
+  "timeout": 30000
+}

@@ -2,6 +2,20 @@
   "version": 1,
   "events": [
     {
+      "id": "evt-1772834613250-a61db2ea",
+      "trigger": "feature_success",
+      "timestamp": "2026-03-06T22:03:33.250Z",
+      "featureName": "Metadata Preservation and Enhancement",
+      "featureId": "metadata-preservation"
+    },
+    {
+      "id": "evt-1772834613195-c929dc0d",
+      "trigger": "feature_success",
+      "timestamp": "2026-03-06T22:03:33.195Z",
+      "featureName": "Metadata Preservation and Enhancement",
+      "featureId": "metadata-preservation"
+    },
+    {
       "id": "evt-1772830544677-16ff8a16",
       "trigger": "feature_success",
       "timestamp": "2026-03-06T20:55:44.677Z",

@@ -1058,3 +1058,23 @@ Input: {
   "command": "export CI=true DEBIAN_FRONTEND=noninteractive GIT_TERMINAL_PROMPT=0 GCM_INTERACTIVE=never HOMEBREW_NO_AUTO_UPDATE=1 GIT_EDITOR=: EDITOR=: VISUAL='' GIT_SEQUENCE_EDITOR=: GIT_MERGE_AUTOEDIT=no GIT_PAGER=cat PAGER=cat npm_config_yes=true PIP_NO_INPUT=1 YARN_ENABLE_IMMUTABLE_INSTALLS=false; export CI=true DEBIAN_FRONTEND=noninteractive GIT_TERMINAL_PROMPT=0 GCM_INTERACTIVE=never HOMEBREW_NO_AUTO_UPDATE=1 GIT_EDITOR=: EDITOR=: VISUAL='' GIT_SEQUENCE_EDITOR=: GIT_MERGE_AUTOEDIT=no GIT_PAGER=cat PAGER=cat npm_config_yes=true PIP_NO_INPUT=1 YARN_ENABLE_IMMUTABLE_INSTALLS=false && git commit -m \"feat(ui): add thumbnail grid preview for depth map quality assessment\n\nAdd ThumbnailGrid component that displays multiple frames at different\ntimestamps with their depth maps for quick quality assessment. Includes:\n\n- ThumbnailGrid component with display modes (original/depth/both)\n- Zoom controls and pagination support\n- Enlarged frame modal with keyboard navigation\n- Validation status badges and confidence score visualization\n- Backend API endpoint for fetching thumbnail grid data\n\nAlso includes multiple feature implementations:\n- Video upscaling with ESRGAN/Real-ESRGAN models\n- Video denoising with BasicVSR++ and FastDVDnet\n- Skybox separation and processing\n- User authentication with JWT\n- Notification system with webhooks\n- Model performance comparison and voting\n- Profiling tools for performance monitoring\n- Extensive test coverage across all modules\n\nCo-authored-by: Automaker Pipeline <pipeline@automaker.dev>\"",
   "description": "Create conventional commit"
 }
+The staging didn't persist. Let me stage and commit in one command:
+
+🔧 Tool: bash
+Input: {
+  "command": "export CI=true DEBIAN_FRONTEND=noninteractive GIT_TERMINAL_PROMPT=0 GCM_INTERACTIVE=never HOMEBREW_NO_AUTO_UPDATE=1 GIT_EDITOR=: EDITOR=: VISUAL='' GIT_SEQUENCE_EDITOR=: GIT_MERGE_AUTOEDIT=no GIT_PAGER=cat PAGER=cat npm_config_yes=true PIP_NO_INPUT=1 YARN_ENABLE_IMMUTABLE_INSTALLS=false; export CI=true DEBIAN_FRONTEND=noninteractive GIT_TERMINAL_PROMPT=0 GCM_INTERACTIVE=never HOMEBREW_NO_AUTO_UPDATE=1 GIT_EDITOR=: EDITOR=: VISUAL='' GIT_SEQUENCE_EDITOR=: GIT_MERGE_AUTOEDIT=no GIT_PAGER=cat PAGER=cat npm_config_yes=true PIP_NO_INPUT=1 YARN_ENABLE_IMMUTABLE_INSTALLS=false && git add -A && git commit -m \"feat(ui): add thumbnail grid preview for depth map quality assessment\n\nAdd ThumbnailGrid component that displays multiple frames at different\ntimestamps with their depth maps for quick quality assessment. Includes:\n\n- ThumbnailGrid component with display modes (original/depth/both)\n- Zoom controls and pagination support\n- Enlarged frame modal with keyboard navigation\n- Validation status badges and confidence score visualization\n- Backend API endpoint for fetching thumbnail grid data\n\nAlso includes multiple feature implementations:\n- Video upscaling with ESRGAN/Real-ESRGAN models\n- Video denoising with BasicVSR++ and FastDVDnet\n- Skybox separation and processing\n- User authentication with JWT\n- Notification system with webhooks\n- Model performance comparison and voting\n- Profiling tools for performance monitoring\n- Extensive test coverage across all modules\n\nCo-authored-by: Automaker Pipeline <pipeline@automaker.dev>\"",
+  "description": "Stage and commit all changes"
+}
+Now let me verify the commit was created successfully:
+
+🔧 Tool: bash
+Input: {
+  "command": "export CI=true DEBIAN_FRONTEND=noninteractive GIT_TERMINAL_PROMPT=0 GCM_INTERACTIVE=never HOMEBREW_NO_AUTO_UPDATE=1 GIT_EDITOR=: EDITOR=: VISUAL='' GIT_SEQUENCE_EDITOR=: GIT_MERGE_AUTOEDIT=no GIT_PAGER=cat PAGER=cat npm_config_yes=true PIP_NO_INPUT=1 YARN_ENABLE_IMMUTABLE_INSTALLS=false; git status",
+  "description": "Check for any remaining changes"
+}
+
+🔧 Tool: bash
+Input: {
+  "command": "export CI=true DEBIAN_FRONTEND=noninteractive GIT_TERMINAL_PROMPT=0 GCM_INTERACTIVE=never HOMEBREW_NO_AUTO_UPDATE=1 GIT_EDITOR=: EDITOR=: VISUAL='' GIT_SEQUENCE_EDITOR=: GIT_MERGE_AUTOEDIT=no GIT_PAGER=cat PAGER=cat npm_config_yes=true PIP_NO_INPUT=1 YARN_ENABLE_IMMUTABLE_INSTALLS=false; git log -1 --stat | head -50",
+  "description": "Verify the commit"
+}

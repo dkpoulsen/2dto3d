@@ -272,6 +272,10 @@
       <name>Kubernetes Deployment Configuration</name>
       <description>Provide Kubernetes deployment manifests for scaling the service with auto-scaling, load balancing, and GPU scheduling.</description>
     </feature>
+    <feature>
+      <name>Metadata Preservation and Enhancement</name>
+      <description>Preserve and enhance video metadata including EXIF, IPTC, and custom fields throughout the conversion process.</description>
+    </feature>
   </implemented_features>
 
   <additional_requirements>

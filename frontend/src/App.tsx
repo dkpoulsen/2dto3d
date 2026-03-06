@@ -23,23 +23,22 @@ const queryClient = new QueryClient({
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <NotificationProvider>
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Layout />}>
-              <Route index element={<DashboardPage />} />
-              <Route path="upload" element={<UploadPage />} />
-              <Route path="jobs" element={<JobsPage />} />
-              <Route path="downloads" element={<DownloadsPage />} />
-              <Route path="system" element={<SystemPage />} />
-              <Route path="compare" element={<ModelComparisonPage />} />
-              <Route path="jobs/:jobId/validate" element={<DepthValidationPage />} />
-            </Route>
-          </Routes>
-        </BrowserRouter>
-      </NotificationProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<Layout />}>
+            <Route index element={<DashboardPage />} />
+            <Route path="upload" element={<UploadPage />} />
+            <Route path="jobs" element={<JobsPage />} />
+            <Route path="downloads" element={<DownloadsPage />} />
+            <Route path="system" element={<SystemPage />} />
+            <Route path="compare" element={<ModelComparisonPage />} />
+            <Route path="jobs/:jobId/validate" element={<DepthValidationPage />} />
+          </Route>
+        </Routes>
+      </BrowserRouter>
     </QueryClientProvider>
   );
+}
 }
 
 export default App;

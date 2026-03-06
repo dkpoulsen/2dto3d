@@ -3,19 +3,20 @@
   "category": "Processing",
   "title": "Metadata Preservation and Enhancement",
   "description": "Preserve and enhance video metadata including EXIF, IPTC, and custom fields throughout the conversion process.",
-  "status": "pipeline_step_mmcc3rzz_k0qltm",
+  "status": "verified",
   "priority": 4,
   "complexity": "simple",
   "dependencies": [
     "video-input-handler"
   ],
   "createdAt": "2026-03-06T15:23:01.935Z",
-  "updatedAt": "2026-03-06T22:00:40.733Z",
+  "updatedAt": "2026-03-06T22:03:33.248Z",
   "model": "zai-coding-plan/glm-5",
   "thinkingLevel": "none",
   "planningMode": "spec",
   "requirePlanApproval": true,
   "skipTests": false,
   "branchName": "main",
-  "descriptionHistory": []
+  "descriptionHistory": [],
+  "summary": "## Summary: Metadata Preservation and Enhancement\n\n### Changes Committed\n\n**Commit Hash:** `1efa8663704fb06a0038c73e8fcd1ffdf51c1ae4`\n\n**Commit Message:**\n```\nfeat(video): add comprehensive metadata preservation and extraction\n\nAdd extended metadata handling for video files including:\n- ExifMetadata dataclass for camera settings, GPS, timestamps\n- IptcMetadata dataclass for title, description, keywords, copyright\n- XmpMetadata dataclass for Dublin Core and custom namespaces\n- CustomMetadata dataclass for application-specific fields\n- ExtendedVideoMetadata combining all metadata types\n- VideoMetadataExtractor using FFprobe for extraction\n- FFmpeg-compatible metadata output for preservation during conversion\n\nAlso fix duplicate _extract_audio method and add missing instance\nattribute initialization in VideoOutputWriter.\n```\n\n### Files Modified\n- `src/video2d3d/video/metadata.py` (+776 lines) - Added extended metadata dataclasses and extractor\n- `src/video2d3d/video/video_writer.py` (+11/-22 lines) - Fixed duplicate method and attribute initialization\n\n### Notes for Developer\n- The metadata module now supports EXIF, IPTC, XMP, and custom metadata extraction via FFprobe\n- `ExtendedVideoMetadata.from_video()` provides a convenient way to extract all metadata types\n- `to_ffmpeg_metadata()` method generates FFmpeg-compatible metadata for preservation during re-encoding\n- The `VideoMetadataExtractor` class handles parsing of various metadata formats from video files"
 }

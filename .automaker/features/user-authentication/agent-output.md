@@ -921,3 +921,93 @@ Input: {
   "limit": 100,
   "offset": 219
 }
+
+🔧 Tool: edit
+Input: {
+  "filePath": "/home/dkp/Documents/Automaker/2dto3d/src/video2d3d/web/auth/router.py",
+  "edits": [
+    {
+      "lines": "from fastapi import APIRouter, Depends, HTTPException, Request, status",
+      "op": "replace",
+      "pos": "15#HN|from fastapi import APIRouter, Depends, HTTPException, status"
+    },
+    {
+      "lines": "from video2d3d.web.schemas import ErrorResponse\nfrom video2d3d.web.rate_limit import limit_auth",
+      "op": "replace",
+      "pos": "37#TB|from video2d3d.web.schemas import ErrorResponse"
+    },
+    {
+      "lines": "@router.post(\n    \"/register\",\n    response_model=TokenResponse,\n    status_code=status.HTTP_201_CREATED,\n    summary=\"Register a new user\",\n    description=\"Create a new user account and return authentication tokens.\",\n    responses={\n        201: {\"description\": \"User created successfully\"},\n        400: {\"model\": ErrorResponse, \"description\": \"Username or email already exists\"},\n        422: {\"model\": ErrorResponse, \"description\": \"Validation error\"},\n    },\n)\n@limit_auth()\nasync def register(request: Request, user_data: UserCreate) -> TokenResponse:",
+      "op": "replace",
+      "pos": "224#ZJ|@router.post(",
+      "end": "236#MW|async def register(user_data: UserCreate) -> TokenResponse:"
+    },
+    {
+      "lines": "@router.post(\n    \"/login\",\n    response_model=TokenResponse,\n    summary=\"User login\",\n    description=\"Authenticate a user and return JWT tokens.\",\n    responses={\n        200: {\"description\": \"Login successful\"},\n        401: {\"model\": ErrorResponse, \"description\": \"Invalid credentials\"},\n    },\n)\n@limit_auth()\nasync def login(request: Request, credentials: UserLogin) -> TokenResponse:",
+      "op": "replace",
+      "pos": "265#SV|@router.post(",
+      "end": "276#JJ|async def login(credentials: UserLogin) -> TokenResponse:"
+    }
+  ]
+}
+
+🔧 Tool: read
+Input: {
+  "filePath": "/home/dkp/Documents/Automaker/2dto3d/src/video2d3d/web/auth/router.py",
+  "limit": 50,
+  "offset": 300
+}
+
+🔧 Tool: edit
+Input: {
+  "filePath": "/home/dkp/Documents/Automaker/2dto3d/src/video2d3d/web/auth/router.py",
+  "edits": [
+    {
+      "lines": "@router.post(\n    \"/refresh\",\n    response_model=TokenResponse,\n    summary=\"Refresh access token\",\n    description=\"Use a refresh token to get a new access token.\",\n    responses={\n        200: {\"description\": \"Token refreshed successfully\"},\n        401: {\"model\": ErrorResponse, \"description\": \"Invalid or expired refresh token\"},\n    },\n)\n@limit_auth()\nasync def refresh_token(\n    http_request: Request,\n    token_request: TokenRefreshRequest,\n) -> TokenResponse:\n    \"\"\"Refresh an access token using a refresh token.\n\n    Args:\n        http_request: FastAPI request object (for rate limiting).\n        token_request: Refresh token request.\n\n    Returns:\n        New TokenResponse with fresh tokens.\n\n    Raises:\n        HTTPException: 401 if refresh token is invalid.\n    \"\"\"\n    payload = decode_token(token_request.refresh_token)",
+      "op": "replace",
+      "pos": "307#ZJ|@router.post(",
+      "end": "329#KS|    payload = decode_token(request.refresh_token)"
+    }
+  ]
+}
+
+🔧 Tool: todowrite
+Input: {
+  "todos": [
+    {
+      "content": "Fix auth router registration in app.py (CRITICAL)",
+      "status": "completed",
+      "priority": "high"
+    },
+    {
+      "content": "Fix deprecated datetime.utcnow() in database.py and jwt_service.py",
+      "status": "completed",
+      "priority": "high"
+    },
+    {
+      "content": "Fix redundant password validation in schemas.py",
+      "status": "completed",
+      "priority": "medium"
+    },
+    {
+      "content": "Add rate limiting to auth endpoints in router.py",
+      "status": "completed",
+      "priority": "high"
+    },
+    {
+      "content": "Refactor session management for better error handling",
+      "status": "in_progress",
+      "priority": "medium"
+    },
+    {
+      "content": "Update API description to mention authentication",
+      "status": "completed",
+      "priority": "medium"
+    },
+    {
+      "content": "Reduce code duplication in get_current_user_optional",
+      "status": "pending",
+      "priority": "low"
+    }
+  ]
+}
