@@ -950,6 +950,18 @@ from video2d3d.depth.adadepth import (
     estimate_depth_adabins,
 )
 
+# Import ZoeDepth components
+from video2d3d.depth.zoedepth import (
+    ZoeDepthEstimator,
+    ZoeDepthConfig,
+    ZoeDepthModelVariant,
+    DepthMode,
+    ZoeDepthLoadError,
+    ZoeDepthInferenceError,
+    create_zoedepth_estimator,
+    estimate_depth_zoedepth,
+)
+
 # Import model selector components
 from video2d3d.depth.model_selector import (
     DepthModelSelector,
@@ -961,7 +973,7 @@ from video2d3d.depth.model_selector import (
     create_model_selector,
     estimate_depth_auto,
 )
-# Module-level logger for backward compatibility
+
 logger = _get_depth_logger()
 
 __all__ = [
@@ -981,6 +993,11 @@ __all__ = [
     "AdaBinsEstimator",
     "AdaBinsConfig",
     "AdaBinsModelType",
+    # ZoeDepth classes
+    "ZoeDepthEstimator",
+    "ZoeDepthConfig",
+    "ZoeDepthModelVariant",
+    "DepthMode",
     # Model selector classes
     "DepthModelSelector",
     "DepthModelConfig",
@@ -1001,6 +1018,9 @@ __all__ = [
     # AdaBins exceptions
     "AdaBinsLoadError",
     "AdaBinsInferenceError",
+    # ZoeDepth exceptions
+    "ZoeDepthLoadError",
+    "ZoeDepthInferenceError",
     # Selector exceptions
     "SelectorLoadError",
     "SelectorInferenceError",
@@ -1018,6 +1038,9 @@ __all__ = [
     # AdaBins functions
     "create_adabins_estimator",
     "estimate_depth_adabins",
+    # ZoeDepth functions
+    "create_zoedepth_estimator",
+    "estimate_depth_zoedepth",
     # Model selector functions
     "create_model_selector",
     "estimate_depth_auto",

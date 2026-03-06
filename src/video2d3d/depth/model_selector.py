@@ -60,6 +60,9 @@ class DepthModelType(Enum):
     DPT_HYBRID = "dpt_hybrid"
     ADABINS_NYU = "adabins_nyu"
     ADABINS_KITTI = "adabins_kitti"
+    ZOEDEPTH_N = "zoedepth_n"
+    ZOEDEPTH_K = "zoedepth_k"
+    ZOEDEPTH_NK = "zoedepth_nk"
 
     @classmethod
     def from_string(cls, name: str) -> "DepthModelType":
@@ -92,6 +95,16 @@ class DepthModelType(Enum):
             "adabins_kitti": cls.ADABINS_KITTI,
             "adadepth_kitti": cls.ADABINS_KITTI,
             "kitti": cls.ADABINS_KITTI,
+            "zoedepth_n": cls.ZOEDEPTH_N,
+            "zoed_n": cls.ZOEDEPTH_N,
+            "zoe_n": cls.ZOEDEPTH_N,
+            "zoedepth_k": cls.ZOEDEPTH_K,
+            "zoed_k": cls.ZOEDEPTH_K,
+            "zoe_k": cls.ZOEDEPTH_K,
+            "zoedepth_nk": cls.ZOEDEPTH_NK,
+            "zoed_nk": cls.ZOEDEPTH_NK,
+            "zoe_nk": cls.ZOEDEPTH_NK,
+            "zoedepth": cls.ZOEDEPTH_NK,
         }
 
         if normalized not in name_mapping:
@@ -114,6 +127,20 @@ class DepthModelType(Enum):
     def is_adabins(self) -> bool:
         """Check if this is an AdaBins model."""
         return self in (DepthModelType.ADABINS_NYU, DepthModelType.ADABINS_KITTI)
+
+    @property
+    def is_zoedepth(self) -> bool:
+        """Check if this is a ZoeDepth model."""
+        return self in (
+            DepthModelType.ZOEDEPTH_N,
+            DepthModelType.ZOEDEPTH_K,
+            DepthModelType.ZOEDEPTH_NK,
+        )
+
+    @property
+    def supports_metric(self) -> bool:
+        """Check if this model supports metric depth estimation."""
+        return self.is_zoedepth
 
 
 class SceneType(Enum):
@@ -375,6 +402,26 @@ class DepthModelSelector:
                 device=self.config.device,
             )
             return AdaBinsEstimator(config=config)
+
+        elif model_type.is_zoedepth:
+            from video2d3d.depth.zoedepth import (
+                ZoeDepthEstimator,
+                ZoeDepthConfig,
+                ZoeDepthModelVariant,
+            )
+
+            # Map DepthModelType to ZoeDepthModelVariant
+            zoedepth_mapping = {
+                DepthModelType.ZOEDEPTH_N: ZoeDepthModelVariant.ZOE_N,
+                DepthModelType.ZOEDEPTH_K: ZoeDepthModelVariant.ZOE_K,
+                DepthModelType.ZOEDEPTH_NK: ZoeDepthModelVariant.ZOE_NK,
+            }
+
+            config = ZoeDepthConfig(
+                model_variant=zoedepth_mapping.get(model_type, ZoeDepthModelVariant.ZOE_NK),
+                device=self.config.device,
+            )
+            return ZoeDepthEstimator(config=config)
 
         else:
             raise ValueError(f"Unknown model type: {model_type}")
