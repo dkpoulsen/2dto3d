@@ -534,6 +534,17 @@ class VideoOutputWriter:
         self.input_pixel_format = input_pixel_format
         self._progress_callback = progress_callback
         self._total_frames = total_frames or 0
+        
+        # Initialize instance attributes
+        self._is_open: bool = False
+        self._process: subprocess.Popen | None = None
+        self._frames_written: int = 0
+        self._temp_audio_file: Path | None = None
+        self._stats: WriterStats = WriterStats()
+        
+        # Check FFmpeg availability
+        self._check_ffmpeg_available()
+
     def _check_ffmpeg_available(self) -> None:
         """Check if FFmpeg is available in the system PATH."""
         if shutil.which("ffmpeg") is None:
@@ -843,9 +854,7 @@ class VideoOutputWriter:
         if self.config.profile:
             cmd.extend(["-profile:v", self.config.profile])
 
-    def _extract_audio(self) -> None:
 
-    def _extract_audio(self) -> None:
         """Extract audio from source video to a temporary file."""
         if not self.source_video or not self.source_video.exists():
             _get_writer_logger().warning(
