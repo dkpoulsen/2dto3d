@@ -6,6 +6,7 @@ This module provides comprehensive batch processing capabilities:
 - Wildcard pattern matching for file discovery
 - Progress tracking and callbacks
 - State persistence and recovery
+- Adaptive batch sizing based on system resources
 """
 
 from video2d3d.batch.config import BatchQueueConfig, FileDiscoveryConfig, FolderWatcherConfig
@@ -32,20 +33,36 @@ from video2d3d.batch.models import (
 
 from video2d3d.batch.queue import BatchVideoQueue
 
+# Adaptive batch sizing
+from video2d3d.batch.adaptive_sizer import (
+    AdaptiveBatchConfig,
+    AdaptiveBatchSizer,
+    AdjustmentReason,
+    BatchSizeCallback,
+    BatchSizeHistory,
+    create_adaptive_sizer,
+    adaptive_batch_sizer_context,
+)
+
 __all__ = [
+    # Core queue components
     "BatchVideoQueue",
     "BatchQueueConfig",
     "FileDiscoveryConfig",
     "FolderWatcherConfig",
+    # Job models
     "BatchJob",
     "BatchJobResult",
     "BatchQueueStats",
     "JobPriority",
     "JobStatus",
+    # File discovery
     "FileDiscovery",
     "discover_videos",
+    # Folder watching
     "FolderWatcher",
     "WATCHDOG_AVAILABLE",
+    # Exceptions
     "BatchQueueError",
     "JobNotFoundError",
     "JobAlreadyExistsError",
@@ -55,4 +72,12 @@ __all__ = [
     "FileDiscoveryError",
     "FolderWatcherError",
     "StatePersistenceError",
+    # Adaptive batch sizing
+    "AdaptiveBatchConfig",
+    "AdaptiveBatchSizer",
+    "AdjustmentReason",
+    "BatchSizeCallback",
+    "BatchSizeHistory",
+    "create_adaptive_sizer",
+    "adaptive_batch_sizer_context",
 ]
