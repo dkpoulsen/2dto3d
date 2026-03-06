@@ -3,14 +3,14 @@
   "category": "Enhancement",
   "title": "Frame Interpolation for Higher FPS",
   "description": "Implement frame interpolation using AI models (RIFE, DAIN) to increase output frame rate for smoother motion in 3D video.",
-  "status": "backlog",
+  "status": "pipeline_step_mmcc38tb_z6cxyk",
   "priority": 3,
   "complexity": "complex",
   "dependencies": [
     "frame-extraction"
   ],
   "createdAt": "2026-03-06T15:23:01.924Z",
-  "updatedAt": "2026-03-06T15:23:01.924Z",
+  "updatedAt": "2026-03-06T20:25:47.690Z",
   "model": "zai-coding-plan/glm-5",
   "thinkingLevel": "none",
   "planningMode": "spec",
