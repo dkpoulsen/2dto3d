@@ -10,9 +10,10 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Optional
+from typing import Any, Optional
 
 from video2d3d.batch.models import JobPriority
+from video2d3d.checkpoint.models import CheckpointConfig
 
 
 @dataclass
@@ -41,7 +42,7 @@ class FileDiscoveryConfig:
     min_file_size_mb: float = 0.0
     max_file_size_mb: float = 0.0  # 0 = no limit
 
-    def to_dict(self) -> dict[str, any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return {
             "patterns": self.patterns,
@@ -53,6 +54,20 @@ class FileDiscoveryConfig:
             "min_file_size_mb": self.min_file_size_mb,
             "max_file_size_mb": self.max_file_size_mb,
         }
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> FileDiscoveryConfig:
+        """Create from dictionary."""
+        return cls(
+            patterns=data.get("patterns", ["*.mp4", "*.avi", "*.mov", "*.mkv", "*.webm"]),
+            exclude_patterns=data.get("exclude_patterns", []),
+            recursive=data.get("recursive", True),
+            case_sensitive=data.get("case_sensitive", False),
+            max_depth=data.get("max_depth", 10),
+            follow_symlinks=data.get("follow_symlinks", False),
+            min_file_size_mb=data.get("min_file_size_mb", 0.0),
+            max_file_size_mb=data.get("max_file_size_mb", 0.0),
+        )
 
 
 @dataclass
@@ -81,7 +96,7 @@ class FolderWatcherConfig:
         """Normalize paths."""
         self.watch_paths = [Path(p) if isinstance(p, str) else p for p in self.watch_paths]
 
-    def to_dict(self) -> dict[str, any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return {
             "enabled": self.enabled,
@@ -92,6 +107,19 @@ class FolderWatcherConfig:
             "process_existing": self.process_existing,
             "recursive": self.recursive,
         }
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> FolderWatcherConfig:
+        """Create from dictionary."""
+        return cls(
+            enabled=data.get("enabled", False),
+            watch_paths=[Path(p) for p in data.get("watch_paths", [])],
+            poll_interval_seconds=data.get("poll_interval_seconds", 2.0),
+            use_inotify=data.get("use_inotify", True),
+            stable_time_seconds=data.get("stable_time_seconds", 5.0),
+            process_existing=data.get("process_existing", True),
+            recursive=data.get("recursive", True),
+        )
 
 
 @dataclass
@@ -118,6 +146,7 @@ class BatchQueueConfig:
         progress_update_interval: How often to update progress (seconds).
         error_callback_url: URL to POST errors to (optional).
         completion_callback_url: URL to POST completion to (optional).
+        checkpoint: Checkpoint configuration for frame-level resume.
     """
 
     max_concurrent_jobs: int = 1
@@ -139,6 +168,7 @@ class BatchQueueConfig:
     progress_update_interval: float = 1.0
     error_callback_url: Optional[str] = None
     completion_callback_url: Optional[str] = None
+    checkpoint: CheckpointConfig = field(default_factory=CheckpointConfig)
 
     def __post_init__(self) -> None:
         """Normalize paths and validate configuration."""
@@ -186,7 +216,7 @@ class BatchQueueConfig:
 
         return output_dir / output_name
 
-    def to_dict(self) -> dict[str, any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return {
             "max_concurrent_jobs": self.max_concurrent_jobs,
@@ -208,11 +238,43 @@ class BatchQueueConfig:
             "progress_update_interval": self.progress_update_interval,
             "error_callback_url": self.error_callback_url,
             "completion_callback_url": self.completion_callback_url,
+            "checkpoint": self.checkpoint.to_dict() if self.checkpoint else None,
         }
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> BatchQueueConfig:
+        """Create from dictionary."""
+        return cls(
+            max_concurrent_jobs=data.get("max_concurrent_jobs", 1),
+            default_priority=JobPriority(data.get("default_priority", "normal")),
+            auto_start=data.get("auto_start", True),
+            retry_failed=data.get("retry_failed", True),
+            max_retries=data.get("max_retries", 3),
+            retry_delay_seconds=data.get("retry_delay_seconds", 5.0),
+            job_timeout_seconds=data.get("job_timeout_seconds", 3600.0),
+            output_directory=Path(data["output_directory"])
+            if data.get("output_directory")
+            else None,
+            output_naming_pattern=data.get("output_naming_pattern", "{name}_3d{ext}"),
+            preserve_directory_structure=data.get("preserve_directory_structure", False),
+            skip_existing=data.get("skip_existing", True),
+            save_state=data.get("save_state", True),
+            state_file=Path(data["state_file"]) if data.get("state_file") else None,
+            state_save_interval=data.get("state_save_interval", 30.0),
+            file_discovery=FileDiscoveryConfig.from_dict(data.get("file_discovery", {})),
+            folder_watcher=FolderWatcherConfig.from_dict(data.get("folder_watcher", {})),
+            progress_update_interval=data.get("progress_update_interval", 1.0),
+            error_callback_url=data.get("error_callback_url"),
+            completion_callback_url=data.get("completion_callback_url"),
+            checkpoint=CheckpointConfig.from_dict(data["checkpoint"])
+            if data.get("checkpoint")
+            else CheckpointConfig(),
+        )
 
 
 __all__ = [
     "BatchQueueConfig",
     "FileDiscoveryConfig",
     "FolderWatcherConfig",
+    "CheckpointConfig",
 ]
