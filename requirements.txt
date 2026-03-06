@@ -49,3 +49,6 @@ scikit-learn>=1.0.0
 
 # Visualization (Optional)
 matplotlib>=3.5.0
+
+# Semantic Segmentation
+segment-anything>=1.0  # Meta SAM model for object segmentation
