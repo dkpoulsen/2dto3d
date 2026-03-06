@@ -47,6 +47,12 @@ from video2d3d.stereo.interlaced import (
     InterlacedPattern,
     encode_interlaced,
 )
+from video2d3d.stereo.top_bottom import (
+    TopBottomEncoder,
+    TopBottomLayout,
+    encode_top_bottom,
+    create_top_bottom_encoder,
+)
 
 from video2d3d.utils.logger import (
     get_logger,
@@ -60,7 +66,7 @@ def _get_stereo_logger() -> "Logger":
     return get_logger("stereo")
 
 
-StereoFormat = Literal["side_by_side", "anaglyph", "interlaced", "vr", "checkerboard"]
+StereoFormat = Literal["side_by_side", "anaglyph", "interlaced", "vr", "checkerboard", "top_bottom"]
 
 
 class StereoGenerator:
@@ -555,6 +561,9 @@ __all__ = [
     # Interlaced classes
     "InterlacedEncoder",
     "InterlacedPattern",
+    # Top-bottom classes
+    "TopBottomEncoder",
+    "TopBottomLayout",
     # DIBR classes (re-exported for convenience)
     "DIBREngine",
     "DIBRConfig",
@@ -570,6 +579,8 @@ __all__ = [
     "create_checkerboard_encoder",
     "encode_interlaced",
     "create_interlaced_encoder",
+    "encode_top_bottom",
+    "create_top_bottom_encoder",
     # Logger
     "_get_stereo_logger",
 ]

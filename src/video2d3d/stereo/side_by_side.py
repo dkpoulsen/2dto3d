@@ -190,8 +190,6 @@ class SideBySideEncoder:
         else:
             left_scaled = left
             right_scaled = right
-            left_scaled = left
-            right_scaled = right
 
         # Swap eyes if requested
         if swap_eyes:
