@@ -196,7 +196,24 @@ web_api:
   # Upload settings
   max_upload_size: 500  # MB
   upload_dir: "uploads"
-
+  
+  # Rate limiting settings
+  rate_limit:
+    # Enable rate limiting
+    enabled: true
+    
+    # General API rate limits
+    requests_per_minute: 60
+    requests_per_hour: 1000
+    
+    # Stricter limits for file uploads
+    upload_requests_per_minute: 10
+    
+    # Storage backend (memory:// for single server, redis:// for distributed)
+    storage_uri: "memory://"
+    
+    # IPs exempt from rate limiting (e.g., monitoring, internal services)
+    whitelist_ips: []
 # Preview Window Settings
 preview:
   enabled: false

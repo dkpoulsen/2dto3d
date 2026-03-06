@@ -216,9 +216,30 @@ class ProcessingError(APIError):
         )
 
 
+class RateLimitExceededError(APIError):
+    """Raised when rate limit is exceeded."""
+
+    def __init__(
+        self,
+        limit: str,
+        retry_after: Optional[int] = None,
+        message: str = "Rate limit exceeded",
+    ) -> None:
+        detail = {"limit": limit}
+        if retry_after:
+            detail["retry_after"] = retry_after
+        super().__init__(
+            message=message,
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            error_type="rate_limit_exceeded",
+            detail=detail,
+        )
+
+
 # ============================================================================
 # Exception Handlers
 # ============================================================================
+
 
 
 async def api_error_handler(
@@ -330,6 +351,7 @@ __all__ = [
     "JobNotRetryableError",
     "JobNotCancellableError",
     "ProcessingError",
+    "RateLimitExceededError",
     # Handlers
     "register_exception_handlers",
 ]

@@ -18,7 +18,8 @@ from typing import Optional
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.openapi.utils import get_openapi
+from fastapi.responses import Response
 
 from video2d3d import __version__
 from video2d3d.batch import BatchQueueConfig, BatchVideoQueue
@@ -37,7 +38,7 @@ from video2d3d.web.routers import downloads, jobs, uploads
 
 from video2d3d.web.state import AppState, app_state
 from video2d3d.web.exceptions import register_exception_handlers
-
+from video2d3d.web.rate_limit import setup_rate_limiting
 
 
 logger = get_logger("web.api")
@@ -111,7 +112,37 @@ async def lifespan(app: FastAPI):
 
 def create_app(
     title: str = "2Dto3D Video Converter API",
-    description: str = "REST API for converting 2D videos to 3D using deep learning depth estimation",
+    description: str = """# 2Dto3D Video Converter API
+
+Convert 2D videos to immersive 3D using state-of-the-art deep learning depth estimation.
+
+## Overview
+
+This REST API provides endpoints for:
+- **Upload**: Upload 2D video files for processing
+- **Jobs**: Submit, monitor, and manage video conversion jobs
+- **Download**: Retrieve converted 3D video files
+
+## Key Features
+
+- 🎬 Support for multiple video formats (MP4, AVI, MOV, MKV, WebM)
+- 🧠 Multiple depth estimation models (MiDaS Small, MiDaS Hybrid, DPT Large, DPT Hybrid)
+- 👓 Multiple 3D output formats (Side-by-Side, Anaglyph, Interlaced, VR)
+- ⚡ GPU acceleration support
+- 🔄 Batch processing with queue management
+- 📊 Real-time job progress tracking
+
+## Getting Started
+
+1. Upload a video file using `POST /api/v1/upload/`
+2. Submit a conversion job using `POST /api/v1/jobs/`
+3. Monitor job progress using `GET /api/v1/jobs/{job_id}`
+4. Download the result using `GET /api/v1/download/{file_id}`
+
+## Authentication
+
+Currently, this API does not require authentication. All endpoints are publicly accessible.
+""",
     version: str = __version__,
 ) -> FastAPI:
     """Create and configure the FastAPI application.
@@ -131,6 +162,35 @@ def create_app(
     app_state.max_upload_size_mb = config.web_api.max_upload_size
     app_state.upload_dir = Path(config.web_api.upload_dir)
 
+    # Define API tags with descriptions
+    tags_metadata = [
+        {
+            "name": "Info",
+            "description": "API information and service metadata.",
+        },
+        {
+            "name": "Health",
+            "description": "Health check endpoints for monitoring service status.",
+        },
+        {
+            "name": "Upload",
+            "description": "Upload 2D video files for conversion. Manage uploaded files.",
+        },
+        {
+            "name": "Jobs",
+            "description": "Submit, monitor, and manage video conversion jobs. "
+            "Includes batch processing, job cancellation, and retry functionality.",
+        },
+        {
+            "name": "Download",
+            "description": "Download converted 3D video files. List and manage downloadable results.",
+        },
+        {
+            "name": "Queue",
+            "description": "Monitor and manage the processing queue. View queue statistics.",
+        },
+    ]
+
     # Create FastAPI app with lifespan
     app = FastAPI(
         title=title,
@@ -140,6 +200,27 @@ def create_app(
         redoc_url="/redoc",
         openapi_url="/openapi.json",
         lifespan=lifespan,
+        contact={
+            "name": "2Dto3D API Support",
+            "url": "https://github.com/automaker/2dto3d",
+            "email": "support@automaker.dev",
+        },
+        license_info={
+            "name": "MIT License",
+            "url": "https://opensource.org/licenses/MIT",
+        },
+        openapi_tags=tags_metadata,
+        servers=[
+            {
+                "url": "/",
+                "description": "Current server",
+            },
+            {
+                "url": "http://localhost:8000",
+                "description": "Local development server",
+            },
+        ],
+        terms_of_service="https://github.com/automaker/2dto3d/blob/main/LICENSE",
     )
 
     # Add CORS middleware
@@ -176,9 +257,13 @@ def create_app(
     # Register exception handlers
     register_exception_handlers(app)
 
+    # Set up rate limiting
+    limiter = setup_rate_limiting(app)
+    if limiter:
+        app_state.limiter = limiter
+
     # Include routers
     api_prefix = config.web_api.prefix
-
     app.include_router(
         uploads.router,
         prefix=f"{api_prefix}/upload",
@@ -239,6 +324,45 @@ def create_app(
 
         stats = app_state.queue.get_stats()
         return stats.to_dict()
+    # OpenAPI YAML export endpoint (for external tools like Postman, Insomnia)
+    @app.get(
+        "/openapi.yaml",
+        include_in_schema=False,
+    )
+    async def get_openapi_yaml():
+        """Get OpenAPI specification in YAML format."""
+        import yaml
+
+        openapi_schema = get_openapi(
+            title=title,
+            version=version,
+            description=description,
+            routes=app.routes,
+            tags=tags_metadata,
+        )
+        yaml_content = yaml.dump(openapi_schema, default_flow_style=False)
+        return Response(
+            content=yaml_content,
+            media_type="application/yaml",
+        )
+
+    # Export API spec endpoint
+    @app.get(
+        f"{api_prefix}/spec",
+        tags=["Info"],
+        summary="Get OpenAPI specification",
+        description="Get the complete OpenAPI specification for this API in JSON format. "
+        "Useful for importing into API clients like Postman, Insomnia, or generating SDKs.",
+    )
+    async def export_openapi_spec():
+        """Export OpenAPI specification for external tools."""
+        return get_openapi(
+            title=title,
+            version=version,
+            description=description,
+            routes=app.routes,
+            tags=tags_metadata,
+        )
 
     logger.info(f"FastAPI app created with prefix: {api_prefix}")
 

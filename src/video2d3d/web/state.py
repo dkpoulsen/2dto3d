@@ -8,10 +8,12 @@ from __future__ import annotations
 
 import time
 from pathlib import Path
-from typing import Optional
+from typing import TYPE_CHECKING, Optional
 
 from video2d3d.batch import BatchVideoQueue
 
+if TYPE_CHECKING:
+    from slowapi import Limiter
 
 class AppState:
     """Application state container."""
@@ -22,6 +24,7 @@ class AppState:
         self.output_dir: Path = Path("outputs")
         self.start_time: float = time.time()
         self.max_upload_size_mb: int = 500
+        self.limiter: Optional[Limiter] = None  # Rate limiter instance
 
     @property
     def uptime_seconds(self) -> float:

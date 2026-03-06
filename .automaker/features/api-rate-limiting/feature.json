@@ -1,0 +1,21 @@
+{
+  "id": "api-rate-limiting",
+  "category": "Security",
+  "title": "API Rate Limiting",
+  "description": "Implement rate limiting on API endpoints to prevent abuse and ensure fair resource allocation among users.",
+  "status": "pipeline_step_mmcc38tb_z6cxyk",
+  "priority": 2,
+  "complexity": "simple",
+  "dependencies": [
+    "web-api-server"
+  ],
+  "createdAt": "2026-03-06T15:23:01.933Z",
+  "updatedAt": "2026-03-06T16:13:59.482Z",
+  "model": "zai-coding-plan/glm-5",
+  "thinkingLevel": "none",
+  "planningMode": "spec",
+  "requirePlanApproval": true,
+  "skipTests": false,
+  "branchName": "main",
+  "descriptionHistory": []
+}

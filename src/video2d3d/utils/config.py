@@ -151,6 +151,18 @@ class LoggingConfig:
 
 
 @dataclass
+class RateLimitConfig:
+    """Rate limiting configuration settings."""
+
+    enabled: bool = True
+    requests_per_minute: int = 60
+    requests_per_hour: int = 1000
+    upload_requests_per_minute: int = 10
+    storage_uri: str = "memory://"
+    whitelist_ips: List[str] = field(default_factory=list)
+
+
+@dataclass
 class WebApiConfig:
     """Web API configuration settings."""
 
@@ -161,7 +173,7 @@ class WebApiConfig:
     cors_origins: List[str] = field(default_factory=lambda: ["http://localhost:3000"])
     max_upload_size: int = 500
     upload_dir: str = "uploads"
-
+    rate_limit: RateLimitConfig = field(default_factory=RateLimitConfig)
 
 @dataclass
 class PreviewConfig:
@@ -251,6 +263,9 @@ def _parse_config_section(config_data: Dict[str, Any], section: str, config_clas
                 section_data["anaglyph"] = AnaglyphConfig(**section_data["anaglyph"])
             if "side_by_side" in section_data:
                 section_data["side_by_side"] = SideBySideConfig(**section_data["side_by_side"])
+        if section == "web_api":
+            if "rate_limit" in section_data:
+                section_data["rate_limit"] = RateLimitConfig(**section_data["rate_limit"])
         return config_class(**{k: v for k, v in section_data.items() if hasattr(config_class, k)})
     return config_class()
 
