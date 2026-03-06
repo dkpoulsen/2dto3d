@@ -3,14 +3,14 @@
   "category": "Testing",
   "title": "Automated End-to-End Testing",
   "description": "Implement automated test suite that runs full conversion pipeline on sample videos with expected output validation.",
-  "status": "pipeline_step_mmcbz6pm_scmfew",
+  "status": "pipeline_step_mmcc38tb_z6cxyk",
   "priority": 2,
   "complexity": "moderate",
   "dependencies": [
     "video-output-writer"
   ],
   "createdAt": "2026-03-06T15:23:01.927Z",
-  "updatedAt": "2026-03-06T17:04:11.698Z",
+  "updatedAt": "2026-03-06T17:07:13.036Z",
   "model": "zai-coding-plan/glm-5",
   "thinkingLevel": "none",
   "planningMode": "spec",

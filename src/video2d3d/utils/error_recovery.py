@@ -592,7 +592,6 @@ class ModelFallbackChain:
         depth_map = fallback_chain.estimate_with_fallback(frame)
         ```
 
-
     Thread Safety:
         This class uses reentrant locks to protect model switching state
         and is safe for concurrent access from multiple threads.

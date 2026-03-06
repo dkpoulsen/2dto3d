@@ -326,3 +326,159 @@ Input: {
   "command": "export CI=true DEBIAN_FRONTEND=noninteractive GIT_TERMINAL_PROMPT=0 GCM_INTERACTIVE=never HOMEBREW_NO_AUTO_UPDATE=1 GIT_EDITOR=: EDITOR=: VISUAL='' GIT_SEQUENCE_EDITOR=: GIT_MERGE_AUTOEDIT=no GIT_PAGER=cat PAGER=cat npm_config_yes=true PIP_NO_INPUT=1 YARN_ENABLE_IMMUTABLE_INSTALLS=false; git status",
   "description": "Verify staged changes"
 }
+
+🔧 Tool: bash
+Input: {
+  "command": "export CI=true DEBIAN_FRONTEND=noninteractive GIT_TERMINAL_PROMPT=0 GCM_INTERACTIVE=never HOMEBREW_NO_AUTO_UPDATE=1 GIT_EDITOR=: EDITOR=: VISUAL='' GIT_SEQUENCE_EDITOR=: GIT_MERGE_AUTOEDIT=no GIT_PAGER=cat PAGER=cat npm_config_yes=true PIP_NO_INPUT=1 YARN_ENABLE_IMMUTABLE_INSTALLS=false; git add -A && git status",
+  "description": "Stage remaining changes"
+}
+Now I'll create the commit with a proper conventional commit message:
+
+🔧 Tool: bash
+Input: {
+  "command": "export CI=true DEBIAN_FRONTEND=noninteractive GIT_TERMINAL_PROMPT=0 GCM_INTERACTIVE=never HOMEBREW_NO_AUTO_UPDATE=1 GIT_EDITOR=: EDITOR=: VISUAL='' GIT_SEQUENCE_EDITOR=: GIT_MERGE_AUTOEDIT=no GIT_PAGER=cat PAGER=cat npm_config_yes=true PIP_NO_INPUT=1 YARN_ENABLE_IMMUTABLE_INSTALLS=false; git commit -m \"$(cat <<'EOF'\ntest(testing): add automated end-to-end test suite for conversion pipeline\n\nImplement comprehensive automated testing framework with:\n\n- Batch queue verification tests for job lifecycle, retry logic, and serialization\n- Unit tests for batch config, models, file discovery, and exceptions\n- Integration tests for API endpoints (uploads, downloads, jobs)\n- Enhanced test coverage for checkpoint, DIBR, frame extraction, preview, \n  progress tracking, and video writer modules\n- Depth estimation integration tests\n- Web schemas and utilities tests\n\nAlso includes:\n- BatchVideoQueue implementation with concurrent job processing\n- Error recovery improvements\n- Updated feature metadata for pipeline tracking\nEOF\n)\"",
+  "description": "Create conventional commit"
+}
+
+🔧 Tool: bash
+Input: {
+  "command": "export CI=true DEBIAN_FRONTEND=noninteractive GIT_TERMINAL_PROMPT=0 GCM_INTERACTIVE=never HOMEBREW_NO_AUTO_UPDATE=1 GIT_EDITOR=: EDITOR=: VISUAL='' GIT_SEQUENCE_EDITOR=: GIT_MERGE_AUTOEDIT=no GIT_PAGER=cat PAGER=cat npm_config_yes=true PIP_NO_INPUT=1 YARN_ENABLE_IMMUTABLE_INSTALLS=false; git log -1",
+  "description": "Verify commit was created"
+}
+<summary>
+## Summary: Commit Changes - Automated Testing Feature
+
+### Changes Committed
+- **261 files changed** with 29,137 insertions and 1,556 deletions
+- Commit hash: `92e36226f6db72327be879555f06e9a9a376d288`
+
+### Exact Commit Message Used
+```
+test(testing): add automated end-to-end test suite for conversion pipeline
+
+Implement comprehensive automated testing framework with:
+
+- Batch queue verification tests for job lifecycle, retry logic, and serialization
+- Unit tests for batch config, models, file discovery, and exceptions
+- Integration tests for API endpoints (uploads, downloads, jobs)
+- Enhanced test coverage for checkpoint, DIBR, frame extraction, preview,
+  progress tracking, and video writer modules
+- Depth estimation integration tests
+- Web schemas and utilities tests
+
+Also includes:
+- BatchVideoQueue implementation with concurrent job processing
+- Error recovery improvements
+- Updated feature metadata for pipeline tracking
+```
+
+### Key Files Modified/Added
+
+**New Source Code:**
+- `src/video2d3d/batch/queue.py` - BatchVideoQueue implementation
+
+**New Unit Tests:**
+- `tests/unit/test_batch_config.py`
+- `tests/unit/test_batch_exceptions.py`
+- `tests/unit/test_batch_file_discovery.py`
+- `tests/unit/test_batch_models.py`
+- `tests/unit/test_depth_midas.py`
+- `tests/unit/test_web_schemas.py`
+- `tests/unit/test_web_utils.py`
+
+**New Integration Tests:**
+- `tests/integration/test_api_downloads.py`
+- `tests/integration/test_api_jobs.py`
+- `tests/integration/test_api_uploads.py`
+- `tests/integration/test_depth_estimation.py`
+- `tests/integration/test_preview_integration.py`
+
+**Verification Test:**
+- `tests/verification/test_batch_queue.py`
+
+**Enhanced Existing Tests:**
+- `tests/unit/test_checkpoint.py`
+- `tests/unit/test_dibr.py`
+- `tests/unit/test_frame_extraction.py`
+- `tests/unit/test_preview.py`
+- `tests/unit/test_progress.py`
+- `tests/unit/test_video_writer.py`
+
+### Notes
+- This commit implements the automated end-to-end testing feature
+- Includes comprehensive test coverage for the full conversion pipeline
+- Adds BatchVideoQueue implementation with concurrent job processing support
+- Feature metadata files updated to track pipeline progress
+</summary>
+
+---
+
+## Follow-up Session
+
+I'll complete the Testing pipeline step by reviewing the test coverage and verifying the tests work correctly.
+
+Let me first assess the current state of the test suite:
+
+🔧 Tool: read
+Input: {
+  "filePath": "/home/dkp/Documents/Automaker/2dto3d/.automaker/features/automated-testing/feature.json"
+}
+
+🔧 Tool: bash
+Input: {
+  "command": "export CI=true DEBIAN_FRONTEND=noninteractive GIT_TERMINAL_PROMPT=0 GCM_INTERACTIVE=never HOMEBREW_NO_AUTO_UPDATE=1 GIT_EDITOR=: EDITOR=: VISUAL='' GIT_SEQUENCE_EDITOR=: GIT_MERGE_AUTOEDIT=no GIT_PAGER=cat PAGER=cat npm_config_yes=true PIP_NO_INPUT=1 YARN_ENABLE_IMMUTABLE_INSTALLS=false; git status --short",
+  "description": "Check current git status"
+}
+
+🔧 Tool: glob
+Input: {
+  "pattern": "tests/**/*.py"
+}
+
+🔧 Tool: todowrite
+Input: {
+  "todos": [
+    {
+      "content": "Review existing test files for completeness",
+      "status": "in_progress",
+      "priority": "high"
+    },
+    {
+      "content": "Run test suite to verify all tests pass",
+      "status": "pending",
+      "priority": "high"
+    },
+    {
+      "content": "Check for any gaps in test coverage",
+      "status": "pending",
+      "priority": "high"
+    },
+    {
+      "content": "Add any missing tests if needed",
+      "status": "pending",
+      "priority": "medium"
+    },
+    {
+      "content": "Verify with Playwright as required",
+      "status": "pending",
+      "priority": "medium"
+    },
+    {
+      "content": "Output final summary",
+      "status": "pending",
+      "priority": "high"
+    }
+  ]
+}
+Let me review the existing test coverage and identify what modules are being tested:
+
+🔧 Tool: glob
+Input: {
+  "pattern": "src/video2d3d/**/*.py"
+}
+
+🔧 Tool: bash
+Input: {
+  "command": "cd /home/dkp/Documents/Automaker/2dto3d && python3 -m pytest tests/ --collect-only -q 2>&1 | head -100",
+  "description": "Collect all tests to see what exists"
+}
