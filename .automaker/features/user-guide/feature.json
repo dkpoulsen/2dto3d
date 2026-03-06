@@ -3,14 +3,14 @@
   "category": "Documentation",
   "title": "Comprehensive User Guide",
   "description": "Write detailed user documentation covering installation, configuration, CLI usage, web UI, troubleshooting, and best practices.",
-  "status": "backlog",
+  "status": "pipeline_step_mmcc38tb_z6cxyk",
   "priority": 2,
   "complexity": "simple",
   "dependencies": [
     "cli-framework"
   ],
   "createdAt": "2026-03-06T15:23:01.938Z",
-  "updatedAt": "2026-03-06T15:23:01.938Z",
+  "updatedAt": "2026-03-06T18:54:05.851Z",
   "model": "zai-coding-plan/glm-5",
   "thinkingLevel": "none",
   "planningMode": "spec",
