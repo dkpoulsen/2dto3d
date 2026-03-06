@@ -29,9 +29,13 @@ from video2d3d.utils.logger import get_logger
 # Import schemas and exceptions
 from video2d3d.web.schemas import (
     APIInfoResponse,
+    ComprehensiveHealthResponse,
     ErrorResponse,
     HealthCheckResponse,
 )
+
+# Import health monitoring utilities
+from video2d3d.web.health import get_comprehensive_health, get_gpu_status
 
 # Import routers (will be created)
 from video2d3d.web.routers import downloads, jobs, uploads
@@ -39,7 +43,6 @@ from video2d3d.web.routers import downloads, jobs, uploads
 from video2d3d.web.state import AppState, app_state
 from video2d3d.web.exceptions import register_exception_handlers
 from video2d3d.web.rate_limit import setup_rate_limiting
-
 
 logger = get_logger("web.api")
 
@@ -280,21 +283,54 @@ Currently, this API does not require authentication. All endpoints are publicly 
         tags=["Download"],
     )
 
-    # Health check endpoint
+    # Health check endpoint (basic)
     @app.get(
         "/health",
         response_model=HealthCheckResponse,
         tags=["Health"],
-        summary="Health check",
+        summary="Basic health check",
     )
     async def health_check():
-        """Check API health status."""
+        """Check basic API health status.
+
+        Returns a simplified health check response for quick health monitoring.
+        For detailed health information, use `/health/detailed`.
+        """
+        gpu_status = get_gpu_status()
+        queue_running = app_state.queue.is_running if app_state.queue else False
+
+        # Determine basic health status string
+        # Report "healthy" only if queue is running (primary health indicator)
+        status = "healthy" if queue_running else "unhealthy"
+
         return HealthCheckResponse(
-            status="healthy",
+            status=status,
             version=__version__,
             uptime_seconds=app_state.uptime_seconds,
-            queue_running=app_state.queue.is_running if app_state.queue else False,
-            gpu_available=False,  # TODO: Check actual GPU availability
+            queue_running=queue_running,
+            gpu_available=gpu_status.available,
+        )
+    # Comprehensive health check endpoint
+    @app.get(
+        "/health/detailed",
+        response_model=ComprehensiveHealthResponse,
+        tags=["Health"],
+        summary="Comprehensive health check",
+    )
+    async def health_check_detailed():
+        """Check comprehensive API health status.
+
+        Returns detailed health information including:
+        - GPU status (availability, memory usage, utilization)
+        - System memory usage
+        - Queue statistics (depth, job counts, success rate)
+        - Individual component health checks
+        - Overall health status (healthy, degraded, unhealthy)
+        """
+        return get_comprehensive_health(
+            queue=app_state.queue,
+            version=__version__,
+            uptime_seconds=app_state.uptime_seconds,
         )
 
     # Root endpoint with API info
