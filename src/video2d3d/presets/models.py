@@ -178,15 +178,32 @@ class QualitySettings:
         """Convert to dictionary for serialization."""
         return asdict(self)
 
+
+
+@dataclass
+class DepthCurveSettings:
+    """Depth curve settings for artistic control over 3D effect strength."""
+
+    enabled: bool = False
+    preset: Optional[str] = None  # linear, s_curve, contrast_boost, soft_curve, etc.
+    control_points: List[Dict[str, float]] = field(
+        default_factory=lambda: [{"x": 0.0, "y": 0.0}, {"x": 1.0, "y": 1.0}]
+    )
+
+    def to_dict(self) -> Dict[str, Any]:
+        """Convert to dictionary for serialization."""
+        return asdict(self)
+
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> QualitySettings:
+    def from_dict(cls, data: Dict[str, Any]) -> "DepthCurveSettings":
         """Create from dictionary."""
         return cls(
-            preset=data.get("preset", "balanced"),
-            post_processing=data.get("post_processing", True),
-            calculate_metrics=data.get("calculate_metrics", False),
+            enabled=data.get("enabled", False),
+            preset=data.get("preset"),
+            control_points=data.get(
+                "control_points", [{"x": 0.0, "y": 0.0}, {"x": 1.0, "y": 1.0}]
+            ),
         )
-
 
 @dataclass
 class PresetSettings:
@@ -197,6 +214,7 @@ class PresetSettings:
     video_output: VideoOutputSettings = field(default_factory=VideoOutputSettings)
     processing: ProcessingSettings = field(default_factory=ProcessingSettings)
     quality: QualitySettings = field(default_factory=QualitySettings)
+    depth_curve: DepthCurveSettings = field(default_factory=DepthCurveSettings)
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary for serialization."""
@@ -206,10 +224,11 @@ class PresetSettings:
             "video_output": self.video_output.to_dict(),
             "processing": self.processing.to_dict(),
             "quality": self.quality.to_dict(),
+            "depth_curve": self.depth_curve.to_dict(),
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> PresetSettings:
+    def from_dict(cls, data: Dict[str, Any]) -> "PresetSettings":
         """Create from dictionary."""
         return cls(
             depth_estimation=DepthEstimationSettings.from_dict(data.get("depth_estimation", {})),
@@ -217,6 +236,7 @@ class PresetSettings:
             video_output=VideoOutputSettings.from_dict(data.get("video_output", {})),
             processing=ProcessingSettings.from_dict(data.get("processing", {})),
             quality=QualitySettings.from_dict(data.get("quality", {})),
+            depth_curve=DepthCurveSettings.from_dict(data.get("depth_curve", {})),
         )
 
 
@@ -326,6 +346,7 @@ __all__ = [
     "VideoOutputSettings",
     "ProcessingSettings",
     "QualitySettings",
+    "DepthCurveSettings",
     "PresetSettings",
     "Preset",
 ]

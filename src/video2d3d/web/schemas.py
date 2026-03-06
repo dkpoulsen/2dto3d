@@ -169,6 +169,10 @@ class JobConfigRequest(BaseModel):
         default_factory=dict,
         description="Additional processing options",
     )
+    depth_curve: Optional[DepthCurveRequest] = Field(
+        default=None,
+        description="Depth curve adjustment for non-linear depth mapping",
+    )
 
 
 class SubmitJobRequest(BaseModel):
@@ -861,6 +865,8 @@ __all__ = [
     "DepthModel",
     "HealthStatus",
     # Request models
+    "CurveControlPointRequest",
+    "DepthCurveRequest",
     "JobConfigRequest",
     "SubmitJobRequest",
     "SubmitBatchRequest",
@@ -880,6 +886,7 @@ __all__ = [
     "GPUStatusResponse",
     "SystemMemoryResponse",
     "QueueHealthResponse",
+    "APIInfoResponse",
     # Crash report models
     "CrashTypeResponse",
     "CrashSeverityResponse",

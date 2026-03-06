@@ -47,6 +47,31 @@ export interface SubmitBatchRequest {
   config?: JobConfig;
 }
 
+// Depth Curve Types
+export type CurvePreset = 
+  | 'linear' 
+  | 's_curve' 
+  | 'contrast_boost' 
+  | 'soft_curve' 
+  | 'inverse_s' 
+  | 'shadow_lift' 
+  | 'highlight_compress';
+
+export interface CurveControlPoint {
+  x: number;  // 0-1 normalized
+  y: number;  // 0-1 normalized
+}
+
+export interface DepthCurveConfig {
+  enabled: boolean;
+  preset?: CurvePreset | null;
+  control_points: CurveControlPoint[];
+}
+
+// Extended JobConfig with depth curve support
+export interface JobConfigWithCurve extends JobConfig {
+  depth_curve?: DepthCurveConfig | null;
+}
 // Response types
 export interface UploadResponse {
   file_id: string;
@@ -201,4 +226,42 @@ export interface ErrorResponse {
   message: string;
   detail?: Record<string, unknown>;
   request_id?: string;
+}
+
+
+// Depth Validation Types
+export interface DepthFrame {
+  frame_index: number;
+  timestamp_ms: number;
+  depth_map_url: string;
+  original_frame_url?: string;
+  needs_validation: boolean;
+  validation_status: 'pending' | 'validated' | 'corrected';
+  confidence_score?: number;
+}
+
+export interface DepthValidationSession {
+  job_id: string;
+  total_frames: number;
+  frames_needing_validation: number;
+  frames: DepthFrame[];
+  current_frame_index: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface DepthMapCorrection {
+  job_id: string;
+  frame_index: number;
+  depth_map_data: string; // Base64 encoded PNG
+  correction_type: 'manual' | 'inpaint' | 'interpolate';
+  notes?: string;
+}
+
+export interface DepthMapCorrectionResponse {
+  job_id: string;
+  frame_index: number;
+  success: boolean;
+  message: string;
+  updated_depth_map_url?: string;
 }

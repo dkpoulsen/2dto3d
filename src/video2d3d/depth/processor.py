@@ -15,7 +15,7 @@ from __future__ import annotations
 import time
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import TYPE_CHECKING, Optional, Union
+from typing import TYPE_CHECKING, Any, Dict, Optional, Union
 
 import cv2
 import numpy as np
@@ -24,7 +24,7 @@ if TYPE_CHECKING:
     from loguru import Logger
 
 from video2d3d.utils.logger import get_logger, log_exception, log_performance
-
+from video2d3d.depth.curve import DepthCurveConfig, apply_depth_curve
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -115,6 +115,8 @@ class DepthProcessorConfig:
     percentile_low: float = _DEFAULT_PERCENTILE_LOW
     percentile_high: float = _DEFAULT_PERCENTILE_HIGH
     colormap: str = "turbo"
+    # Depth curve adjustment for non-linear depth mapping
+    depth_curve: Optional[Dict[str, Any]] = None  # DepthCurveConfig as dict
     def __post_init__(self) -> None:
         """Validate and normalize configuration."""
         # Validate normalization method
@@ -295,11 +297,11 @@ class DepthMapProcessor:
 
         try:
             if norm_method == NormalizationMethod.MIN_MAX.value:
-                return self._normalize_min_max(depth_map)
+                normalized = self._normalize_min_max(depth_map)
             elif norm_method == NormalizationMethod.PERCENTILE.value:
-                return self._normalize_percentile(depth_map)
+                normalized = self._normalize_percentile(depth_map)
             elif norm_method == NormalizationMethod.HISTOGRAM_EQUALIZATION.value:
-                return self._normalize_histogram(depth_map)
+                normalized = self._normalize_histogram(depth_map)
             else:
                 raise DepthProcessingError(
                     f"Unknown normalization method: {norm_method}",
@@ -312,6 +314,38 @@ class DepthMapProcessor:
             raise DepthProcessingError(
                 f"Normalization failed: {e}",
                 operation="normalize",
+                original_exception=e,
+            ) from e
+
+        # Apply depth curve if configured
+        if self.config.depth_curve:
+            normalized = self._apply_curve(normalized)
+
+        return normalized
+
+    def _apply_curve(self, depth_map: np.ndarray) -> np.ndarray:
+        """Apply depth curve adjustment for non-linear depth mapping.
+
+        This applies a curve transformation to the normalized depth values,
+        allowing artistic control over the 3D effect strength.
+
+        Args:
+            depth_map: Normalized depth map with values in [0, 1].
+
+        Returns:
+            Curve-adjusted depth map with values in [0, 1].
+
+        Raises:
+            DepthProcessingError: If curve application fails.
+        """
+        try:
+            curve_config = DepthCurveConfig.from_dict(self.config.depth_curve)
+            return apply_depth_curve(depth_map, curve_config)
+        except Exception as e:
+            log_exception("Depth curve application failed", exception=e)
+            raise DepthProcessingError(
+                f"Depth curve application failed: {e}",
+                operation="apply_curve",
                 original_exception=e,
             ) from e
 
