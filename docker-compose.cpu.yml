@@ -1,0 +1,196 @@
+# =============================================================================
+# 2Dto3D Video Converter - Docker Compose (CPU Only)
+# =============================================================================
+# Docker Compose configuration for CPU-only deployment
+# Smaller image, no GPU dependencies
+#
+# Usage:
+#   docker-compose -f docker-compose.cpu.yml up -d
+#   docker-compose -f docker-compose.cpu.yml --profile api up -d
+#   docker-compose -f docker-compose.cpu.yml logs -f
+#   docker-compose -f docker-compose.cpu.yml down
+# =============================================================================
+
+version: "3.8"
+
+services:
+  # ---------------------------------------------------------------------------
+  # Main Application Service (CPU)
+  # ---------------------------------------------------------------------------
+  video2d3d:
+    build:
+      context: .
+      dockerfile: Dockerfile.cpu
+    image: video2d3d:cpu
+    container_name: video2d3d-cpu
+    
+    # Environment Configuration
+    environment:
+      - VIDEO2D3D_ENV=${VIDEO2D3D_ENV:-production}
+      - VIDEO2D3D_NO_GPU=1
+      - VIDEO2D3D_LOG_LEVEL=${LOG_LEVEL:-INFO}
+      - API_HOST=0.0.0.0
+      - API_PORT=${API_PORT:-8000}
+      - VIDEO2D3D_BATCH_SIZE=${BATCH_SIZE:-2}
+      - VIDEO2D3D_NUM_WORKERS=${NUM_WORKERS:-2}
+    
+    # Port Mapping
+    ports:
+      - "${API_PORT:-8000}:8000"
+    
+    # Volume Mounts
+    volumes:
+      - ./inputs:/app/inputs:ro
+      - ./outputs:/app/outputs:rw
+      - models_data:/app/models
+      - ./logs:/app/logs:rw
+      - ./config:/app/config:ro
+    
+    # Health Check
+    healthcheck:
+      test: ["CMD", "/healthcheck.sh"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    
+    # Restart Policy
+    restart: unless-stopped
+    
+    # Logging Configuration
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
+    
+    # Security Options
+    security_opt:
+      - no-new-privileges:true
+    
+    # Resource Limits for CPU-only
+    deploy:
+      resources:
+        limits:
+          cpus: '4'
+          memory: 4G
+        reservations:
+          cpus: '1'
+          memory: 1G
+
+  # ---------------------------------------------------------------------------
+  # API Server Service (CPU)
+  # ---------------------------------------------------------------------------
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.cpu
+    image: video2d3d:cpu
+    container_name: video2d3d-api-cpu
+    
+    command: ["serve", "--host", "0.0.0.0", "--port", "8000"]
+    
+    # Environment Configuration
+    environment:
+      - VIDEO2D3D_ENV=${VIDEO2D3D_ENV:-production}
+      - VIDEO2D3D_NO_GPU=1
+      - VIDEO2D3D_LOG_LEVEL=${LOG_LEVEL:-INFO}
+      - API_HOST=0.0.0.0
+      - API_PORT=${API_PORT:-8000}
+    
+    # Port Mapping
+    ports:
+      - "${API_PORT:-8000}:8000"
+    
+    # Volume Mounts
+    volumes:
+      - ./inputs:/app/inputs:ro
+      - ./outputs:/app/outputs:rw
+      - models_data:/app/models
+      - ./logs:/app/logs:rw
+      - ./config:/app/config:ro
+    
+    # Health Check
+    healthcheck:
+      test: ["CMD", "/healthcheck.sh", "serve"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    
+    # Restart Policy
+    restart: unless-stopped
+    
+    # Logging Configuration
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
+    
+    # Security Options
+    security_opt:
+      - no-new-privileges:true
+    
+    profiles:
+      - api
+
+  # ---------------------------------------------------------------------------
+  # Batch Processing Service (CPU)
+  # ---------------------------------------------------------------------------
+  batch:
+    build:
+      context: .
+      dockerfile: Dockerfile.cpu
+    image: video2d3d:cpu
+    container_name: video2d3d-batch-cpu
+    
+    command: ["batch-convert", "/app/inputs", "--output-dir", "/app/outputs"]
+    
+    # Environment Configuration
+    environment:
+      - VIDEO2D3D_ENV=${VIDEO2D3D_ENV:-production}
+      - VIDEO2D3D_NO_GPU=1
+      - VIDEO2D3D_LOG_LEVEL=${LOG_LEVEL:-INFO}
+      - VIDEO2D3D_BATCH_SIZE=${BATCH_SIZE:-2}
+      - VIDEO2D3D_NUM_WORKERS=${NUM_WORKERS:-2}
+    
+    # Volume Mounts
+    volumes:
+      - ./inputs:/app/inputs:ro
+      - ./outputs:/app/outputs:rw
+      - models_data:/app/models
+      - ./logs:/app/logs:rw
+      - ./config:/app/config:ro
+    
+    # Restart Policy - Don't restart batch jobs automatically
+    restart: "no"
+    
+    # Logging Configuration
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
+    
+    # Security Options
+    security_opt:
+      - no-new-privileges:true
+    
+    profiles:
+      - batch
+
+# =============================================================================
+# Named Volumes - For persistent data
+# =============================================================================
+volumes:
+  models_data:
+    driver: local
+
+# =============================================================================
+# Networks
+# =============================================================================
+networks:
+  default:
+    name: video2d3d-network-cpu
+    driver: bridge

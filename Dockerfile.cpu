@@ -1,0 +1,130 @@
+# =============================================================================
+# 2Dto3D Video Converter - CPU-Only Docker Image
+# =============================================================================
+# Multi-stage build for optimized CPU-only Docker image
+# Smaller image size without CUDA dependencies
+#
+# Build: docker build -t video2d3d:cpu -f Dockerfile.cpu .
+# Run:   docker run -v $(pwd)/inputs:/app/inputs -v $(pwd)/outputs:/app/outputs video2d3d:cpu
+# =============================================================================
+
+# Build arguments for version pinning
+ARG PYTHON_VERSION=3.10
+ARG TORCH_VERSION=2.1.0
+ARG TORCHVISION_VERSION=0.16.0
+
+# -----------------------------------------------------------------------------
+# Stage 1: Builder - Install dependencies and build
+# -----------------------------------------------------------------------------
+FROM python:${PYTHON_VERSION}-slim-bookworm AS builder
+
+# Re-declare ARGs after FROM
+ARG TORCH_VERSION
+ARG TORCHVISION_VERSION
+
+# Prevent interactive prompts during package installation
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install build dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    git \
+    ffmpeg \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create virtual environment
+RUN python -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+# Upgrade pip and install build tools
+RUN pip install --no-cache-dir --upgrade pip wheel setuptools
+
+# Copy requirements first for better caching
+COPY requirements.txt .
+
+# Install PyTorch CPU version (smaller than GPU version)
+RUN pip install --no-cache-dir \
+    torch==${TORCH_VERSION}+cpu \
+    torchvision==${TORCHVISION_VERSION}+cpu \
+    --index-url https://download.pytorch.org/whl/cpu
+
+# Install remaining dependencies
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy source code and install package
+COPY pyproject.toml setup.py README.md ./
+COPY src/ ./src/
+COPY config/ ./config/
+RUN pip install --no-cache-dir -e .
+
+# -----------------------------------------------------------------------------
+# Stage 2: Runtime - Minimal production image
+# -----------------------------------------------------------------------------
+FROM python:${PYTHON_VERSION}-slim-bookworm AS runtime
+
+# Labels for container metadata
+LABEL maintainer="Automaker <support@automaker.dev>"
+LABEL org.opencontainers.image.title="2Dto3D Video Converter (CPU)"
+LABEL org.opencontainers.image.description="Convert 2D videos to 3D using deep learning depth estimation - CPU only"
+LABEL org.opencontainers.image.version="0.1.0"
+LABEL org.opencontainers.image.source="https://github.com/automaker/2dto3d"
+LABEL org.opencontainers.image.licenses="MIT"
+
+# Prevent interactive prompts
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install runtime dependencies only
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ffmpeg \
+    curl \
+    libgl1-mesa-glx \
+    libglib2.0-0 \
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
+
+# Create non-root user for security
+RUN groupadd -r video2d3d && useradd -r -g video2d3d video2d3d
+
+# Copy virtual environment from builder
+COPY --from=builder /opt/venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+# Set environment variables
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PYTHONPATH=/app \
+    VIDEO2D3D_ENV=production \
+    VIDEO2D3D_NO_GPU=1
+
+# Create application directories
+WORKDIR /app
+RUN mkdir -p /app/inputs /app/outputs /app/logs /app/models /app/config \
+    && chown -R video2d3d:video2d3d /app
+
+# Copy application code
+COPY --chown=video2d3d:video2d3d src/ /app/src/
+COPY --chown=video2d3d:video2d3d config/ /app/config/
+COPY --chown=video2d3d:video2d3d pyproject.toml setup.py README.md ./
+COPY --chown=video2d3d:video2d3d .env.example /app/.env.example
+
+# Copy entrypoint and healthcheck scripts
+COPY docker/entrypoint.sh /entrypoint.sh
+COPY docker/healthcheck.sh /healthcheck.sh
+RUN chmod +x /entrypoint.sh /healthcheck.sh
+
+# Switch to non-root user
+USER video2d3d
+
+# Expose API port
+EXPOSE 8000
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+    CMD /healthcheck.sh || exit 1
+
+# Set entrypoint
+ENTRYPOINT ["/entrypoint.sh"]
+
+# Default command: show help
+CMD ["video2d3d", "--help"]
