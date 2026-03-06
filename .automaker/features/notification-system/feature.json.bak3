@@ -1,0 +1,21 @@
+{
+  "id": "notification-system",
+  "category": "Management",
+  "title": "Notification System",
+  "description": "Add notification system for job completion, failures, and status updates via email, webhooks, or in-app notifications.",
+  "status": "in_progress",
+  "priority": 3,
+  "complexity": "simple",
+  "dependencies": [
+    "job-scheduler"
+  ],
+  "createdAt": "2026-03-06T15:23:01.933Z",
+  "updatedAt": "2026-03-06T21:51:44.163Z",
+  "model": "zai-coding-plan/glm-5",
+  "thinkingLevel": "none",
+  "planningMode": "spec",
+  "requirePlanApproval": true,
+  "skipTests": false,
+  "branchName": "main",
+  "descriptionHistory": []
+}

@@ -1,0 +1,21 @@
+{
+  "id": "interlaced-encoder",
+  "category": "Output",
+  "title": "Interlaced 3D Format Encoder",
+  "description": "Create an encoder for interlaced (field sequential) 3D format where left and right eye views are encoded in alternating scan lines for passive 3D displays.",
+  "status": "pipeline_step_mmcc38tb_z6cxyk",
+  "priority": 2,
+  "complexity": "simple",
+  "dependencies": [
+    "dibr-engine"
+  ],
+  "createdAt": "2026-03-06T15:23:01.920Z",
+  "updatedAt": "2026-03-06T18:06:55.714Z",
+  "model": "zai-coding-plan/glm-5",
+  "thinkingLevel": "none",
+  "planningMode": "spec",
+  "requirePlanApproval": true,
+  "skipTests": false,
+  "branchName": "main",
+  "descriptionHistory": []
+}

@@ -6,4 +6,9 @@ export { FileDropZone } from './FileDropZone';
 export { DepthCurveEditor } from './DepthCurveEditor';
 export { DepthValidationEditor } from './DepthValidationEditor';
 export { DepthFocusControl } from './DepthFocusControl';
+export { DepthMapCard } from './DepthMapCard';
+export { MetricsPanel } from './MetricsPanel';
+export { VotingWidget } from './VotingWidget';
+export { ModelComparisonView } from './ModelComparisonView';
+
 

@@ -1,0 +1,21 @@
+{
+  "id": "depth-segmentation",
+  "category": "Processing",
+  "title": "Semantic Segmentation Integration",
+  "description": "Integrate semantic segmentation models to identify object boundaries for improved depth estimation and 3D separation.",
+  "status": "pipeline_step_mmcc3rzz_k0qltm",
+  "priority": 2,
+  "complexity": "complex",
+  "dependencies": [
+    "midas-integration"
+  ],
+  "createdAt": "2026-03-06T15:23:01.926Z",
+  "updatedAt": "2026-03-06T17:54:45.483Z",
+  "model": "zai-coding-plan/glm-5",
+  "thinkingLevel": "none",
+  "planningMode": "spec",
+  "requirePlanApproval": true,
+  "skipTests": false,
+  "branchName": "main",
+  "descriptionHistory": []
+}

@@ -10,5 +10,12 @@
     "progress-tracking"
   ],
   "createdAt": "2026-03-06T15:23:01.930Z",
-  "updatedAt": "2026-03-06T15:23:01.930Z"
+  "updatedAt": "2026-03-06T21:52:14.006Z",
+  "model": "zai-coding-plan/glm-5",
+  "thinkingLevel": "none",
+  "planningMode": "spec",
+  "requirePlanApproval": true,
+  "skipTests": false,
+  "branchName": "main",
+  "descriptionHistory": []
 }

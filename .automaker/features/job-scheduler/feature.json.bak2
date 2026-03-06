@@ -1,0 +1,21 @@
+{
+  "id": "job-scheduler",
+  "category": "Management",
+  "title": "Job Scheduling System",
+  "description": "Implement job scheduler allowing users to queue multiple conversions with priority levels, scheduled start times, and dependencies.",
+  "status": "pipeline_step_mmcc3rzz_k0qltm",
+  "priority": 2,
+  "complexity": "moderate",
+  "dependencies": [
+    "batch-video-queue"
+  ],
+  "createdAt": "2026-03-06T15:23:01.933Z",
+  "updatedAt": "2026-03-06T18:14:50.671Z",
+  "model": "zai-coding-plan/glm-5",
+  "thinkingLevel": "none",
+  "planningMode": "spec",
+  "requirePlanApproval": true,
+  "skipTests": false,
+  "branchName": "main",
+  "descriptionHistory": []
+}

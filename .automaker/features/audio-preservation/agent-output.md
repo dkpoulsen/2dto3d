@@ -1286,3 +1286,130 @@ Input: {
   "command": "export CI=true DEBIAN_FRONTEND=noninteractive GIT_TERMINAL_PROMPT=0 GCM_INTERACTIVE=never HOMEBREW_NO_AUTO_UPDATE=1 GIT_EDITOR=: EDITOR=: VISUAL='' GIT_SEQUENCE_EDITOR=: GIT_MERGE_AUTOEDIT=no GIT_PAGER=cat PAGER=cat npm_config_yes=true PIP_NO_INPUT=1 YARN_ENABLE_IMMUTABLE_INSTALLS=false; cd /home/dkp/Documents/Automaker/2dto3d && git diff src/video2d3d/video/video_writer.py | head -100",
   "description": "Check video_writer changes"
 }
+## Phase 2: Commit Phase
+
+Now I'll stage the audio-preservation feature changes and create a conventional commit:
+
+🔧 Tool: bash
+Input: {
+  "command": "export CI=true DEBIAN_FRONTEND=noninteractive GIT_TERMINAL_PROMPT=0 GCM_INTERACTIVE=never HOMEBREW_NO_AUTO_UPDATE=1 GIT_EDITOR=: EDITOR=: VISUAL='' GIT_SEQUENCE_EDITOR=: GIT_MERGE_AUTOEDIT=no GIT_PAGER=cat PAGER=cat npm_config_yes=true PIP_NO_INPUT=1 YARN_ENABLE_IMMUTABLE_INSTALLS=false; cd /home/dkp/Documents/Automaker/2dto3d && git add src/video2d3d/audio/ src/video2d3d/video/video_writer.py tests/unit/test_audio_config.py tests/unit/test_audio_metadata.py tests/unit/test_audio_exceptions.py .automaker/features/audio-preservation/",
+  "description": "Stage audio-preservation feature files"
+}
+
+🔧 Tool: bash
+Input: {
+  "command": "export CI=true DEBIAN_FRONTEND=noninteractive GIT_TERMINAL_PROMPT=0 GCM_INTERACTIVE=never HOMEBREW_NO_AUTO_UPDATE=1 GIT_EDITOR=: EDITOR=: VISUAL='' GIT_SEQUENCE_EDITOR=: GIT_MERGE_AUTOEDIT=no GIT_PAGER=cat PAGER=cat npm_config_yes=true PIP_NO_INPUT=1 YARN_ENABLE_IMMUTABLE_INSTALLS=false; cd /home/dkp/Documents/Automaker/2dto3d && git status --short",
+  "description": "Verify staged changes"
+}
+Now I'll execute the commit with a proper conventional commit message:
+
+🔧 Tool: bash
+Input: {
+  "command": "export CI=true DEBIAN_FRONTEND=noninteractive GIT_TERMINAL_PROMPT=0 GCM_INTERACTIVE=never HOMEBREW_NO_AUTO_UPDATE=1 GIT_EDITOR=: EDITOR=: VISUAL='' GIT_SEQUENCE_EDITOR=: GIT_MERGE_AUTOEDIT=no GIT_PAGER=cat PAGER=cat npm_config_yes=true PIP_NO_INPUT=1 YARN_ENABLE_IMMUTABLE_INSTALLS=false; cd /home/dkp/Documents/Automaker/2dto3d && git commit -m \"feat(audio): add advanced audio processing with 3D spatial audio support\" -m \"Implement comprehensive audio processing module including:\n\n- Audio metadata extraction from video files using FFprobe\n- 3D spatial audio processing with binaural and Ambisonics formats\n- Multi-track audio preservation from source videos\n- Multi-channel audio support (5.1, 7.1 surround) with downmixing\n- Audio loudness normalization (EBU R128)\n- Integration with VideoOutputWriter via get_audio_config() method\n\nNew module files:\n- audio/config.py: Configuration dataclasses for audio processing\n- audio/constants.py: Shared constants and utility functions\n- audio/metadata.py: Audio metadata extraction using FFprobe\n- audio/spatial.py: Spatial audio processor with FFmpeg filters\n- audio/tracks.py: Audio track preservation and extraction\n- audio/multichannel.py: Multi-channel audio downmix/upmix\n- audio/processor.py: Main audio processor integration\n- audio/exceptions.py: Custom audio processing exceptions\n\nUnit tests for configuration, metadata, and exceptions included.\n\nRelates-to: audio-preservation feature\"",
+  "description": "Create conventional commit for audio-preservation feature"
+}
+
+🔧 Tool: bash
+Input: {
+  "command": "export CI=true DEBIAN_FRONTEND=noninteractive GIT_TERMINAL_PROMPT=0 GCM_INTERACTIVE=never HOMEBREW_NO_AUTO_UPDATE=1 GIT_EDITOR=: EDITOR=: VISUAL='' GIT_SEQUENCE_EDITOR=: GIT_MERGE_AUTOEDIT=no GIT_PAGER=cat PAGER=cat npm_config_yes=true PIP_NO_INPUT=1 YARN_ENABLE_IMMUTABLE_INSTALLS=false; cd /home/dkp/Documents/Automaker/2dto3d && git log -1 --stat",
+  "description": "Verify the commit details"
+}
+---
+
+<summary>
+## Summary: Enhanced Audio Processing
+
+### Commit Details
+- **Commit Hash:** `d0211111cf51ffe16171b5789bbc5fe0c8648f84`
+- **Commit Type:** `feat(audio)`
+- **Subject:** Add advanced audio processing with 3D spatial audio support
+
+### Changes Committed
+
+**18 files changed, 4714 insertions(+), 4 deletions(-)**
+
+#### New Audio Module (`src/video2d3d/audio/`)
+| File | Purpose |
+|------|---------|
+| `__init__.py` | Module exports and public API |
+| `config.py` | Configuration dataclasses (AudioConfig, SpatialAudioConfig, AudioFormatConfig, AudioChannelLayout, SpatialAudioFormat enums) |
+| `constants.py` | Shared constants (timeouts, codec extensions, utility functions) |
+| `exceptions.py` | Custom exceptions (AudioProcessingError, AudioExtractionError, etc.) |
+| `metadata.py` | Audio metadata extraction using FFprobe |
+| `spatial.py` | SpatialAudioProcessor with FFmpeg filters for binaural/Ambisonics |
+| `tracks.py` | AudioTrackPreserver for multi-track extraction |
+| `multichannel.py` | MultiChannelAudioProcessor for 5.1/7.1 surround support |
+| `processor.py` | Main AudioProcessor integrating all capabilities |
+
+#### Video Integration
+- `src/video2d3d/video/video_writer.py` - Added advanced audio processing options to VideoWriterConfig and `get_audio_config()` method
+
+#### Unit Tests
+- `tests/unit/test_audio_config.py` - Configuration tests
+- `tests/unit/test_audio_exceptions.py` - Exception tests  
+- `tests/unit/test_audio_metadata.py` - Metadata extraction tests
+
+### Features Implemented
+1. **3D Spatial Audio** - Binaural (HRTF) and Ambisonics (1st/2nd/3rd order) support
+2. **Track Preservation** - Multi-track audio extraction from source videos
+3. **Multi-Channel Support** - 5.1 and 7.1 surround with downmix/upmix
+4. **Loudness Normalization** - EBU R128 normalization
+5. **FFmpeg Integration** - All processing via FFmpeg filters
+
+### Notes for Developer
+- Requires FFmpeg to be installed and available in PATH
+- Spatial audio uses simple binaural simulation by default; custom HRTF files can be specified
+- VideoWriterConfig now includes `enable_spatial_audio`, `spatial_audio_format`, `preserve_all_audio_tracks`, `audio_normalization`, and `audio_normalization_target` fields
+</summary>
+
+---
+
+## Follow-up Session
+
+I'll complete the Testing pipeline step by first reviewing what needs testing, then writing comprehensive test files.
+
+## Phase 1: Review Phase
+
+🔧 Tool: bash
+Input: {
+  "command": "cd /home/dkp/Documents/Automaker/2dto3d && find tests -name \"*.py\" -path \"*/unit/*\" | head -20",
+  "description": "List existing unit test files"
+}
+
+🔧 Tool: bash
+Input: {
+  "command": "cd /home/dkp/Documents/Automaker/2dto3d && wc -l tests/unit/test_audio_*.py 2>/dev/null || echo \"Test files may not exist\"",
+  "description": "Check existing audio test files"
+}
+
+🔧 Tool: bash
+Input: {
+  "command": "cd /home/dkp/Documents/Automaker/2dto3d && find tests -type d | head -10",
+  "description": "List test directories"
+}
+
+🔧 Tool: read
+Input: {
+  "filePath": "/home/dkp/Documents/Automaker/2dto3d/tests/unit/test_audio_config.py"
+}
+
+🔧 Tool: read
+Input: {
+  "filePath": "/home/dkp/Documents/Automaker/2dto3d/tests/unit/test_audio_metadata.py"
+}
+
+🔧 Tool: read
+Input: {
+  "filePath": "/home/dkp/Documents/Automaker/2dto3d/tests/unit/test_audio_exceptions.py"
+}
+## Phase 2: Update Phase - Creating Test Files
+
+Based on my review, I need to add tests for:
+1. **Constants module** - Utility functions
+2. **SpatialAudioProcessor** - 3D spatial audio processing
+3. **AudioTrackPreserver** - Track preservation
+4. **MultiChannelAudioProcessor** - Surround sound support
+5. **AudioProcessor** - Main processor integration
+6. **Integration tests** - End-to-end audio processing
+
+Let me create these test files:

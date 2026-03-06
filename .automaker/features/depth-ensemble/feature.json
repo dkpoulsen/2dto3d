@@ -3,7 +3,7 @@
   "category": "Core",
   "title": "Depth Ensemble and Model Blending",
   "description": "Implement ensemble prediction by combining outputs from multiple depth models using weighted averaging or voting for improved accuracy.",
-  "status": "backlog",
+  "status": "verified",
   "priority": 2,
   "complexity": "complex",
   "dependencies": [
@@ -11,12 +11,13 @@
     "zoedepth-integration"
   ],
   "createdAt": "2026-03-06T15:23:01.920Z",
-  "updatedAt": "2026-03-06T15:23:01.920Z",
+  "updatedAt": "2026-03-06T20:03:01.104Z",
   "model": "zai-coding-plan/glm-5",
   "thinkingLevel": "none",
   "planningMode": "spec",
   "requirePlanApproval": true,
   "skipTests": false,
   "branchName": "main",
-  "descriptionHistory": []
+  "descriptionHistory": [],
+  "summary": "## Commit Summary: Ensemble Depth Prediction Feature\n\n### Changes Committed\n- **3 files changed, 1784 insertions(+), 2 deletions(-)**\n\n### Files Modified/Created\n1. `src/video2d3d/depth/ensemble.py` (NEW - 1110 lines) - Main ensemble implementation\n2. `src/video2d3d/depth/__init__.py` (MODIFIED - 23 lines changed) - Added ensemble exports\n3. `tests/unit/test_depth_ensemble.py` (NEW - 653 lines) - Comprehensive unit tests\n\n### Exact Commit Message Used\n```\nfeat(depth): add ensemble prediction combining multiple depth models\n\nImplement ensemble depth estimation by combining outputs from multiple\ndepth models using weighted averaging or other aggregation methods.\n\nFeatures:\n- EnsembleMethod enum: WEIGHTED_AVERAGE, AVERAGE, MEDIAN, MAX, MIN, VOTING\n- WeightStrategy enum: UNIFORM, PREDEFINED, PERFORMANCE, UNCERTAINTY\n- EnsembleConfig dataclass with validation and weight normalization\n- EnsemblePredictor class with multiple combination methods\n- Auto-weight computation strategies (uniform, predefined, performance-based)\n- Model preloading and dynamic weight management\n- Performance tracking for adaptive model weighting\n- Batch processing support with uncertainty map generation\n- Context manager support for resource cleanup\n\nRefactored to eliminate DRY violations:\n- Added helper methods for weight normalization\n- Extracted predefined and performance weight computation\n- Added input validation for weight setting and model updates\n- Improved scipy import with graceful fallback\n\nCloses #depth-ensemble\n```\n\n### Commit Hash\n`7d0eee2ebb17d65b743c1fd69e5790fb1d67d554`\n\n### Commit Type\n`feat(depth)` - New feature in the depth module\n\n### Notes\n- This commit adds a complete ensemble prediction system for combining multiple depth estimation models\n- Includes comprehensive unit tests with torch mocking for dependency-free testing\n- Code review improvements included: DRY refactoring, magic number extraction, input validation\n- No breaking changes - additive feature only"
 }

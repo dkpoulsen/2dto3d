@@ -1,0 +1,21 @@
+{
+  "id": "model-performance-comparison",
+  "category": "Validation",
+  "title": "Model Comparison Dashboard",
+  "description": "Create comparison tool that visualizes depth estimation results side-by-side across multiple models with metrics and user voting.",
+  "status": "interrupted",
+  "priority": 3,
+  "complexity": "moderate",
+  "dependencies": [
+    "benchmark-suite"
+  ],
+  "createdAt": "2026-03-06T15:23:01.928Z",
+  "updatedAt": "2026-03-06T20:58:08.539Z",
+  "model": "zai-coding-plan/glm-5",
+  "thinkingLevel": "none",
+  "planningMode": "spec",
+  "requirePlanApproval": true,
+  "skipTests": false,
+  "branchName": "main",
+  "descriptionHistory": []
+}

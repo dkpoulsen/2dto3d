@@ -3,12 +3,19 @@
   "category": "UI",
   "title": "Web-Based Dashboard UI",
   "description": "Create a modern web dashboard using React/Vue frontend that connects to the FastAPI backend for visual control and monitoring.",
-  "status": "backlog",
+  "status": "verified",
   "priority": 2,
   "complexity": "complex",
   "dependencies": [
     "web-api-server"
   ],
   "createdAt": "2026-03-06T15:23:01.931Z",
-  "updatedAt": "2026-03-06T15:23:01.931Z"
+  "updatedAt": "2026-03-06T19:43:22.686Z",
+  "model": "zai-coding-plan/glm-5",
+  "thinkingLevel": "none",
+  "planningMode": "spec",
+  "requirePlanApproval": true,
+  "skipTests": false,
+  "branchName": "main",
+  "descriptionHistory": []
 }

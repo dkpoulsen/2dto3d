@@ -215,7 +215,55 @@ class JobConfigRequest(BaseModel):
         default=None,
         description="Depth focus adjustment for controlling which depth appears at screen plane",
     )
+    upscaling: Optional[UpscalingConfigRequest] = Field(
+        default=None,
+        description="AI upscaling configuration using ESRGAN/Real-ESRGAN models",
+    )
 
+class UpscalingConfigRequest(BaseModel):
+    """Configuration for AI-based video upscaling.
+
+    Allows users to enable AI upscaling using ESRGAN/Real-ESRGAN models
+    to enhance output resolution during conversion.
+    """
+
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "enabled": True,
+                "model_type": "realesrgan-x4plus",
+                "scale": 4,
+                "tile_size": 512,
+                "denoise_strength": 0.5,
+            }
+        }
+    )
+
+    enabled: bool = Field(
+        default=False,
+        description="Whether to enable AI upscaling",
+    )
+    model_type: str = Field(
+        default="realesrgan-x4plus",
+        description="Upscaling model: esrgan, realesrgan-x4plus, realesrgan-x4plus-anime, realesrgan-x2plus, realesrgan-general-x4v3",
+    )
+    scale: int = Field(
+        default=4,
+        ge=2,
+        le=4,
+        description="Upscaling factor (2x or 4x)",
+    )
+    tile_size: int = Field(
+        default=0,
+        ge=0,
+        description="Tile size for processing large images. 0 = auto (no tiling for small images)",
+    )
+    denoise_strength: float = Field(
+        default=0.5,
+        ge=0.0,
+        le=1.0,
+        description="Denoising strength (0.0 = none, 1.0 = max)",
+    )
 
 
 class SubmitJobRequest(BaseModel):
@@ -900,6 +948,115 @@ class ManualCrashReportRequest(BaseModel):
         description="Severity level",
     )
 
+
+# ============================================================================
+# Thumbnail Grid Models
+# ============================================================================
+
+
+class ThumbnailFrameResponse(BaseModel):
+    """A single frame thumbnail for the grid view."""
+
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "frame_index": 100,
+                "timestamp": 3.33,
+                "original_url": "/api/v1/jobs/job_123/frames/100/original",
+                "depth_map_url": "/api/v1/jobs/job_123/frames/100/depth-map",
+                "confidence_score": 0.85,
+                "validation_status": "pending",
+            }
+        }
+    )
+
+    frame_index: int = Field(..., description="Frame index in the video", ge=0)
+    timestamp: float = Field(..., description="Timestamp in seconds", ge=0.0)
+    original_url: str = Field(..., description="URL to the original frame image")
+    depth_map_url: str = Field(..., description="URL to the depth map image")
+    confidence_score: Optional[float] = Field(
+        None,
+        description="Optional confidence score (0-1)",
+        ge=0.0,
+        le=1.0,
+    )
+    validation_status: Optional[str] = Field(
+        None,
+        description="Validation status: pending, validated, or corrected",
+    )
+
+
+class ThumbnailGridRequest(BaseModel):
+    """Request parameters for fetching thumbnail grid data."""
+
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "count": 24,
+                "start_frame": 0,
+                "end_frame": 1000,
+            }
+        }
+    )
+
+    count: Optional[int] = Field(
+        default=24,
+        description="Number of thumbnails to fetch (evenly distributed across video)",
+        ge=1,
+        le=100,
+    )
+    start_frame: Optional[int] = Field(
+        default=None,
+        description="Start frame index (optional)",
+        ge=0,
+    )
+    end_frame: Optional[int] = Field(
+        default=None,
+        description="End frame index (optional)",
+        ge=0,
+    )
+
+
+class ThumbnailGridResponse(BaseModel):
+    """Response containing thumbnail grid data."""
+
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "job_id": "job_abc123",
+                "thumbnails": [
+                    {
+                        "frame_index": 0,
+                        "timestamp": 0.0,
+                        "original_url": "/api/v1/jobs/job_abc123/frames/0/original",
+                        "depth_map_url": "/api/v1/jobs/job_abc123/frames/0/depth-map",
+                    },
+                    {
+                        "frame_index": 100,
+                        "timestamp": 3.33,
+                        "original_url": "/api/v1/jobs/job_abc123/frames/100/original",
+                        "depth_map_url": "/api/v1/jobs/job_abc123/frames/100/depth-map",
+                    },
+                ],
+                "total_frames": 1500,
+                "duration_seconds": 50.0,
+            }
+        }
+    )
+
+    job_id: str = Field(..., description="Job ID")
+    thumbnails: list[ThumbnailFrameResponse] = Field(
+        default_factory=list,
+        description="List of thumbnail frames",
+    )
+    total_frames: int = Field(default=0, description="Total frames in the video", ge=0)
+    duration_seconds: float = Field(
+        default=0.0,
+        description="Video duration in seconds",
+        ge=0.0,
+    )
+
+
 __all__ = [
     # Enums
     "JobStatusResponse",
@@ -911,7 +1068,7 @@ __all__ = [
     "CurveControlPointRequest",
     "DepthCurveRequest",
     "DepthFocusRequest",
-
+    "UpscalingConfigRequest",
     "JobConfigRequest",
     "SubmitJobRequest",
     "SubmitBatchRequest",
@@ -944,4 +1101,8 @@ __all__ = [
     "CrashReportSummaryResponse",
     "CrashReportListResponse",
     "ManualCrashReportRequest",
+    # Thumbnail grid models
+    "ThumbnailFrameResponse",
+    "ThumbnailGridRequest",
+    "ThumbnailGridResponse",
 ]

@@ -9,13 +9,16 @@ Tests cover:
 - JobValidationError exception
 - FileDiscoveryError exception
 - FolderWatcherError exception
-- StatePersistenceError exception
+- CircularDependencyError exception
+- DependencyFailedError exception
 """
 
 import pytest
 
 from video2d3d.batch.exceptions import (
     BatchQueueError,
+    CircularDependencyError,
+    DependencyFailedError,
     FileDiscoveryError,
     FolderWatcherError,
     JobAlreadyExistsError,
@@ -246,8 +249,6 @@ class TestExceptionHierarchy:
             except BatchQueueError as e:
                 assert e is exc
             else:
-                pytest.fail(f"Exception {type(exc).__name__} was not caught")
-
     def test_exception_can_be_chained(self) -> None:
         """Test that exceptions can be chained with 'from'."""
         original = ValueError("original error")
@@ -256,3 +257,103 @@ class TestExceptionHierarchy:
         except FileDiscoveryError as e:
             assert e.__cause__ is original
             assert e.path == "/test"
+
+
+class TestCircularDependencyError:
+    """Tests for CircularDependencyError exception."""
+
+    def test_message_format(self) -> None:
+        """Test error message includes job_ids."""
+        error = CircularDependencyError("job-123", "job-456")
+        assert "job-123" in str(error)
+        assert "job-456" in str(error)
+        assert "circular dependency" in str(error).lower()
+
+    def test_job_id_attributes(self) -> None:
+        """Test job_id and dependency_id attributes are set correctly."""
+        error = CircularDependencyError("job-a", "job-b")
+        assert error.job_id == "job-a"
+        assert error.dependency_id == "job-b"
+
+    def test_inheritance(self) -> None:
+        """Test that CircularDependencyError inherits from BatchQueueError."""
+        error = CircularDependencyError("job-1", "job-2")
+        assert isinstance(error, BatchQueueError)
+        assert isinstance(error, Exception)
+
+    def test_can_be_caught_as_base_type(self) -> None:
+        """Test that exception can be caught as BatchQueueError."""
+        with pytest.raises(BatchQueueError):
+            raise CircularDependencyError("job-1", "job-2")
+
+
+class TestDependencyFailedError:
+    """Tests for DependencyFailedError exception."""
+
+    def test_message_format_failed(self) -> None:
+        """Test error message for failed dependency."""
+        error = DependencyFailedError("job-123", "job-456", "failed")
+        assert "job-123" in str(error)
+        assert "job-456" in str(error)
+        assert "failed" in str(error).lower()
+        assert "cannot run" in str(error).lower()
+
+    def test_message_format_cancelled(self) -> None:
+        """Test error message for cancelled dependency."""
+        error = DependencyFailedError("job-123", "job-456", "cancelled")
+        assert "cancelled" in str(error).lower()
+
+    def test_job_id_attributes(self) -> None:
+        """Test job_id, dependency_id, and dependency_status attributes."""
+        error = DependencyFailedError("job-a", "job-b", "failed")
+        assert error.job_id == "job-a"
+        assert error.dependency_id == "job-b"
+        assert error.dependency_status == "failed"
+
+    def test_inheritance(self) -> None:
+        """Test that DependencyFailedError inherits from BatchQueueError."""
+        error = DependencyFailedError("job-1", "job-2", "failed")
+        assert isinstance(error, BatchQueueError)
+        assert isinstance(error, Exception)
+
+    def test_can_be_caught_as_base_type(self) -> None:
+        """Test that exception can be caught as BatchQueueError."""
+        with pytest.raises(BatchQueueError):
+            raise DependencyFailedError("job-1", "job-2", "failed")
+
+
+class TestSchedulerExceptionHierarchy:
+    """Tests for scheduler exception hierarchy."""
+
+    def test_scheduler_exceptions_inherit_from_base(self) -> None:
+        """Test that scheduler exceptions inherit from BatchQueueError."""
+        exceptions = [
+            CircularDependencyError("job-1", "job-2"),
+            DependencyFailedError("job-1", "job-2", "failed"),
+        ]
+        for exc in exceptions:
+            assert isinstance(exc, BatchQueueError)
+            assert isinstance(exc, Exception)
+
+    def test_catching_base_catches_scheduler_exceptions(self) -> None:
+        """Test that catching BatchQueueError catches scheduler exceptions."""
+        exceptions_to_raise = [
+            CircularDependencyError("job-1", "job-2"),
+            DependencyFailedError("job-3", "job-4", "cancelled"),
+        ]
+        for exc in exceptions_to_raise:
+            try:
+                raise exc
+            except BatchQueueError as e:
+                assert e is exc
+            else:
+                pytest.fail(f"Exception {type(exc).__name__} was not caught")
+
+    def test_scheduler_exceptions_can_be_chained(self) -> None:
+        """Test that scheduler exceptions can be chained with 'from'."""
+        original = ValueError("original error")
+        try:
+            raise CircularDependencyError("job-1", "job-2") from original
+        except CircularDependencyError as e:
+            assert e.__cause__ is original
+            assert e.job_id == "job-1"

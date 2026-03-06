@@ -3,19 +3,20 @@
   "category": "Deployment",
   "title": "Docker Container Packaging",
   "description": "Create optimized Docker images with GPU support for easy deployment and consistent execution across environments.",
-  "status": "backlog",
+  "status": "verified",
   "priority": 2,
   "complexity": "simple",
   "dependencies": [
     "project-initialization"
   ],
   "createdAt": "2026-03-06T15:23:01.936Z",
-  "updatedAt": "2026-03-06T15:23:01.936Z",
+  "updatedAt": "2026-03-06T17:57:28.124Z",
   "model": "zai-coding-plan/glm-5",
   "thinkingLevel": "none",
   "planningMode": "spec",
   "requirePlanApproval": true,
   "skipTests": false,
   "branchName": "main",
-  "descriptionHistory": []
+  "descriptionHistory": [],
+  "summary": "## Summary: Commit Changes - Docker Container Packaging\n\n### Commit Details\n\n**Commit Hash:** `19f7b266ff34d0d95a59aeefc0a1a969e185010d`\n\n**Commit Message:**\n```\nfeat(docker): add GPU/CPU container packaging with compose support\n\nCreate optimized Docker images for easy deployment:\n- Multi-stage Dockerfile with NVIDIA CUDA 12.1 support\n- Separate CPU-only Dockerfile for smaller deployments\n- Docker Compose configurations for GPU and CPU modes\n- Entrypoint script with command routing (serve, batch, convert)\n- Health check script for container monitoring\n- .dockerignore for optimized build context\n- Updated README with Docker deployment instructions\n\nFeatures:\n- Version-pinned ARGs for reproducible builds\n- Non-root user for security\n- Named volumes for model persistence\n- Graceful shutdown signal handling\n- API, batch, and CLI operation modes\n```\n\n### Files Committed (8 files, 1325 insertions)\n| File | Status | Lines |\n|------|--------|-------|\n| `.dockerignore` | new | 87 |\n| `Dockerfile` | new | 149 |\n| `Dockerfile.cpu` | new | 130 |\n| `README.md` | modified | 92 |\n| `docker-compose.cpu.yml` | new | 196 |\n| `docker-compose.yml` | new | 219 |\n| `docker/entrypoint.sh` | new | 287 |\n| `docker/healthcheck.sh` | new | 165 |\n\n### Conventional Commit Details\n- **Type:** `feat` (new feature)\n- **Scope:** `docker` (container packaging)\n- **Subject:** add GPU/CPU container packaging with compose support\n\n### Notes\n- Multi-stage builds for optimized image sizes\n- NVIDIA CUDA 12.1.0 base image for GPU support\n- Python 3.10-slim base for CPU-only builds\n- Non-root user `video2d3d` for security\n- Health checks configured for container monitoring\n- Entrypoint supports: serve, batch, convert, shell, python commands"
 }

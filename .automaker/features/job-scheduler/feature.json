@@ -3,19 +3,20 @@
   "category": "Management",
   "title": "Job Scheduling System",
   "description": "Implement job scheduler allowing users to queue multiple conversions with priority levels, scheduled start times, and dependencies.",
-  "status": "backlog",
+  "status": "verified",
   "priority": 2,
   "complexity": "moderate",
   "dependencies": [
     "batch-video-queue"
   ],
   "createdAt": "2026-03-06T15:23:01.933Z",
-  "updatedAt": "2026-03-06T15:23:01.933Z",
+  "updatedAt": "2026-03-06T18:23:40.683Z",
   "model": "zai-coding-plan/glm-5",
   "thinkingLevel": "none",
   "planningMode": "spec",
   "requirePlanApproval": true,
   "skipTests": false,
   "branchName": "main",
-  "descriptionHistory": []
+  "descriptionHistory": [],
+  "summary": "## Summary: Job Scheduling System - Commit\n\n### Commit Created Successfully\n\n**Commit Hash:** `2a2ee5d23647edcc3e83cfc09ba6099d4e48e58d`\n\n**Commit Message:**\n```\nfeat(batch): add job scheduling with priority, scheduled times, and dependencies\n\nImplement comprehensive job scheduler allowing users to queue multiple\nconversions with priority levels, scheduled start times, and job\ndependencies.\n\nChanges:\n- Add scheduled_at field to BatchJob for delayed job execution\n- Add depends_on/dependent_jobs fields for job dependency chains\n- Add circular dependency detection with graph traversal\n- Add validation for failed/cancelled dependencies\n- Update _get_next_job to check scheduled time and dependencies\n- Add dependency completion notification callbacks\n- Add CircularDependencyError and DependencyFailedError exceptions\n- Update API schemas (SubmitJobRequest, JobResponse) with scheduler fields\n- Update job router to handle new scheduler parameters\n```\n\n### Files Committed (5 files, +387/-6 lines)\n- `src/video2d3d/batch/exceptions.py` - Added CircularDependencyError and DependencyFailedError\n- `src/video2d3d/batch/models.py` - Added scheduler fields and helper methods\n- `src/video2d3d/batch/queue.py` - Added dependency validation, scheduling logic\n- `src/video2d3d/web/routers/jobs.py` - Updated to pass scheduler fields\n- `src/video2d3d/web/schemas.py` - Added API schema fields for scheduler\n\n### Notes for Developer\n- .automaker tracking files were intentionally NOT committed (internal pipeline state)\n- All source code changes for the job scheduler feature are now committed\n- The commit follows conventional commit format with `feat(batch)` scope"
 }

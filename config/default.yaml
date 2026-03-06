@@ -189,10 +189,55 @@ depth_processing:
     # Custom control points (x = input depth, y = output depth), range [0, 1]
     # Must include endpoints (0,0) and (1,1) - added automatically if missing
     control_points:
-      - x: 0.0
-        y: 0.0
       - x: 1.0
         y: 1.0
+
+# Sky/Background Plane Detection Settings
+skybox:
+  # Enable sky detection and depth adjustment
+  enabled: true
+  
+  # Detection method: color, position, edge, combined
+  detection_method: combined
+  
+  # Minimum confidence threshold for valid sky detection
+  min_confidence: 0.3
+  
+  # Enable temporal smoothing across frames
+  temporal_consistency: true
+  smoothing_frames: 5
+  
+  # Color-based detection settings
+  color_config:
+    hue_min: 195.0  # Min hue for blue sky (degrees, 0-360)
+    hue_max: 255.0  # Max hue for blue sky
+    saturation_max: 0.6  # Max saturation (low = washed out sky)
+    value_min: 0.4  # Min brightness value
+    gradient_threshold: 0.15  # Threshold for vertical gradient
+    enable_cloudy_sky: true  # Also detect cloudy/overcast sky
+  
+  # Position-based detection settings
+  position_config:
+    sky_region_ratio: 0.5  # Top 50% considered sky candidate
+    min_sky_coverage: 0.05  # Minimum 5% for valid sky
+    max_sky_coverage: 0.7  # Maximum 70% for sky
+    prefer_top_weight: 2.0  # Weight for pixels closer to top
+  
+  # Edge-based horizon detection settings
+  edge_config:
+    horizon_search_ratio: 0.3  # Search bottom 30% for horizon
+    edge_threshold: 50.0  # Canny edge threshold
+    min_edge_pixels: 100  # Min pixels for valid horizon
+    use_hough_transform: false  # Use Hough line transform
+  
+  # Depth assignment settings
+  depth_config:
+    depth_mode: maximum  # Options: maximum, gradient, inverse_gradient
+    sky_depth_value: 1.0  # Maximum depth for sky (normalized)
+    boundary_blend_pixels: 10  # Pixels for smooth transition
+    apply_depth_gradient: true
+    gradient_strength: 0.2
+
 # Stereoscopic Generation Settings
 stereo_generation:
   # Output 3D format
@@ -392,3 +437,27 @@ error_recovery:
   
   # Track failed frames for later retry
   track_failures: true
+
+# Video Denoising Settings
+# AI-based video denoising for cleaner depth estimation
+video_denoising:
+  # Enable/disable video denoising
+  enabled: false
+  
+  # Denoising model to use
+  # Options: fastdvdnet, basicvsr_plusplus, basicvsr
+  model_type: fastdvdnet
+  
+  # Use GPU for inference
+  use_gpu: true
+  
+  # Number of frames for temporal context
+  # Higher values = better temporal consistency but slower
+  num_frames: 5
+  
+  # Default noise level (sigma)
+  # Used for fixed noise level mode
+  noise_level: 30.0
+  
+  # Fallback to CPU if GPU errors occur
+  fallback_to_cpu: true

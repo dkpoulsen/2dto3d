@@ -1,0 +1,21 @@
+{
+  "id": "benchmark-suite",
+  "category": "Testing",
+  "title": "Performance Benchmark Suite",
+  "description": "Create comprehensive benchmark suite to measure and compare performance across different models, resolutions, and hardware configurations.",
+  "status": "pipeline_step_mmcc3rzz_k0qltm",
+  "priority": 3,
+  "complexity": "moderate",
+  "dependencies": [
+    "quality-metrics"
+  ],
+  "createdAt": "2026-03-06T15:23:01.927Z",
+  "updatedAt": "2026-03-06T19:45:38.319Z",
+  "model": "zai-coding-plan/glm-5",
+  "thinkingLevel": "none",
+  "planningMode": "spec",
+  "requirePlanApproval": true,
+  "skipTests": false,
+  "branchName": "main",
+  "descriptionHistory": []
+}

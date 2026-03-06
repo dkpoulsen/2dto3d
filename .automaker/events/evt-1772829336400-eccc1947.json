@@ -1,0 +1,11 @@
+{
+  "id": "evt-1772829336400-eccc1947",
+  "trigger": "feature_error",
+  "timestamp": "2026-03-06T20:35:36.400Z",
+  "projectPath": "/home/dkp/Documents/Automaker/2dto3d",
+  "projectName": "2dto3d",
+  "featureId": "depth-focus-control",
+  "featureName": "Depth-of-Focus Control",
+  "error": "Agent execution ended with: error",
+  "errorType": "execution"
+}

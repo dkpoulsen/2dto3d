@@ -3,12 +3,19 @@
   "category": "Output",
   "title": "Custom Codec Support",
   "description": "Add support for custom and experimental video codecs including AV1, HEVC variants, and VR-specific codecs.",
-  "status": "backlog",
+  "status": "verified",
   "priority": 3,
   "complexity": "moderate",
   "dependencies": [
     "video-output-writer"
   ],
   "createdAt": "2026-03-06T15:23:01.934Z",
-  "updatedAt": "2026-03-06T15:23:01.934Z"
+  "updatedAt": "2026-03-06T20:02:32.221Z",
+  "model": "zai-coding-plan/glm-5",
+  "thinkingLevel": "none",
+  "planningMode": "spec",
+  "requirePlanApproval": true,
+  "skipTests": false,
+  "branchName": "main",
+  "descriptionHistory": []
 }

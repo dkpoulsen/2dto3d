@@ -738,6 +738,324 @@ class TestFlowVisualization:
                 assert vis.shape == (frame1.shape[0], frame1.shape[1], 3)
 
 
+
+# ---------------------------------------------------------------------------
+# Additional Edge Cases and Missing Coverage Tests
+# ---------------------------------------------------------------------------
+
+
+class TestAdditionalEdgeCases:
+    """Additional tests for edge cases and missing coverage."""
+
+    def test_model_type_aliases(
+        self,
+        mock_logger: MagicMock,
+        mock_gpu_utils: dict,
+        mock_cv2_calc_optical_flow: MagicMock,
+    ) -> None:
+        """Test model type parsing with various aliases."""
+        from video2d3d.opticalflow.engine import OpticalFlowModelType
+
+        # Test various aliases
+        assert OpticalFlowModelType.from_string("raft") == OpticalFlowModelType.RAFT_LARGE
+        assert OpticalFlowModelType.from_string("RAFT") == OpticalFlowModelType.RAFT_LARGE
+        assert OpticalFlowModelType.from_string("pwc") == OpticalFlowModelType.PWC_NET
+        assert OpticalFlowModelType.from_string("PWC") == OpticalFlowModelType.PWC_NET
+        assert OpticalFlowModelType.from_string("opencv") == OpticalFlowModelType.FARNEBACK
+        assert OpticalFlowModelType.from_string("sintel") == OpticalFlowModelType.RAFT_Sintel
+        assert OpticalFlowModelType.from_string("kitti") == OpticalFlowModelType.RAFT_Kitti
+
+    def test_model_type_with_hyphens_and_spaces(
+        self,
+        mock_cv2_calc_optical_flow: MagicMock,
+    ) -> None:
+        """Test model type parsing handles hyphens and spaces."""
+        from video2d3d.opticalflow.engine import OpticalFlowModelType
+
+        assert OpticalFlowModelType.from_string("raft-large") == OpticalFlowModelType.RAFT_LARGE
+        assert OpticalFlowModelType.from_string("raft small") == OpticalFlowModelType.RAFT_SMALL
+        assert OpticalFlowModelType.from_string("pwc net") == OpticalFlowModelType.PWC_NET
+
+    def test_config_cache_dir_path_normalization(
+        self,
+        mock_logger: MagicMock,
+        mock_gpu_utils: dict,
+        mock_cv2_calc_optical_flow: MagicMock,
+    ) -> None:
+        """Test that cache_dir is normalized to Path."""
+        from pathlib import Path
+        from video2d3d.opticalflow.engine import OpticalFlowConfig
+
+        # String path should be converted to Path
+        config = OpticalFlowConfig(model_type="farneback", cache_dir="/tmp/cache")
+        assert isinstance(config.cache_dir, Path)
+        assert config.cache_dir == Path("/tmp/cache")
+
+    def test_config_repr_method(
+        self,
+        mock_logger: MagicMock,
+        mock_gpu_utils: dict,
+        mock_cv2_calc_optical_flow: MagicMock,
+    ) -> None:
+        """Test OpticalFlowConfig __repr__ method."""
+        from video2d3d.opticalflow.engine import OpticalFlowConfig
+
+        config = OpticalFlowConfig(model_type="farneback")
+        repr_str = repr(config)
+
+        assert "OpticalFlowConfig" in repr_str
+        assert "farneback" in repr_str
+        assert "device" in repr_str
+
+    def test_engine_repr_method(
+        self,
+        mock_logger: MagicMock,
+        mock_gpu_utils: dict,
+        mock_cv2_calc_optical_flow: MagicMock,
+    ) -> None:
+        """Test OpticalFlowEngine __repr__ method."""
+        from video2d3d.opticalflow.engine import OpticalFlowConfig, OpticalFlowEngine
+
+        config = OpticalFlowConfig(model_type="farneback")
+        engine = OpticalFlowEngine(config=config)
+        repr_str = repr(engine)
+
+        assert "OpticalFlowEngine" in repr_str
+        assert "farneback" in repr_str
+        assert "is_loaded" in repr_str
+
+    def test_engine_close_method(
+        self,
+        mock_logger: MagicMock,
+        mock_gpu_utils: dict,
+        mock_cv2_calc_optical_flow: MagicMock,
+    ) -> None:
+        """Test explicit close() method call."""
+        from video2d3d.opticalflow.engine import OpticalFlowConfig, OpticalFlowEngine
+
+        config = OpticalFlowConfig(model_type="farneback")
+        engine = OpticalFlowEngine(config=config)
+
+        # Engine should have no model loaded for Farneback
+        assert engine._model is None
+
+        # Close should not raise even with no model
+        engine.close()
+
+        assert engine._model is None
+        assert not engine.is_loaded
+
+    def test_model_property_lazy_loading(
+        self,
+        mock_logger: MagicMock,
+        mock_gpu_utils: dict,
+        mock_cv2_calc_optical_flow: MagicMock,
+    ) -> None:
+        """Test that model property returns None for Farneback (no DL model)."""
+        from video2d3d.opticalflow.engine import (
+            OpticalFlowConfig,
+            OpticalFlowEngine,
+        )
+
+        # For Farneback, model property should return None
+        config = OpticalFlowConfig(model_type="farneback")
+        engine = OpticalFlowEngine(config=config)
+
+        # Farneback doesn't have a deep learning model, so model should return None
+        model = engine.model
+        assert model is None
+        # is_loaded should be False until load_model is explicitly called for Farneback
+        assert not engine.is_loaded
+
+    def test_load_model_farneback(
+        self,
+        mock_logger: MagicMock,
+        mock_gpu_utils: dict,
+        mock_cv2_calc_optical_flow: MagicMock,
+    ) -> None:
+        """Test load_model for Farneback sets is_loaded to True."""
+        from video2d3d.opticalflow.engine import OpticalFlowConfig, OpticalFlowEngine
+
+        config = OpticalFlowConfig(model_type="farneback")
+        engine = OpticalFlowEngine(config=config)
+        assert not engine.is_loaded
+
+        # Calling load_model for Farneback sets is_loaded=True
+        engine.load_model()
+        assert engine.is_loaded
+
+    def test_visualize_flow_non_array_input(
+        self,
+        mock_logger: MagicMock,
+        mock_gpu_utils: dict,
+        mock_cv2_calc_optical_flow: MagicMock,
+    ) -> None:
+        """Test visualize_flow raises error for non-array input."""
+        from video2d3d.opticalflow.engine import OpticalFlowConfig, OpticalFlowEngine
+
+        config = OpticalFlowConfig(model_type="farneback")
+        engine = OpticalFlowEngine(config=config)
+
+        with pytest.raises(ValueError, match="flow must be a numpy array"):
+            engine.visualize_flow("not an array")  # type: ignore
+
+    def test_visualize_flow_wrong_ndim(
+        self,
+        mock_logger: MagicMock,
+        mock_gpu_utils: dict,
+        mock_cv2_calc_optical_flow: MagicMock,
+    ) -> None:
+        """Test visualize_flow raises error for wrong ndim."""
+        from video2d3d.opticalflow.engine import OpticalFlowConfig, OpticalFlowEngine
+
+        config = OpticalFlowConfig(model_type="farneback")
+        engine = OpticalFlowEngine(config=config)
+
+        # 2D array instead of 3D
+        invalid_flow = np.zeros((100, 100), dtype=np.float32)
+
+        with pytest.raises(ValueError, match="flow must have shape"):
+            engine.visualize_flow(invalid_flow)
+
+    def test_visualize_flow_wrong_channels(
+        self,
+        mock_logger: MagicMock,
+        mock_gpu_utils: dict,
+        mock_cv2_calc_optical_flow: MagicMock,
+    ) -> None:
+        """Test visualize_flow raises error for wrong channel count."""
+        from video2d3d.opticalflow.engine import OpticalFlowConfig, OpticalFlowEngine
+
+        config = OpticalFlowConfig(model_type="farneback")
+        engine = OpticalFlowEngine(config=config)
+
+        # 3 channels instead of 2
+        invalid_flow = np.zeros((100, 100, 3), dtype=np.float32)
+
+        with pytest.raises(ValueError, match="flow must have shape"):
+            engine.visualize_flow(invalid_flow)
+
+    def test_visualize_flow_frame_size_mismatch(
+        self,
+        sample_frame_pair: tuple[np.ndarray, np.ndarray],
+        mock_logger: MagicMock,
+        mock_gpu_utils: dict,
+        mock_cv2_calc_optical_flow: MagicMock,
+    ) -> None:
+        """Test visualize_flow raises error when frame size doesn't match."""
+        from video2d3d.opticalflow.engine import OpticalFlowConfig, OpticalFlowEngine
+
+        config = OpticalFlowConfig(model_type="farneback")
+        engine = OpticalFlowEngine(config=config)
+
+        frame1, frame2 = sample_frame_pair
+        flow = engine.compute_flow(frame1, frame2)
+
+        # Wrong size frame
+        wrong_frame = np.zeros((50, 50, 3), dtype=np.uint8)
+
+        with pytest.raises(ValueError, match="doesn't match flow shape"):
+            engine.visualize_flow(flow, wrong_frame)
+
+    def test_batch_with_custom_batch_size(
+        self,
+        frame_sequence: list[np.ndarray],
+        mock_logger: MagicMock,
+        mock_gpu_utils: dict,
+        mock_cv2_calc_optical_flow: MagicMock,
+    ) -> None:
+        """Test batch processing with custom batch size."""
+        from video2d3d.opticalflow.engine import OpticalFlowConfig, OpticalFlowEngine
+
+        config = OpticalFlowConfig(model_type="farneback")
+        engine = OpticalFlowEngine(config=config)
+
+        frames1 = frame_sequence[:-1]
+        frames2 = frame_sequence[1:]
+
+        # Process with batch_size=2
+        flows = engine.compute_flow_batch(frames1, frames2, batch_size=2)
+
+        assert len(flows) == len(frames1)
+        for flow in flows:
+            assert flow.shape == (frames1[0].shape[0], frames1[0].shape[1], 2)
+
+    def test_config_with_fp16(
+        self,
+        mock_logger: MagicMock,
+        mock_gpu_utils: dict,
+        mock_cv2_calc_optical_flow: MagicMock,
+    ) -> None:
+        """Test config with FP16 enabled."""
+        from video2d3d.opticalflow.engine import OpticalFlowConfig
+
+        config = OpticalFlowConfig(model_type="farneback", use_fp16=True)
+
+        assert config.use_fp16 is True
+
+    def test_config_with_auto_download(
+        self,
+        mock_logger: MagicMock,
+        mock_gpu_utils: dict,
+        mock_cv2_calc_optical_flow: MagicMock,
+    ) -> None:
+        """Test config with auto_download disabled."""
+        from video2d3d.opticalflow.engine import OpticalFlowConfig
+
+        config = OpticalFlowConfig(model_type="farneback", auto_download=False)
+
+        assert config.auto_download is False
+
+    def test_config_with_input_resolution(
+        self,
+        mock_logger: MagicMock,
+        mock_gpu_utils: dict,
+        mock_cv2_calc_optical_flow: MagicMock,
+    ) -> None:
+        """Test config with custom input resolution."""
+        from video2d3d.opticalflow.engine import OpticalFlowConfig
+
+        config = OpticalFlowConfig(model_type="raft_large", input_resolution=512)
+
+        assert config.input_resolution == 512
+        assert config.effective_resolution == 512
+
+    def test_farneback_default_resolution(
+        self,
+        mock_cv2_calc_optical_flow: MagicMock,
+    ) -> None:
+        """Test that Farneback has 0 default resolution (native)."""
+        from video2d3d.opticalflow.engine import OpticalFlowConfig, OpticalFlowModelType
+
+        config = OpticalFlowConfig(model_type="farneback")
+
+        assert config.model_type.default_resolution == 0
+        assert config.effective_resolution == 0
+
+    def test_large_frame_processing(
+        self,
+        mock_logger: MagicMock,
+        mock_gpu_utils: dict,
+        mock_cv2_calc_optical_flow: MagicMock,
+    ) -> None:
+        """Test processing of larger frames."""
+        from video2d3d.opticalflow.engine import OpticalFlowConfig, OpticalFlowEngine
+
+        config = OpticalFlowConfig(model_type="farneback")
+        engine = OpticalFlowEngine(config=config)
+
+        # Create larger frames
+        np.random.seed(42)
+        frame1 = np.random.randint(0, 255, (480, 640, 3), dtype=np.uint8)
+        frame2 = np.roll(frame1, 10, axis=1)
+
+        # Mock should be updated to return correct shape
+        with patch("cv2.calcOpticalFlowFarneback") as mock_calc:
+            mock_calc.return_value = np.zeros((480, 640, 2), dtype=np.float32)
+            flow = engine.compute_flow(frame1, frame2)
+
+            assert flow.shape == (480, 640, 2)
+
 # ---------------------------------------------------------------------------
 # Edge Cases Tests
 # ---------------------------------------------------------------------------

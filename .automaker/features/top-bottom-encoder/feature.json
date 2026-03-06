@@ -3,19 +3,20 @@
   "category": "Output",
   "title": "Top-Bottom 3D Format Encoder",
   "description": "Implement top-bottom 3D format encoder where left view is placed in top half and right view in bottom half of the frame.",
-  "status": "backlog",
+  "status": "verified",
   "priority": 2,
   "complexity": "simple",
   "dependencies": [
     "dibr-engine"
   ],
   "createdAt": "2026-03-06T15:23:01.921Z",
-  "updatedAt": "2026-03-06T15:23:01.921Z",
+  "updatedAt": "2026-03-06T18:45:32.011Z",
   "model": "zai-coding-plan/glm-5",
   "thinkingLevel": "none",
   "planningMode": "spec",
   "requirePlanApproval": true,
   "skipTests": false,
   "branchName": "main",
-  "descriptionHistory": []
+  "descriptionHistory": [],
+  "summary": "## Summary: Testing for Top-Bottom 3D Format Encoder\n\n### Phase 1: Review - Testing Needs Identified\n\nThe `TopBottomEncoder` implementation required comprehensive testing for:\n1. **Enum class**: `TopBottomLayout` (STANDARD, SWAPPED)\n2. **Encoder class**: `TopBottomEncoder` with all methods\n3. **Convenience functions**: `encode_top_bottom()`, `create_top_bottom_encoder()`\n4. **Input validation**: Error handling for invalid inputs\n5. **Edge cases**: Various image formats, dimensions, and dtypes\n6. **Integration**: Exports from the stereo module\n\n### Phase 2: Update - Tests Created\n\n**Test File Created:** `tests/unit/test_top_bottom.py` (713 lines)\n\n**Test Classes and Tests:**\n\n| Test Class | Tests | Description |\n|------------|-------|-------------|\n| `TestTopBottomLayout` | 2 | Enum value tests |\n| `TestTopBottomEncoder` | 21 | Encoder initialization, all encoding methods, input validation |\n| `TestConvenienceFunctions` | 3 | Module-level convenience functions |\n| `TestEdgeCases` | 8 | Edge cases (small images, identical views, extreme colors, etc.) |\n| `TestIntegration` | 2 | Stereo module integration tests |\n| `TestAdditionalEdgeCases` | 5 | RGBA, single-channel, float ranges, large images, dtypes |\n\n**Total Tests:** 41 tests\n\n### Test Coverage\n\n| File | Statements | Missed | Branches | Coverage |\n|------|-----------|--------|----------|----------|\n| `src/video2d3d/stereo/top_bottom.py` | 56 | 0 | 10 | **100%** |\n\n### Tests Run\n\n```\npython -m pytest tests/unit/test_top_bottom.py -v --tb=short\n============================== 41 passed in 1.83s ==============================\n```\n\n### Test Categories Covered\n\n1. **Unit Tests** ✅\n   - `TopBottomLayout` enum values and properties\n   - `TopBottomEncoder.__init__()` with default and custom parameters\n   - `TopBottomEncoder.__repr__()` string representation\n   - `encode()` method with all layouts and width modes\n   - Convenience methods: `encode_standard()`, `encode_swapped()`, `encode_half_width()`, `encode_full_width()`\n   - Input validation: None inputs, dimension mismatches, invalid dimensions\n\n2. **Edge Case Tests** ✅\n   - Grayscale, RGBA, single-channel inputs\n   - Float and uint16 dtype preservation\n   - Large 4K images\n   - Odd-width half-width scaling\n   - Zero-dimension and zero-width images\n   - Extreme color values (black/white)\n   - Content preservation verification\n\n3. **Integration Tests** ✅\n   - Import from `video2d3d.stereo` module\n   - Encoder with DIBR-generated views\n\n### Verification Status\n- All 41 tests pass ✅\n- 100% code coverage on `top_bottom.py` ✅\n- All tests follow existing project patterns ✅\n- No regressions in related tests ✅"
 }

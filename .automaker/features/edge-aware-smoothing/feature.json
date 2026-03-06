@@ -3,19 +3,20 @@
   "category": "Processing",
   "title": "Edge-Aware Depth Smoothing",
   "description": "Implement bilateral filtering and guided filtering for depth maps that preserves object edges while smoothing noise.",
-  "status": "backlog",
+  "status": "verified",
   "priority": 2,
   "complexity": "simple",
   "dependencies": [
     "depth-map-processor"
   ],
   "createdAt": "2026-03-06T15:23:01.925Z",
-  "updatedAt": "2026-03-06T15:23:01.925Z",
+  "updatedAt": "2026-03-06T17:53:48.108Z",
   "model": "zai-coding-plan/glm-5",
   "thinkingLevel": "none",
   "planningMode": "spec",
   "requirePlanApproval": true,
   "skipTests": false,
   "branchName": "main",
-  "descriptionHistory": []
+  "descriptionHistory": [],
+  "summary": "## Summary: Edge-Aware Depth Smoothing - Commit Step\n\n### Changes Committed\n\nThe following files were committed with the edge-aware smoothing feature:\n\n1. **src/video2d3d/depth/processor.py** (+169/-15 lines)\n   - Added `EdgeAwareFilterType` enum for filter selection (bilateral/guided/none)\n   - Added `apply_guided_filter()` method implementing He et al. guided image filtering algorithm\n   - Added `guided_filter_radius`, `guided_filter_eps`, `edge_filter_type` config options to `DepthProcessorConfig`\n   - Added auto-enable logic for filter flags when `edge_filter_type` is set\n   - Added edge case handling for images smaller than filter radius\n   - Updated `process()` pipeline to support guided filter selection\n\n2. **src/video2d3d/depth/__init__.py** (+51 lines)\n   - Exported `EdgeAwareFilterType` enum\n   - Exported `_DEFAULT_GUIDED_FILTER_RADIUS` and `_DEFAULT_GUIDED_FILTER_EPS` constants\n   - Added AdaBins and model selector exports (related features)\n\n3. **tests/unit/test_depth_processor.py** (+207 lines)\n   - Added `TestGuidedFilter` test class with comprehensive tests\n   - Tests for basic filter, custom params, guidance image, edge preservation\n   - Tests for small/tiny image handling\n   - Tests for auto-enable behavior of filter flags\n   - Tests for invalid parameter validation\n\n### Commit Details\n\n- **Commit Hash:** `0641ad39e0774501ddabc3e783e50c4d92a249cf`\n- **Commit Type:** `feat` (new feature)\n- **Scope:** `depth`\n- **Subject:** add guided filter for edge-aware depth smoothing\n\n### Commit Message (Full)\n```\nfeat(depth): add guided filter for edge-aware depth smoothing\n\nImplement guided image filtering algorithm as an alternative to bilateral\nfiltering for depth map edge-aware smoothing. The guided filter provides\nbetter edge preservation and is computationally more efficient.\n\nChanges:\n- Add EdgeAwareFilterType enum for filter selection (bilateral/guided/none)\n- Add apply_guided_filter() method implementing He et al. algorithm\n- Add guided_filter config options (radius, eps) to DepthProcessorConfig\n- Auto-enable filter flags when edge_filter_type is set\n- Handle edge case where image is smaller than filter radius\n- Add comprehensive unit tests for guided filter functionality\n- Update module exports for new enum and constants\n\nThe guided filter uses a local linear model to transfer structures from\na guidance image to the filtering output, preserving sharp edges while\nsmoothing flat regions.\n```\n\n### Notes for Developer\n- The guided filter implementation is pure NumPy/OpenCV (no opencv-contrib required)\n- Use `edge_filter_type=\"guided\"` to enable guided filtering instead of bilateral\n- The filter auto-adjusts radius when image dimensions are too small\n- Filter flags are auto-enabled based on `edge_filter_type` setting"
 }

@@ -517,3 +517,195 @@ class TestModuleExports:
 
         for export in expected_exports:
             assert export in depth.__all__, f"Missing export: {export}"
+
+
+# ---------------------------------------------------------------------------
+# Model Caching Tests
+# ---------------------------------------------------------------------------
+
+
+class TestModelCaching:
+    """Tests for model caching behavior."""
+
+    def test_torch_hub_directory_set(self, mock_torch: MagicMock) -> None:
+        """Test that torch hub directory is configured."""
+        from video2d3d.depth import DepthEstimator
+        from pathlib import Path
+
+        custom_cache = Path("/tmp/test_cache")
+        config = type('Config', (), {
+            'model_type': type('MT', (), {'value': 'MiDaS_small', 'hub_name': 'MiDaS_small'})(),
+            'device': 'cpu',
+            'cache_dir': custom_cache,
+            'auto_download': True,
+            'optimize': False,
+            'use_fp16': False,
+        })()
+
+        estimator = DepthEstimator.__new__(DepthEstimator)
+        estimator.config = config
+        estimator._model = None
+        estimator._transform = None
+        estimator._is_loaded = False
+        estimator._temporal_smoother = None
+        estimator._temporal_config = None
+
+        hub_dir = estimator._get_torch_hub_dir()
+
+        mock_torch.hub.set_dir.assert_called()
+
+    def test_cache_dir_from_config(self, mock_torch: MagicMock) -> None:
+        """Test that cache directory is used from config."""
+        from video2d3d.depth import DepthEstimator, MiDaSConfig
+        from pathlib import Path
+
+        custom_cache = Path("/tmp/test_cache")
+        config = MiDaSConfig(cache_dir=custom_cache)
+        estimator = DepthEstimator(config=config)
+
+        # Verify config has the cache_dir
+        assert estimator.config.cache_dir == custom_cache
+
+    def test_default_cache_dir(self, mock_torch: MagicMock) -> None:
+        """Test that default cache dir uses torch.hub.get_dir()."""
+        from video2d3d.depth import DepthEstimator
+
+        mock_torch.hub.get_dir.return_value = "/default/torch/hub"
+
+        estimator = DepthEstimator()
+        hub_dir = estimator._get_torch_hub_dir()
+
+        # Should use the default torch hub directory
+        assert str(hub_dir) == "/default/torch/hub"
+
+    def test_auto_download_flag_passed_to_torch_hub(
+        self, mock_torch: MagicMock
+    ) -> None:
+        """Test that auto_download flag is passed correctly."""
+        from video2d3d.depth import DepthEstimator, MiDaSConfig
+
+        # Test with auto_download=True (default)
+        config = MiDaSConfig(auto_download=True)
+        estimator = DepthEstimator(config=config)
+        estimator.load_model()
+
+        # Verify torch.hub.load was called
+        assert mock_torch.hub.load.call_count >= 1
+
+    def test_model_load_only_once(
+        self, mock_torch: MagicMock, sample_rgb_image: np.ndarray
+    ) -> None:
+        """Test that model is only loaded once during multiple inferences."""
+        from video2d3d.depth import DepthEstimator
+
+        mock_model = MagicMock()
+        mock_model.eval.return_value = mock_model
+        mock_model.to.return_value = mock_model
+        mock_output = MagicMock()
+        mock_output.dim.return_value = 4
+        mock_output.squeeze.return_value = mock_output
+        mock_output.cpu.return_value = mock_output
+        mock_output.numpy.return_value = np.zeros((100, 100), dtype=np.float32)
+        mock_model.return_value = mock_output
+
+        mock_transforms = MagicMock()
+        mock_transform_fn = MagicMock()
+        mock_transform_fn.dim.return_value = 3
+        mock_transform_fn.unsqueeze.return_value = mock_transform_fn
+        mock_transform_fn.to.return_value = mock_transform_fn
+        mock_transforms.small_transform = mock_transform_fn
+
+        mock_torch.hub.load.side_effect = [mock_model, mock_transforms, mock_transforms]
+
+        estimator = DepthEstimator()
+
+        # Multiple calls to property should not reload model
+        _ = estimator.model
+        _ = estimator.model
+        _ = estimator.model
+
+        # Model load should only be called twice (model + transforms)
+        assert mock_torch.hub.load.call_count <= 3
+
+
+# ---------------------------------------------------------------------------
+# GPU Fallback Tests
+# ---------------------------------------------------------------------------
+
+
+class TestGPUFallback:
+    """Tests for GPU fallback behavior."""
+
+    def test_fallback_to_cpu_on_oom(
+        self, mock_torch: MagicMock, sample_rgb_image: np.ndarray
+    ) -> None:
+        """Test that GPU OOM triggers CPU fallback."""
+        from video2d3d.depth import DepthEstimator, MiDaSConfig
+
+        config = MiDaSConfig(device="cuda", fallback_to_cpu=True)
+        estimator = DepthEstimator(config=config)
+
+        # Set up model that raises OOM on first call
+        call_count = [0]
+
+        def mock_inference(*args, **kwargs):
+            call_count[0] += 1
+            if call_count[0] == 1:
+                raise RuntimeError("CUDA out of memory")
+            mock_output = MagicMock()
+            mock_output.dim.return_value = 4
+            mock_output.squeeze.return_value = mock_output
+            mock_output.cpu.return_value = mock_output
+            mock_output.numpy.return_value = np.zeros((100, 100), dtype=np.float32)
+            return mock_output
+
+        mock_model = MagicMock()
+        mock_model.eval.return_value = mock_model
+        mock_model.to.return_value = mock_model
+        mock_model.side_effect = mock_inference
+
+        mock_transforms = MagicMock()
+        mock_transform_fn = MagicMock()
+        mock_transform_fn.dim.return_value = 3
+        mock_transform_fn.unsqueeze.return_value = mock_transform_fn
+        mock_transform_fn.to.return_value = mock_transform_fn
+        mock_transforms.small_transform = mock_transform_fn
+
+        mock_torch.hub.load.side_effect = [mock_model, mock_transforms]
+
+        with patch("video2d3d.depth.F") as mock_F:
+            mock_F.interpolate.return_value = MagicMock(
+                squeeze=MagicMock(return_value=MagicMock(numpy=MagicMock(return_value=np.zeros((100, 100), dtype=np.float32))))
+            )
+            result = estimator.estimate_depth(sample_rgb_image)
+
+            # Should have fallen back to CPU
+            assert estimator.config.device == "cpu"
+            assert isinstance(result, np.ndarray)
+
+    def test_no_fallback_when_disabled(
+        self, mock_torch: MagicMock, sample_rgb_image: np.ndarray
+    ) -> None:
+        """Test that OOM raises error when fallback is disabled."""
+        from video2d3d.depth import DepthEstimator, MiDaSConfig, InferenceError
+
+        config = MiDaSConfig(device="cuda", fallback_to_cpu=False)
+        estimator = DepthEstimator(config=config)
+
+        mock_model = MagicMock()
+        mock_model.eval.return_value = mock_model
+        mock_model.to.return_value = mock_model
+        mock_model.side_effect = RuntimeError("CUDA out of memory")
+
+        mock_transforms = MagicMock()
+        mock_transform_fn = MagicMock()
+        mock_transform_fn.dim.return_value = 3
+        mock_transform_fn.unsqueeze.return_value = mock_transform_fn
+        mock_transform_fn.to.return_value = mock_transform_fn
+        mock_transforms.small_transform = mock_transform_fn
+
+        mock_torch.hub.load.side_effect = [mock_model, mock_transforms]
+
+        with patch("video2d3d.depth.F"):
+            with pytest.raises(InferenceError, match="Depth estimation failed"):
+                estimator.estimate_depth(sample_rgb_image)

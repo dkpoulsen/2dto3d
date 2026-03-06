@@ -702,8 +702,6 @@ class ZoeDepthEstimator:
             depth_map = self._postprocess_depth(prediction, original_shape, depth_mode=depth_mode)
 
             elapsed_ms = (time.time() - start_time) * 1000
-
-            elapsed_ms = (time.time() - start_time) * 1000
             log_model_inference(
                 model_name=f"zoedepth_{self.config.model_variant.value}",
                 batch_size=1,

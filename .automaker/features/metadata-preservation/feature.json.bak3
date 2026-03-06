@@ -1,0 +1,21 @@
+{
+  "id": "metadata-preservation",
+  "category": "Processing",
+  "title": "Metadata Preservation and Enhancement",
+  "description": "Preserve and enhance video metadata including EXIF, IPTC, and custom fields throughout the conversion process.",
+  "status": "backlog",
+  "priority": 4,
+  "complexity": "simple",
+  "dependencies": [
+    "video-input-handler"
+  ],
+  "createdAt": "2026-03-06T15:23:01.935Z",
+  "updatedAt": "2026-03-06T21:52:14.002Z",
+  "model": "zai-coding-plan/glm-5",
+  "thinkingLevel": "none",
+  "planningMode": "spec",
+  "requirePlanApproval": true,
+  "skipTests": false,
+  "branchName": "main",
+  "descriptionHistory": []
+}

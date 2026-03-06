@@ -3,12 +3,19 @@
   "category": "Configuration",
   "title": "Processing Preset Manager",
   "description": "Create system for saving, loading, and sharing processing presets with optimized settings for different use cases (cinema, VR, web, mobile).",
-  "status": "backlog",
+  "status": "verified",
   "priority": 2,
   "complexity": "simple",
   "dependencies": [
     "cli-framework"
   ],
   "createdAt": "2026-03-06T15:23:01.930Z",
-  "updatedAt": "2026-03-06T15:23:01.930Z"
+  "updatedAt": "2026-03-06T18:56:18.121Z",
+  "model": "zai-coding-plan/glm-5",
+  "thinkingLevel": "none",
+  "planningMode": "spec",
+  "requirePlanApproval": true,
+  "skipTests": false,
+  "branchName": "main",
+  "descriptionHistory": []
 }

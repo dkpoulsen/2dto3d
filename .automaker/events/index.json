@@ -2,6 +2,461 @@
   "version": 1,
   "events": [
     {
+      "id": "evt-1772830544677-16ff8a16",
+      "trigger": "feature_success",
+      "timestamp": "2026-03-06T20:55:44.677Z",
+      "featureName": "Kubernetes Deployment Configuration",
+      "featureId": "kubernetes-deployment"
+    },
+    {
+      "id": "evt-1772830544647-76e0168e",
+      "trigger": "feature_success",
+      "timestamp": "2026-03-06T20:55:44.647Z",
+      "featureName": "Kubernetes Deployment Configuration",
+      "featureId": "kubernetes-deployment"
+    },
+    {
+      "id": "evt-1772830171939-e568a6c8",
+      "trigger": "feature_success",
+      "timestamp": "2026-03-06T20:49:31.939Z",
+      "featureName": "Interactive Depth Validation Tool",
+      "featureId": "depth-validation-tool"
+    },
+    {
+      "id": "evt-1772830171917-a46a042a",
+      "trigger": "feature_success",
+      "timestamp": "2026-03-06T20:49:31.917Z",
+      "featureName": "Interactive Depth Validation Tool",
+      "featureId": "depth-validation-tool"
+    },
+    {
+      "id": "evt-1772829947762-42232e14",
+      "trigger": "feature_success",
+      "timestamp": "2026-03-06T20:45:47.762Z",
+      "featureName": "Interactive Depth Editor",
+      "featureId": "interactive-depth-editor"
+    },
+    {
+      "id": "evt-1772829947735-9245d322",
+      "trigger": "feature_success",
+      "timestamp": "2026-03-06T20:45:47.735Z",
+      "featureName": "Interactive Depth Editor",
+      "featureId": "interactive-depth-editor"
+    },
+    {
+      "id": "evt-1772829336400-eccc1947",
+      "trigger": "feature_error",
+      "timestamp": "2026-03-06T20:35:36.400Z",
+      "featureName": "Depth-of-Focus Control",
+      "featureId": "depth-focus-control"
+    },
+    {
+      "id": "evt-1772829082896-1a043dd9",
+      "trigger": "feature_success",
+      "timestamp": "2026-03-06T20:31:22.896Z",
+      "featureName": "Desktop GUI Application",
+      "featureId": "desktop-gui"
+    },
+    {
+      "id": "evt-1772829082887-4ab0c5bf",
+      "trigger": "feature_success",
+      "timestamp": "2026-03-06T20:31:22.887Z",
+      "featureName": "Desktop GUI Application",
+      "featureId": "desktop-gui"
+    },
+    {
+      "id": "evt-1772829008475-1499669a",
+      "trigger": "feature_success",
+      "timestamp": "2026-03-06T20:30:08.475Z",
+      "featureName": "Frame Interpolation for Higher FPS",
+      "featureId": "frame-interpolation"
+    },
+    {
+      "id": "evt-1772829008452-28c6cfde",
+      "trigger": "feature_success",
+      "timestamp": "2026-03-06T20:30:08.452Z",
+      "featureName": "Frame Interpolation for Higher FPS",
+      "featureId": "frame-interpolation"
+    },
+    {
+      "id": "evt-1772828284665-b145d8a2",
+      "trigger": "feature_success",
+      "timestamp": "2026-03-06T20:18:04.665Z",
+      "featureName": "Depth Curve Adjustment Tool",
+      "featureId": "depth-curve-adjustment"
+    },
+    {
+      "id": "evt-1772828284654-5d81c57b",
+      "trigger": "feature_success",
+      "timestamp": "2026-03-06T20:18:04.654Z",
+      "featureName": "Depth Curve Adjustment Tool",
+      "featureId": "depth-curve-adjustment"
+    },
+    {
+      "id": "evt-1772828269885-ead832c9",
+      "trigger": "feature_success",
+      "timestamp": "2026-03-06T20:17:49.885Z",
+      "featureName": "Developer Documentation",
+      "featureId": "developer-documentation"
+    },
+    {
+      "id": "evt-1772828269874-b9a2921a",
+      "trigger": "feature_success",
+      "timestamp": "2026-03-06T20:17:49.874Z",
+      "featureName": "Developer Documentation",
+      "featureId": "developer-documentation"
+    },
+    {
+      "id": "evt-1772827514012-7c9b7bba",
+      "trigger": "feature_success",
+      "timestamp": "2026-03-06T20:05:14.012Z",
+      "featureName": "Crash Reporting and Diagnostics",
+      "featureId": "crash-reporting"
+    },
+    {
+      "id": "evt-1772827513997-131e4e8c",
+      "trigger": "feature_success",
+      "timestamp": "2026-03-06T20:05:13.997Z",
+      "featureName": "Crash Reporting and Diagnostics",
+      "featureId": "crash-reporting"
+    },
+    {
+      "id": "evt-1772827381106-398ef521",
+      "trigger": "feature_success",
+      "timestamp": "2026-03-06T20:03:01.106Z",
+      "featureName": "Depth Ensemble and Model Blending",
+      "featureId": "depth-ensemble"
+    },
+    {
+      "id": "evt-1772827381092-5c5b7af5",
+      "trigger": "feature_success",
+      "timestamp": "2026-03-06T20:03:01.092Z",
+      "featureName": "Depth Ensemble and Model Blending",
+      "featureId": "depth-ensemble"
+    },
+    {
+      "id": "evt-1772827352233-1ab04fde",
+      "trigger": "feature_success",
+      "timestamp": "2026-03-06T20:02:32.233Z",
+      "featureName": "Custom Codec Support",
+      "featureId": "custom-codecs"
+    },
+    {
+      "id": "evt-1772827352220-34be761a",
+      "trigger": "feature_success",
+      "timestamp": "2026-03-06T20:02:32.220Z",
+      "featureName": "Custom Codec Support",
+      "featureId": "custom-codecs"
+    },
+    {
+      "id": "evt-1772826481422-8233fdea",
+      "trigger": "feature_success",
+      "timestamp": "2026-03-06T19:48:01.422Z",
+      "featureName": "Performance Benchmark Suite",
+      "featureId": "benchmark-suite"
+    },
+    {
+      "id": "evt-1772826481411-3db7d61b",
+      "trigger": "feature_success",
+      "timestamp": "2026-03-06T19:48:01.411Z",
+      "featureName": "Performance Benchmark Suite",
+      "featureId": "benchmark-suite"
+    },
+    {
+      "id": "evt-1772826202710-60594115",
+      "trigger": "feature_success",
+      "timestamp": "2026-03-06T19:43:22.710Z",
+      "featureName": "Web-Based Dashboard UI",
+      "featureId": "web-ui-dashboard"
+    },
+    {
+      "id": "evt-1772826202684-368b0112",
+      "trigger": "feature_success",
+      "timestamp": "2026-03-06T19:43:22.684Z",
+      "featureName": "Web-Based Dashboard UI",
+      "featureId": "web-ui-dashboard"
+    },
+    {
+      "id": "evt-1772825749951-8bc9b69a",
+      "trigger": "feature_success",
+      "timestamp": "2026-03-06T19:35:49.951Z",
+      "featureName": "Enhanced Audio Processing",
+      "featureId": "audio-preservation"
+    },
+    {
+      "id": "evt-1772825749924-8887535e",
+      "trigger": "feature_success",
+      "timestamp": "2026-03-06T19:35:49.924Z",
+      "featureName": "Enhanced Audio Processing",
+      "featureId": "audio-preservation"
+    },
+    {
+      "id": "evt-1772825310551-9e99fef5",
+      "trigger": "feature_success",
+      "timestamp": "2026-03-06T19:28:30.551Z",
+      "featureName": "ZoeDepth Model Integration",
+      "featureId": "zoedepth-integration"
+    },
+    {
+      "id": "evt-1772825310536-aa833117",
+      "trigger": "feature_success",
+      "timestamp": "2026-03-06T19:28:30.536Z",
+      "featureName": "ZoeDepth Model Integration",
+      "featureId": "zoedepth-integration"
+    },
+    {
+      "id": "evt-1772825046456-378275b8",
+      "trigger": "feature_success",
+      "timestamp": "2026-03-06T19:24:06.456Z",
+      "featureName": "Configuration Import/Export",
+      "featureId": "config-import-export"
+    },
+    {
+      "id": "evt-1772825046442-7862740a",
+      "trigger": "feature_success",
+      "timestamp": "2026-03-06T19:24:06.442Z",
+      "featureName": "Configuration Import/Export",
+      "featureId": "config-import-export"
+    },
+    {
+      "id": "evt-1772824026677-bcdf30a8",
+      "trigger": "feature_success",
+      "timestamp": "2026-03-06T19:07:06.677Z",
+      "featureName": "VR Video Output Generator",
+      "featureId": "vr-output-generator"
+    },
+    {
+      "id": "evt-1772824026642-deab9175",
+      "trigger": "feature_success",
+      "timestamp": "2026-03-06T19:07:06.642Z",
+      "featureName": "VR Video Output Generator",
+      "featureId": "vr-output-generator"
+    },
+    {
+      "id": "evt-1772823607079-4f6248e3",
+      "trigger": "feature_success",
+      "timestamp": "2026-03-06T19:00:07.079Z",
+      "featureName": "Optical Flow Calculation Engine",
+      "featureId": "optical-flow-engine"
+    },
+    {
+      "id": "evt-1772823607070-f886e162",
+      "trigger": "feature_success",
+      "timestamp": "2026-03-06T19:00:07.070Z",
+      "featureName": "Optical Flow Calculation Engine",
+      "featureId": "optical-flow-engine"
+    },
+    {
+      "id": "evt-1772823550951-e6e1e7ff",
+      "trigger": "feature_success",
+      "timestamp": "2026-03-06T18:59:10.951Z",
+      "featureName": "Comprehensive User Guide",
+      "featureId": "user-guide"
+    },
+    {
+      "id": "evt-1772823550944-60305c7e",
+      "trigger": "feature_success",
+      "timestamp": "2026-03-06T18:59:10.944Z",
+      "featureName": "Comprehensive User Guide",
+      "featureId": "user-guide"
+    },
+    {
+      "id": "evt-1772823378128-115ef27d",
+      "trigger": "feature_success",
+      "timestamp": "2026-03-06T18:56:18.128Z",
+      "featureName": "Processing Preset Manager",
+      "featureId": "preset-manager"
+    },
+    {
+      "id": "evt-1772823378120-a5b20bf7",
+      "trigger": "feature_success",
+      "timestamp": "2026-03-06T18:56:18.120Z",
+      "featureName": "Processing Preset Manager",
+      "featureId": "preset-manager"
+    },
+    {
+      "id": "evt-1772822841358-66cf5651",
+      "trigger": "feature_success",
+      "timestamp": "2026-03-06T18:47:21.358Z",
+      "featureName": "Adaptive Batch Size Optimization",
+      "featureId": "adaptive-batch-sizing"
+    },
+    {
+      "id": "evt-1772822841350-6b99eb7d",
+      "trigger": "feature_success",
+      "timestamp": "2026-03-06T18:47:21.350Z",
+      "featureName": "Adaptive Batch Size Optimization",
+      "featureId": "adaptive-batch-sizing"
+    },
+    {
+      "id": "evt-1772822732012-215b4a1c",
+      "trigger": "feature_success",
+      "timestamp": "2026-03-06T18:45:32.012Z",
+      "featureName": "Top-Bottom 3D Format Encoder",
+      "featureId": "top-bottom-encoder"
+    },
+    {
+      "id": "evt-1772822732005-9a01928f",
+      "trigger": "feature_success",
+      "timestamp": "2026-03-06T18:45:32.005Z",
+      "featureName": "Top-Bottom 3D Format Encoder",
+      "featureId": "top-bottom-encoder"
+    },
+    {
+      "id": "evt-1772821876636-2ca980b8",
+      "trigger": "feature_success",
+      "timestamp": "2026-03-06T18:31:16.636Z",
+      "featureName": "Motion-Compensated Temporal Smoothing",
+      "featureId": "motion-compensated-smoothing"
+    },
+    {
+      "id": "evt-1772821876626-73e4f8a2",
+      "trigger": "feature_success",
+      "timestamp": "2026-03-06T18:31:16.626Z",
+      "featureName": "Motion-Compensated Temporal Smoothing",
+      "featureId": "motion-compensated-smoothing"
+    },
+    {
+      "id": "evt-1772821608276-f31e7dbd",
+      "trigger": "feature_success",
+      "timestamp": "2026-03-06T18:26:48.276Z",
+      "featureName": "Health Monitoring Endpoint",
+      "featureId": "health-monitoring"
+    },
+    {
+      "id": "evt-1772821608268-e04d6c39",
+      "trigger": "feature_success",
+      "timestamp": "2026-03-06T18:26:48.268Z",
+      "featureName": "Health Monitoring Endpoint",
+      "featureId": "health-monitoring"
+    },
+    {
+      "id": "evt-1772821420684-35c8e64e",
+      "trigger": "feature_success",
+      "timestamp": "2026-03-06T18:23:40.684Z",
+      "featureName": "Job Scheduling System",
+      "featureId": "job-scheduler"
+    },
+    {
+      "id": "evt-1772821420677-4af3aa42",
+      "trigger": "feature_success",
+      "timestamp": "2026-03-06T18:23:40.677Z",
+      "featureName": "Job Scheduling System",
+      "featureId": "job-scheduler"
+    },
+    {
+      "id": "evt-1772820921154-a423fae5",
+      "trigger": "feature_success",
+      "timestamp": "2026-03-06T18:15:21.154Z",
+      "featureName": "Memory Usage Monitor",
+      "featureId": "memory-monitor"
+    },
+    {
+      "id": "evt-1772820921147-8adfba85",
+      "trigger": "feature_success",
+      "timestamp": "2026-03-06T18:15:21.147Z",
+      "featureName": "Memory Usage Monitor",
+      "featureId": "memory-monitor"
+    },
+    {
+      "id": "evt-1772820561156-c964e121",
+      "trigger": "feature_success",
+      "timestamp": "2026-03-06T18:09:21.156Z",
+      "featureName": "Interlaced 3D Format Encoder",
+      "featureId": "interlaced-encoder"
+    },
+    {
+      "id": "evt-1772820561147-b792270f",
+      "trigger": "feature_success",
+      "timestamp": "2026-03-06T18:09:21.147Z",
+      "featureName": "Interlaced 3D Format Encoder",
+      "featureId": "interlaced-encoder"
+    },
+    {
+      "id": "evt-1772820113170-82a10363",
+      "trigger": "feature_success",
+      "timestamp": "2026-03-06T18:01:53.170Z",
+      "featureName": "Semantic Segmentation Integration",
+      "featureId": "depth-segmentation"
+    },
+    {
+      "id": "evt-1772820113160-6612f622",
+      "trigger": "feature_success",
+      "timestamp": "2026-03-06T18:01:53.160Z",
+      "featureName": "Semantic Segmentation Integration",
+      "featureId": "depth-segmentation"
+    },
+    {
+      "id": "evt-1772819972962-ec385cb0",
+      "trigger": "feature_success",
+      "timestamp": "2026-03-06T17:59:32.962Z",
+      "featureName": "AdaDepth Model Integration",
+      "featureId": "adadepth-integration"
+    },
+    {
+      "id": "evt-1772819972946-7aef78a4",
+      "trigger": "feature_success",
+      "timestamp": "2026-03-06T17:59:32.946Z",
+      "featureName": "AdaDepth Model Integration",
+      "featureId": "adadepth-integration"
+    },
+    {
+      "id": "evt-1772819848125-b05d006e",
+      "trigger": "feature_success",
+      "timestamp": "2026-03-06T17:57:28.125Z",
+      "featureName": "Docker Container Packaging",
+      "featureId": "docker-packaging"
+    },
+    {
+      "id": "evt-1772819848116-34c906fb",
+      "trigger": "feature_success",
+      "timestamp": "2026-03-06T17:57:28.116Z",
+      "featureName": "Docker Container Packaging",
+      "featureId": "docker-packaging"
+    },
+    {
+      "id": "evt-1772819628109-7680db5c",
+      "trigger": "feature_success",
+      "timestamp": "2026-03-06T17:53:48.109Z",
+      "featureName": "Edge-Aware Depth Smoothing",
+      "featureId": "edge-aware-smoothing"
+    },
+    {
+      "id": "evt-1772819628103-85cae0d6",
+      "trigger": "feature_success",
+      "timestamp": "2026-03-06T17:53:48.103Z",
+      "featureName": "Edge-Aware Depth Smoothing",
+      "featureId": "edge-aware-smoothing"
+    },
+    {
+      "id": "evt-1772818439489-91fadfef",
+      "trigger": "feature_success",
+      "timestamp": "2026-03-06T17:33:59.489Z",
+      "featureName": "Multiple Depth Model Support",
+      "featureId": "depth-model-selection"
+    },
+    {
+      "id": "evt-1772818439478-e3d121b0",
+      "trigger": "feature_success",
+      "timestamp": "2026-03-06T17:33:59.478Z",
+      "featureName": "Multiple Depth Model Support",
+      "featureId": "depth-model-selection"
+    },
+    {
+      "id": "evt-1772818318554-70da26e5",
+      "trigger": "feature_success",
+      "timestamp": "2026-03-06T17:31:58.554Z",
+      "featureName": "Checkerboard 3D Pattern Encoder",
+      "featureId": "checkerboard-encoder"
+    },
+    {
+      "id": "evt-1772818318545-cae3c026",
+      "trigger": "feature_success",
+      "timestamp": "2026-03-06T17:31:58.545Z",
+      "featureName": "Checkerboard 3D Pattern Encoder",
+      "featureId": "checkerboard-encoder"
+    },
+    {
       "id": "evt-1772817311201-286654e8",
       "trigger": "feature_success",
       "timestamp": "2026-03-06T17:15:11.201Z",

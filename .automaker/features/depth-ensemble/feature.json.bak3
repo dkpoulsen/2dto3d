@@ -1,0 +1,22 @@
+{
+  "id": "depth-ensemble",
+  "category": "Core",
+  "title": "Depth Ensemble and Model Blending",
+  "description": "Implement ensemble prediction by combining outputs from multiple depth models using weighted averaging or voting for improved accuracy.",
+  "status": "pipeline_step_mmcc38tb_z6cxyk",
+  "priority": 2,
+  "complexity": "complex",
+  "dependencies": [
+    "adadepth-integration",
+    "zoedepth-integration"
+  ],
+  "createdAt": "2026-03-06T15:23:01.920Z",
+  "updatedAt": "2026-03-06T19:52:46.362Z",
+  "model": "zai-coding-plan/glm-5",
+  "thinkingLevel": "none",
+  "planningMode": "spec",
+  "requirePlanApproval": true,
+  "skipTests": false,
+  "branchName": "main",
+  "descriptionHistory": []
+}

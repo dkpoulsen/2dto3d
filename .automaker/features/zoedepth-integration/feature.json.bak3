@@ -1,0 +1,21 @@
+{
+  "id": "zoedepth-integration",
+  "category": "Core",
+  "title": "ZoeDepth Model Integration",
+  "description": "Add ZoeDepth metric depth estimation model integration with support for both relative and absolute depth estimation modes.",
+  "status": "pipeline_step_mmcbz6pm_scmfew",
+  "priority": 2,
+  "complexity": "moderate",
+  "dependencies": [
+    "depth-model-selection"
+  ],
+  "createdAt": "2026-03-06T15:23:01.919Z",
+  "updatedAt": "2026-03-06T19:10:09.289Z",
+  "model": "zai-coding-plan/glm-5",
+  "thinkingLevel": "none",
+  "planningMode": "spec",
+  "requirePlanApproval": true,
+  "skipTests": false,
+  "branchName": "main",
+  "descriptionHistory": []
+}

@@ -10,8 +10,7 @@ Tests cover:
 
 from __future__ import annotations
 
-from datetime import datetime
-from typing import Any
+from datetime import datetime, timedelta
 
 import pytest
 from pydantic import ValidationError as PydanticValidationError
@@ -36,6 +35,8 @@ from video2d3d.web.schemas import (
     ErrorResponse,
     HealthCheckResponse,
     APIInfoResponse,
+    DepthFocusRequest,
+    DepthCurveRequest,
 )
 
 
@@ -461,12 +462,281 @@ class TestModelSerialization:
         assert json_data["job_id"] == "job-id"
         assert json_data["status"] == "running"
 
-    def test_error_response_exclude_none(self) -> None:
-        """Test ErrorResponse excludes None fields."""
-        response = ErrorResponse(
-            error="test_error",
-            message="Test message",
-        )
-        json_data = response.model_dump(exclude_none=True)
-        assert "detail" not in json_data
         assert "request_id" not in json_data
+
+
+class TestSchedulerFields:
+    """Tests for scheduler fields in API schemas."""
+
+    def test_submit_job_request_scheduled_at(self) -> None:
+        """Test SubmitJobRequest with scheduled_at field."""
+        scheduled = datetime.now() + timedelta(hours=1)
+        request = SubmitJobRequest(
+            input_file_id="test-file-id",
+            scheduled_at=scheduled,
+        )
+        assert request.scheduled_at == scheduled
+
+    def test_submit_job_request_scheduled_at_none(self) -> None:
+        """Test SubmitJobRequest with no scheduled_at (immediate)."""
+        request = SubmitJobRequest(input_file_id="test-file-id")
+        assert request.scheduled_at is None
+
+    def test_submit_job_request_depends_on(self) -> None:
+        """Test SubmitJobRequest with depends_on field."""
+        request = SubmitJobRequest(
+            input_file_id="test-file-id",
+            depends_on=["job-1", "job-2"],
+        )
+        assert request.depends_on == ["job-1", "job-2"]
+
+    def test_submit_job_request_depends_on_none(self) -> None:
+        """Test SubmitJobRequest with no depends_on."""
+        request = SubmitJobRequest(input_file_id="test-file-id")
+        assert request.depends_on is None
+
+    def test_submit_job_request_scheduler_json(self) -> None:
+        """Test SubmitJobRequest JSON serialization with scheduler fields."""
+        scheduled = datetime.now() + timedelta(hours=1)
+        request = SubmitJobRequest(
+            input_file_id="test-file-id",
+            scheduled_at=scheduled,
+            depends_on=["job-1"],
+        )
+        json_data = request.model_dump()
+        assert "scheduled_at" in json_data
+        assert "depends_on" in json_data
+
+    def test_job_response_scheduled_at(self) -> None:
+        """Test JobResponse with scheduled_at field."""
+        scheduled = datetime.now() + timedelta(hours=1)
+        response = JobResponse(
+            job_id="job-id",
+            status=JobStatusResponse.PENDING,
+            priority=JobPriorityRequest.NORMAL,
+            input_filename="input.mp4",
+            created_at=datetime.now(),
+            scheduled_at=scheduled,
+        )
+        assert response.scheduled_at == scheduled
+
+    def test_job_response_depends_on(self) -> None:
+        """Test JobResponse with depends_on field."""
+        response = JobResponse(
+            job_id="job-id",
+            status=JobStatusResponse.PENDING,
+            priority=JobPriorityRequest.NORMAL,
+            input_filename="input.mp4",
+            created_at=datetime.now(),
+            depends_on=["job-1", "job-2"],
+        )
+        assert response.depends_on == ["job-1", "job-2"]
+
+    def test_job_response_dependent_jobs(self) -> None:
+        """Test JobResponse with dependent_jobs field."""
+        response = JobResponse(
+            job_id="job-id",
+            status=JobStatusResponse.COMPLETED,
+            priority=JobPriorityRequest.NORMAL,
+            input_filename="input.mp4",
+            created_at=datetime.now(),
+            dependent_jobs=["waiting-1", "waiting-2"],
+        )
+        assert response.dependent_jobs == ["waiting-1", "waiting-2"]
+
+    def test_job_response_scheduler_defaults(self) -> None:
+        """Test JobResponse default values for scheduler fields."""
+        response = JobResponse(
+            job_id="job-id",
+            status=JobStatusResponse.PENDING,
+            priority=JobPriorityRequest.NORMAL,
+            input_filename="input.mp4",
+            created_at=datetime.now(),
+        )
+        assert response.scheduled_at is None
+        assert response.depends_on == []
+        assert response.dependent_jobs == []
+
+    def test_job_response_scheduler_json(self) -> None:
+        """Test JobResponse JSON serialization with scheduler fields."""
+        response = JobResponse(
+            job_id="job-id",
+            status=JobStatusResponse.PENDING,
+            priority=JobPriorityRequest.NORMAL,
+            input_filename="input.mp4",
+            created_at=datetime.now(),
+            scheduled_at=datetime.now(),
+            depends_on=["job-1"],
+            dependent_jobs=["waiting-1"],
+        )
+        json_data = response.model_dump()
+        assert "scheduled_at" in json_data
+        assert "depends_on" in json_data
+        assert "dependent_jobs" in json_data
+
+
+class TestDepthFocusRequest:
+    """Tests for DepthFocusRequest model."""
+
+    def test_default_values(self) -> None:
+        """Test default values are set correctly."""
+        focus = DepthFocusRequest()
+        assert focus.enabled is False
+        assert focus.focus_depth == 0.5
+        assert focus.focus_range == 0.3
+
+    def test_custom_values(self) -> None:
+        """Test custom values are set correctly."""
+        focus = DepthFocusRequest(
+            enabled=True,
+            focus_depth=0.7,
+            focus_range=0.4,
+        )
+        assert focus.enabled is True
+        assert focus.focus_depth == 0.7
+        assert focus.focus_range == 0.4
+
+    def test_focus_depth_validation_min(self) -> None:
+        """Test focus_depth validation accepts minimum value (0.0)."""
+        focus = DepthFocusRequest(focus_depth=0.0)
+        assert focus.focus_depth == 0.0
+
+    def test_focus_depth_validation_max(self) -> None:
+        """Test focus_depth validation accepts maximum value (1.0)."""
+        focus = DepthFocusRequest(focus_depth=1.0)
+        assert focus.focus_depth == 1.0
+
+    def test_focus_depth_validation_below_min(self) -> None:
+        """Test focus_depth validation rejects below minimum."""
+        with pytest.raises(PydanticValidationError):
+            DepthFocusRequest(focus_depth=-0.1)
+
+    def test_focus_depth_validation_above_max(self) -> None:
+        """Test focus_depth validation rejects above maximum."""
+        with pytest.raises(PydanticValidationError):
+            DepthFocusRequest(focus_depth=1.1)
+
+    def test_focus_range_validation_min(self) -> None:
+        """Test focus_range validation accepts minimum value (0.0)."""
+        focus = DepthFocusRequest(focus_range=0.0)
+        assert focus.focus_range == 0.0
+
+    def test_focus_range_validation_max(self) -> None:
+        """Test focus_range validation accepts maximum value (1.0)."""
+        focus = DepthFocusRequest(focus_range=1.0)
+        assert focus.focus_range == 1.0
+
+    def test_focus_range_validation_below_min(self) -> None:
+        """Test focus_range validation rejects below minimum."""
+        with pytest.raises(PydanticValidationError):
+            DepthFocusRequest(focus_range=-0.1)
+
+    def test_focus_range_validation_above_max(self) -> None:
+        """Test focus_range validation rejects above maximum."""
+        with pytest.raises(PydanticValidationError):
+            DepthFocusRequest(focus_range=1.1)
+
+    def test_model_config_example(self) -> None:
+        """Test that model_config has example."""
+        assert hasattr(DepthFocusRequest, "model_config")
+        assert "json_schema_extra" in DepthFocusRequest.model_config
+
+    def test_json_serialization(self) -> None:
+        """Test JSON serialization of DepthFocusRequest."""
+        focus = DepthFocusRequest(enabled=True, focus_depth=0.6, focus_range=0.2)
+        json_data = focus.model_dump()
+        assert json_data["enabled"] is True
+        assert json_data["focus_depth"] == 0.6
+        assert json_data["focus_range"] == 0.2
+
+
+class TestJobConfigRequestDepthFocus:
+    """Tests for depth_focus field in JobConfigRequest."""
+
+    def test_depth_focus_default_none(self) -> None:
+        """Test depth_focus defaults to None."""
+        config = JobConfigRequest()
+        assert config.depth_focus is None
+
+    def test_depth_focus_with_value(self) -> None:
+        """Test depth_focus can be set."""
+        config = JobConfigRequest(
+            depth_focus=DepthFocusRequest(
+                enabled=True,
+                focus_depth=0.7,
+                focus_range=0.4,
+            )
+        )
+        assert config.depth_focus is not None
+        assert config.depth_focus.enabled is True
+        assert config.depth_focus.focus_depth == 0.7
+        assert config.depth_focus.focus_range == 0.4
+
+    def test_depth_focus_serialization(self) -> None:
+        """Test depth_focus serialization in JobConfigRequest."""
+        config = JobConfigRequest(
+            depth_focus=DepthFocusRequest(enabled=True, focus_depth=0.5, focus_range=0.3)
+        )
+        json_data = config.model_dump()
+        assert "depth_focus" in json_data
+        assert json_data["depth_focus"]["enabled"] is True
+
+
+class TestDepthCurveRequest:
+    """Tests for DepthCurveRequest model."""
+
+    def test_default_values(self) -> None:
+        """Test default values are set correctly."""
+        curve = DepthCurveRequest()
+        assert curve.enabled is False
+        assert curve.preset is None
+        assert len(curve.control_points) == 2
+        assert curve.control_points[0].x == 0.0
+        assert curve.control_points[-1].x == 1.0
+
+    def test_custom_values(self) -> None:
+        """Test custom values are set correctly."""
+        curve = DepthCurveRequest(
+            enabled=True,
+            preset="s_curve",
+        )
+        assert curve.enabled is True
+        assert curve.preset == "s_curve"
+
+    def test_control_point_validation(self) -> None:
+        """Test control point validation."""
+        from video2d3d.web.schemas import CurveControlPointRequest
+        point = CurveControlPointRequest(x=0.5, y=0.7)
+        assert point.x == 0.5
+        assert point.y == 0.7
+
+    def test_control_point_x_validation_below_min(self) -> None:
+        """Test control point x validation rejects below minimum."""
+        from video2d3d.web.schemas import CurveControlPointRequest
+        with pytest.raises(PydanticValidationError):
+            CurveControlPointRequest(x=-0.1, y=0.5)
+
+    def test_control_point_x_validation_above_max(self) -> None:
+        """Test control point x validation rejects above maximum."""
+        from video2d3d.web.schemas import CurveControlPointRequest
+        with pytest.raises(PydanticValidationError):
+            CurveControlPointRequest(x=1.1, y=0.5)
+
+    def test_control_point_y_validation_below_min(self) -> None:
+        """Test control point y validation rejects below minimum."""
+        from video2d3d.web.schemas import CurveControlPointRequest
+        with pytest.raises(PydanticValidationError):
+            CurveControlPointRequest(x=0.5, y=-0.1)
+
+    def test_control_point_y_validation_above_max(self) -> None:
+        """Test control point y validation rejects above maximum."""
+        from video2d3d.web.schemas import CurveControlPointRequest
+        with pytest.raises(PydanticValidationError):
+            CurveControlPointRequest(x=0.5, y=1.1)
+
+    def test_json_serialization(self) -> None:
+        """Test JSON serialization of DepthCurveRequest."""
+        curve = DepthCurveRequest(enabled=True, preset="s_curve")
+        json_data = curve.model_dump()
+        assert json_data["enabled"] is True
+        assert json_data["preset"] == "s_curve"

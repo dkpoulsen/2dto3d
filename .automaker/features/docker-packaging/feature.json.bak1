@@ -3,12 +3,19 @@
   "category": "Deployment",
   "title": "Docker Container Packaging",
   "description": "Create optimized Docker images with GPU support for easy deployment and consistent execution across environments.",
-  "status": "backlog",
+  "status": "verified",
   "priority": 2,
   "complexity": "simple",
   "dependencies": [
     "project-initialization"
   ],
   "createdAt": "2026-03-06T15:23:01.936Z",
-  "updatedAt": "2026-03-06T15:23:01.936Z"
+  "updatedAt": "2026-03-06T17:57:28.117Z",
+  "model": "zai-coding-plan/glm-5",
+  "thinkingLevel": "none",
+  "planningMode": "spec",
+  "requirePlanApproval": true,
+  "skipTests": false,
+  "branchName": "main",
+  "descriptionHistory": []
 }

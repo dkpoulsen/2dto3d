@@ -1,0 +1,21 @@
+{
+  "id": "depth-curve-adjustment",
+  "category": "Processing",
+  "title": "Depth Curve Adjustment Tool",
+  "description": "Implement depth curve manipulation allowing users to adjust non-linear depth mapping for artistic control over 3D effect strength.",
+  "status": "pipeline_step_mmcc3rzz_k0qltm",
+  "priority": 3,
+  "complexity": "moderate",
+  "dependencies": [
+    "depth-map-processor"
+  ],
+  "createdAt": "2026-03-06T15:23:01.923Z",
+  "updatedAt": "2026-03-06T20:15:24.491Z",
+  "model": "zai-coding-plan/glm-5",
+  "thinkingLevel": "none",
+  "planningMode": "spec",
+  "requirePlanApproval": true,
+  "skipTests": false,
+  "branchName": "main",
+  "descriptionHistory": []
+}

@@ -54,6 +54,16 @@ class TestGetSystemMemory:
             assert result.total_mb == 0.0
             assert result.utilization_percent == 0.0
 
+    def test_get_system_memory_exception(self) -> None:
+        """Test system memory retrieval when psutil raises exception."""
+        with patch("video2d3d.web.health.psutil") as mock_psutil:
+            mock_psutil.virtual_memory.side_effect = RuntimeError("Memory error")
+            result = get_system_memory()
+
+            assert isinstance(result, SystemMemoryResponse)
+            assert result.total_mb == 0.0
+            assert result.utilization_percent == 0.0
+
 
 class TestGetGPUStatus:
     """Tests for get_gpu_status function."""
@@ -165,6 +175,38 @@ class TestGetQueueHealth:
         assert result.queue_depth == 5  # pending + running
         assert result.success_rate_percent == 80.0
 
+    def test_get_queue_health_exception(self) -> None:
+        """Test queue health handles exceptions gracefully."""
+        mock_queue = MagicMock()
+        mock_queue.is_running = True
+        mock_queue.get_stats.side_effect = RuntimeError("Queue error")
+
+        result = get_queue_health(mock_queue)
+
+        assert isinstance(result, QueueHealthResponse)
+        assert result.running is False
+        assert result.paused is False
+
+    def test_get_queue_health_paused(self) -> None:
+        """Test queue health when queue is paused."""
+        mock_queue = MagicMock()
+        mock_queue.is_running = True
+        mock_queue.is_paused = True
+        mock_stats = MagicMock()
+        mock_stats.total_jobs = 5
+        mock_stats.pending_jobs = 3
+        mock_stats.running_jobs = 0
+        mock_stats.completed_jobs = 2
+        mock_stats.failed_jobs = 0
+        mock_stats.success_rate = 100.0
+        mock_queue.get_stats.return_value = mock_stats
+
+        result = get_queue_health(mock_queue)
+
+        assert result.paused is True
+        assert result.running is True  # Running but paused
+        assert result.queue_depth == 3  # Only pending (no running)
+
 
 class TestDetermineHealthStatus:
     """Tests for determine_health_status function."""
@@ -274,8 +316,96 @@ class TestDetermineHealthStatus:
         assert status == HealthStatus.DEGRADED
         assert checks["gpu"] is True  # Still OK, just degraded
 
+    def test_healthy_status_no_gpu(self) -> None:
+        """Test healthy status when GPU is not available (not required)."""
+        gpu_status = GPUStatusResponse(available=False)
+        memory_status = SystemMemoryResponse(
+            total_mb=16000.0,
+            available_mb=8000.0,
+            used_mb=8000.0,
+            utilization_percent=50.0,
+        )
+        queue_status = QueueHealthResponse(running=True)
 
-class TestGetComprehensiveHealth:
+        status, checks = determine_health_status(gpu_status, memory_status, queue_status)
+
+        assert status == HealthStatus.HEALTHY
+        assert checks["gpu"] is True  # No GPU is still considered healthy
+
+    def test_memory_exactly_at_warning_threshold(self) -> None:
+        """Test degraded status when memory exactly at warning threshold."""
+        gpu_status = GPUStatusResponse(available=False)
+        memory_status = SystemMemoryResponse(
+            total_mb=16000.0,
+            available_mb=2400.0,
+            used_mb=13600.0,
+            utilization_percent=MEMORY_WARNING_THRESHOLD,  # Exactly at threshold
+        )
+        queue_status = QueueHealthResponse(running=True)
+
+        status, checks = determine_health_status(gpu_status, memory_status, queue_status)
+
+        assert status == HealthStatus.DEGRADED
+        assert checks["memory"] is True
+
+    def test_gpu_memory_exactly_at_warning_threshold(self) -> None:
+        """Test degraded status when GPU memory exactly at warning threshold."""
+        gpu_status = GPUStatusResponse(
+            available=True,
+            memory_utilization_percent=GPU_MEMORY_WARNING_THRESHOLD,
+        )
+        memory_status = SystemMemoryResponse(
+            total_mb=16000.0,
+            available_mb=8000.0,
+            used_mb=8000.0,
+            utilization_percent=50.0,
+        )
+        queue_status = QueueHealthResponse(running=True)
+
+        status, checks = determine_health_status(gpu_status, memory_status, queue_status)
+
+        assert status == HealthStatus.DEGRADED
+        assert checks["gpu"] is True
+
+    def test_gpu_memory_exactly_at_critical_threshold(self) -> None:
+        """Test unhealthy status when GPU memory exactly at critical threshold."""
+        gpu_status = GPUStatusResponse(
+            available=True,
+            memory_utilization_percent=GPU_MEMORY_CRITICAL_THRESHOLD,
+        )
+        memory_status = SystemMemoryResponse(
+            total_mb=16000.0,
+            available_mb=8000.0,
+            used_mb=8000.0,
+            utilization_percent=50.0,
+        )
+        queue_status = QueueHealthResponse(running=True)
+
+        status, checks = determine_health_status(gpu_status, memory_status, queue_status)
+
+        assert status == HealthStatus.UNHEALTHY
+        assert checks["gpu"] is False
+
+    def test_both_memory_and_gpu_degraded(self) -> None:
+        """Test degraded status when both memory and GPU at warning levels."""
+        gpu_status = GPUStatusResponse(
+            available=True,
+            memory_utilization_percent=92.0,
+        )
+        memory_status = SystemMemoryResponse(
+            total_mb=16000.0,
+            available_mb=2000.0,
+            used_mb=14000.0,
+            utilization_percent=90.0,
+        )
+        queue_status = QueueHealthResponse(running=True)
+
+        status, checks = determine_health_status(gpu_status, memory_status, queue_status)
+
+        assert status == HealthStatus.DEGRADED
+        assert all(checks.values()) is True
+
+
     """Tests for get_comprehensive_health function."""
 
     def test_comprehensive_health_structure(self) -> None:

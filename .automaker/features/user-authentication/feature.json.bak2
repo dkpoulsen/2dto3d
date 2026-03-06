@@ -1,0 +1,21 @@
+{
+  "id": "user-authentication",
+  "category": "Security",
+  "title": "User Authentication System",
+  "description": "Add authentication to web API with JWT tokens, user registration, login, and role-based access control.",
+  "status": "in_progress",
+  "priority": 3,
+  "complexity": "moderate",
+  "dependencies": [
+    "web-api-server"
+  ],
+  "createdAt": "2026-03-06T15:23:01.933Z",
+  "updatedAt": "2026-03-06T21:51:52.252Z",
+  "model": "zai-coding-plan/glm-5",
+  "thinkingLevel": "none",
+  "planningMode": "spec",
+  "requirePlanApproval": true,
+  "skipTests": false,
+  "branchName": "main",
+  "descriptionHistory": []
+}

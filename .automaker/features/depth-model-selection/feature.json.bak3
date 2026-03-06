@@ -3,14 +3,14 @@
   "category": "Core",
   "title": "Multiple Depth Model Support",
   "description": "Add support for selecting between multiple depth estimation models (MiDaS, AdaDepth, ZoeDepth, etc.) with automatic model downloading and caching.",
-  "status": "in_progress",
+  "status": "pipeline_step_mmcc38tb_z6cxyk",
   "priority": 2,
   "complexity": "moderate",
   "dependencies": [
     "midas-integration"
   ],
   "createdAt": "2026-03-06T15:23:01.918Z",
-  "updatedAt": "2026-03-06T17:15:13.197Z",
+  "updatedAt": "2026-03-06T17:22:10.787Z",
   "model": "zai-coding-plan/glm-5",
   "thinkingLevel": "none",
   "planningMode": "spec",

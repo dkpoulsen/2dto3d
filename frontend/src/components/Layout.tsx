@@ -6,13 +6,15 @@ import {
   Download,
   Activity,
   Video,
+  GitCompare,
 } from 'lucide-react';
-
+import { NotificationBell } from './NotificationBell';
 const navItems = [
   { to: '/', icon: LayoutDashboard, label: 'Dashboard' },
   { to: '/upload', icon: Upload, label: 'Upload' },
   { to: '/jobs', icon: ListVideo, label: 'Jobs' },
   { to: '/downloads', icon: Download, label: 'Downloads' },
+  { to: '/compare', icon: GitCompare, label: 'Compare' },
   { to: '/system', icon: Activity, label: 'System' },
 ] as const;
 
@@ -27,6 +29,7 @@ export function Layout() {
               <h1 className="text-xl font-bold text-gray-900">2Dto3D Converter</h1>
             </div>
             <div className="flex items-center gap-2">
+              <NotificationBell />
               <span className="text-sm text-gray-500">Web Dashboard</span>
             </div>
           </div>
@@ -48,7 +51,6 @@ export function Layout() {
                   }`
                 }
               >
-                <Icon className="h-5 w-5" aria-hidden="true" />
                 <Icon className="h-5 w-5" aria-hidden="true" />
                 {label}
               </NavLink>

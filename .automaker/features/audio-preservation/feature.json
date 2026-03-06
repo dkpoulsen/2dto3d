@@ -3,19 +3,20 @@
   "category": "Processing",
   "title": "Enhanced Audio Processing",
   "description": "Implement advanced audio processing including 3D spatial audio generation, track preservation, and multi-channel audio support.",
-  "status": "pipeline_step_mmcc38tb_z6cxyk",
+  "status": "verified",
   "priority": 3,
   "complexity": "moderate",
   "dependencies": [
     "video-output-writer"
   ],
   "createdAt": "2026-03-06T15:23:01.934Z",
-  "updatedAt": "2026-03-06T19:31:35.781Z",
+  "updatedAt": "2026-03-06T19:35:49.949Z",
   "model": "zai-coding-plan/glm-5",
   "thinkingLevel": "none",
   "planningMode": "spec",
   "requirePlanApproval": true,
   "skipTests": false,
   "branchName": "main",
-  "descriptionHistory": []
+  "descriptionHistory": [],
+  "summary": "## Summary: Enhanced Audio Processing\n\n### Commit Details\n- **Commit Hash:** `d0211111cf51ffe16171b5789bbc5fe0c8648f84`\n- **Commit Type:** `feat(audio)`\n- **Subject:** Add advanced audio processing with 3D spatial audio support\n\n### Changes Committed\n\n**18 files changed, 4714 insertions(+), 4 deletions(-)**\n\n#### New Audio Module (`src/video2d3d/audio/`)\n| File | Purpose |\n|------|---------|\n| `__init__.py` | Module exports and public API |\n| `config.py` | Configuration dataclasses (AudioConfig, SpatialAudioConfig, AudioFormatConfig, AudioChannelLayout, SpatialAudioFormat enums) |\n| `constants.py` | Shared constants (timeouts, codec extensions, utility functions) |\n| `exceptions.py` | Custom exceptions (AudioProcessingError, AudioExtractionError, etc.) |\n| `metadata.py` | Audio metadata extraction using FFprobe |\n| `spatial.py` | SpatialAudioProcessor with FFmpeg filters for binaural/Ambisonics |\n| `tracks.py` | AudioTrackPreserver for multi-track extraction |\n| `multichannel.py` | MultiChannelAudioProcessor for 5.1/7.1 surround support |\n| `processor.py` | Main AudioProcessor integrating all capabilities |\n\n#### Video Integration\n- `src/video2d3d/video/video_writer.py` - Added advanced audio processing options to VideoWriterConfig and `get_audio_config()` method\n\n#### Unit Tests\n- `tests/unit/test_audio_config.py` - Configuration tests\n- `tests/unit/test_audio_exceptions.py` - Exception tests  \n- `tests/unit/test_audio_metadata.py` - Metadata extraction tests\n\n### Features Implemented\n1. **3D Spatial Audio** - Binaural (HRTF) and Ambisonics (1st/2nd/3rd order) support\n2. **Track Preservation** - Multi-track audio extraction from source videos\n3. **Multi-Channel Support** - 5.1 and 7.1 surround with downmix/upmix\n4. **Loudness Normalization** - EBU R128 normalization\n5. **FFmpeg Integration** - All processing via FFmpeg filters\n\n### Notes for Developer\n- Requires FFmpeg to be installed and available in PATH\n- Spatial audio uses simple binaural simulation by default; custom HRTF files can be specified\n- VideoWriterConfig now includes `enable_spatial_audio`, `spatial_audio_format`, `preserve_all_audio_tracks`, `audio_normalization`, and `audio_normalization_target` fields"
 }

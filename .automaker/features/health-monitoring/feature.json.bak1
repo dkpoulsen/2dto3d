@@ -3,12 +3,19 @@
   "category": "Operations",
   "title": "Health Monitoring Endpoint",
   "description": "Add comprehensive health check endpoint monitoring GPU status, memory usage, queue depth, and overall system health.",
-  "status": "backlog",
+  "status": "verified",
   "priority": 2,
   "complexity": "simple",
   "dependencies": [
     "web-api-server"
   ],
   "createdAt": "2026-03-06T15:23:01.937Z",
-  "updatedAt": "2026-03-06T15:23:01.937Z"
+  "updatedAt": "2026-03-06T18:26:48.269Z",
+  "model": "zai-coding-plan/glm-5",
+  "thinkingLevel": "none",
+  "planningMode": "spec",
+  "requirePlanApproval": true,
+  "skipTests": false,
+  "branchName": "main",
+  "descriptionHistory": []
 }

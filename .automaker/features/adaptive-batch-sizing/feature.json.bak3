@@ -1,0 +1,22 @@
+{
+  "id": "adaptive-batch-sizing",
+  "category": "Performance",
+  "title": "Adaptive Batch Size Optimization",
+  "description": "Implement dynamic batch sizing that automatically adjusts based on available memory and GPU utilization for optimal throughput.",
+  "status": "pipeline_step_mmcc38tb_z6cxyk",
+  "priority": 2,
+  "complexity": "moderate",
+  "dependencies": [
+    "memory-monitor",
+    "batch-processor"
+  ],
+  "createdAt": "2026-03-06T15:23:01.930Z",
+  "updatedAt": "2026-03-06T18:35:25.283Z",
+  "model": "zai-coding-plan/glm-5",
+  "thinkingLevel": "none",
+  "planningMode": "spec",
+  "requirePlanApproval": true,
+  "skipTests": false,
+  "branchName": "main",
+  "descriptionHistory": []
+}

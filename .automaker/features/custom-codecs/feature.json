@@ -3,19 +3,20 @@
   "category": "Output",
   "title": "Custom Codec Support",
   "description": "Add support for custom and experimental video codecs including AV1, HEVC variants, and VR-specific codecs.",
-  "status": "backlog",
+  "status": "verified",
   "priority": 3,
   "complexity": "moderate",
   "dependencies": [
     "video-output-writer"
   ],
   "createdAt": "2026-03-06T15:23:01.934Z",
-  "updatedAt": "2026-03-06T15:23:01.934Z",
+  "updatedAt": "2026-03-06T20:02:32.231Z",
   "model": "zai-coding-plan/glm-5",
   "thinkingLevel": "none",
   "planningMode": "spec",
   "requirePlanApproval": true,
   "skipTests": false,
   "branchName": "main",
-  "descriptionHistory": []
+  "descriptionHistory": [],
+  "summary": "## Summary: Custom Codec Support\n\n### Changes Implemented\n- **VideoCodec enum extended** with 13 new codec options:\n  - AV1 codecs: `libaom-av1`, `libsvtav1`, `librav1e`\n  - HEVC hardware-accelerated: `hevc_nvenc`, `hevc_vaapi`, `hevc_qsv`, `hevc_videotoolbox`\n  - VR-optimized presets: `hevc_vr`, `av1_vr`\n  \n- **CODEC_DEFAULTS** dictionary with optimized FFmpeg settings for each codec\n\n- **VideoWriterConfig** new fields:\n  - `tune`, `profile`, `level` for codec tuning\n  - `codec_params` for generic codec parameters\n  - `x265_params` for HEVC-specific options\n  - `av1_params` for AV1-specific options\n  - `vr_mode` for VR encoding optimizations\n\n- **Codec-specific FFmpeg builders**: `_add_x264_options`, `_add_x265_options`, `_add_aom_av1_options`, `_add_svtav1_options`, `_add_nvenc_hevc_options`, etc.\n\n- **Convenience factory functions**:\n  - `create_vr_video_writer()` - VR-optimized with 10-bit encoding\n  - `create_av1_video_writer()` - AV1 with speed/quality presets\n  - `create_hevc_video_writer()` - HEVC with optional hardware acceleration\n\n- **CRF validation** per codec family (0-51 for H.264/HEVC, 0-63 for VP9/AV1)\n\n### Files Modified\n- `src/video2d3d/video/video_writer.py` (+625 lines)\n- `src/video2d3d/video/__init__.py` (+6 lines)\n- `config/default.yaml` (+49 lines)\n- `test_custom_codecs_verification.py` (new file)\n\n### Verification Status\n- Python syntax check passed\n- Verification test runs successfully (tests codec enums, defaults, config validation, convenience functions)\n\n### Commit Details\n- **Commit Hash**: `70df939ba4f5fd4d532e45184462868b0ec0f191`\n- **Commit Message**: `feat(video): add custom codec support (AV1, HEVC variants, VR codecs)`\n\n### Notes for Developer\n- Hardware-accelerated codecs (NVENC, VAAPI, QSV, VideoToolbox) require appropriate hardware and FFmpeg builds\n- VR presets use 10-bit pixel format (`yuv420p10le`) for better gradient quality\n- `librav1e` uses QP instead of CRF - a warning is issued if CRF is set"
 }

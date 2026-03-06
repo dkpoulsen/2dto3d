@@ -279,6 +279,32 @@ def limit_api(limiter: Optional[Limiter] = None):
     )
 
 
+def limit_auth(limiter: Optional[Limiter] = None):
+    """Decorator for authentication endpoints with very strict rate limits.
+    
+    Auth endpoints need stricter limits to prevent brute force attacks.
+    Default: 5 requests per minute, 20 per hour.
+
+    Args:
+        limiter: Limiter instance. If None, creates new one.
+
+    Returns:
+        Rate limit decorator.
+    """
+    if limiter is None:
+        limiter = get_limiter()
+
+    if limiter is None:
+        # Return a no-op decorator if rate limiting is disabled
+        def decorator(func):
+            return func
+
+        return decorator
+
+    # Very strict limits for auth endpoints to prevent brute force
+    return limiter.limit("5/minute;20/hour")
+
+
 __all__ = [
     "create_limiter",
     "setup_rate_limiting",
@@ -286,5 +312,6 @@ __all__ = [
     "get_limiter",
     "limit_upload",
     "limit_api",
+    "limit_auth",
     "rate_limit_exceeded_handler",
 ]

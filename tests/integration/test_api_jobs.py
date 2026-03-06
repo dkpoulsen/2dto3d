@@ -453,3 +453,233 @@ class TestQueueStats:
         data = response.json()
         # Should return default/empty stats
         assert "total_jobs" in data
+
+
+class TestSubmitJobWithDepthFocus:
+    """Tests for job submission with depth focus configuration."""
+
+    def test_submit_job_with_depth_focus_enabled(
+        self, client: TestClient, mock_queue: MagicMock
+    ) -> None:
+        """Test job submission with depth focus enabled."""
+        mock_job = MagicMock(spec=BatchJob)
+        mock_job.job_id = "test-job-id"
+        mock_job.status = JobStatus.PENDING
+        mock_queue.add_job.return_value = mock_job
+
+        response = client.post(
+            "/api/v1/jobs/",
+            json={
+                "input_file_id": "test-file-id",
+                "priority": "normal",
+                "config": {
+                    "stereo_format": "side_by_side",
+                    "depth_model": "midas_small",
+                    "use_gpu": True,
+                    "depth_focus": {
+                        "enabled": True,
+                        "focus_depth": 0.7,
+                        "focus_range": 0.4,
+                    },
+                },
+            },
+        )
+
+        assert response.status_code == status.HTTP_201_CREATED
+        # Verify the job was added with depth_focus config
+        call_args = mock_queue.add_job.call_args
+        assert call_args is not None
+
+    def test_submit_job_with_depth_focus_disabled(
+        self, client: TestClient, mock_queue: MagicMock
+    ) -> None:
+        """Test job submission with depth focus disabled (default)."""
+        mock_job = MagicMock(spec=BatchJob)
+        mock_job.job_id = "test-job-id"
+        mock_job.status = JobStatus.PENDING
+        mock_queue.add_job.return_value = mock_job
+
+        response = client.post(
+            "/api/v1/jobs/",
+            json={
+                "input_file_id": "test-file-id",
+                "priority": "normal",
+                "config": {
+                    "stereo_format": "side_by_side",
+                    "depth_model": "midas_small",
+                    "depth_focus": {
+                        "enabled": False,
+                        "focus_depth": 0.5,
+                        "focus_range": 0.3,
+                    },
+                },
+            },
+        )
+
+        assert response.status_code == status.HTTP_201_CREATED
+
+    def test_submit_job_with_depth_focus_boundary_values(
+        self, client: TestClient, mock_queue: MagicMock
+    ) -> None:
+        """Test job submission with boundary values for depth focus."""
+        mock_job = MagicMock(spec=BatchJob)
+        mock_job.job_id = "test-job-id"
+        mock_job.status = JobStatus.PENDING
+        mock_queue.add_job.return_value = mock_job
+
+        # Test with focus_depth=0.0 (closest)
+        response = client.post(
+            "/api/v1/jobs/",
+            json={
+                "input_file_id": "test-file-id",
+                "config": {
+                    "depth_focus": {
+                        "enabled": True,
+                        "focus_depth": 0.0,
+                        "focus_range": 0.0,
+                    },
+                },
+            },
+        )
+        assert response.status_code == status.HTTP_201_CREATED
+
+        # Test with focus_depth=1.0 (farthest)
+        response = client.post(
+            "/api/v1/jobs/",
+            json={
+                "input_file_id": "test-file-id",
+                "config": {
+                    "depth_focus": {
+                        "enabled": True,
+                        "focus_depth": 1.0,
+                        "focus_range": 1.0,
+                    },
+                },
+            },
+        )
+        assert response.status_code == status.HTTP_201_CREATED
+
+    def test_submit_job_with_invalid_depth_focus_depth(
+        self, client: TestClient
+    ) -> None:
+        """Test job submission with invalid focus_depth value."""
+        response = client.post(
+            "/api/v1/jobs/",
+            json={
+                "input_file_id": "test-file-id",
+                "config": {
+                    "depth_focus": {
+                        "enabled": True,
+                        "focus_depth": 1.5,  # Invalid: > 1.0
+                        "focus_range": 0.3,
+                    },
+                },
+            },
+        )
+
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+
+    def test_submit_job_with_invalid_depth_focus_range(
+        self, client: TestClient
+    ) -> None:
+        """Test job submission with invalid focus_range value."""
+        response = client.post(
+            "/api/v1/jobs/",
+            json={
+                "input_file_id": "test-file-id",
+                "config": {
+                    "depth_focus": {
+                        "enabled": True,
+                        "focus_depth": 0.5,
+                        "focus_range": -0.1,  # Invalid: < 0.0
+                    },
+                },
+            },
+        )
+
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+
+
+class TestSubmitJobWithDepthCurve:
+    """Tests for job submission with depth curve configuration."""
+
+    def test_submit_job_with_depth_curve_preset(
+        self, client: TestClient, mock_queue: MagicMock
+    ) -> None:
+        """Test job submission with depth curve preset."""
+        mock_job = MagicMock(spec=BatchJob)
+        mock_job.job_id = "test-job-id"
+        mock_job.status = JobStatus.PENDING
+        mock_queue.add_job.return_value = mock_job
+
+        response = client.post(
+            "/api/v1/jobs/",
+            json={
+                "input_file_id": "test-file-id",
+                "config": {
+                    "depth_curve": {
+                        "enabled": True,
+                        "preset": "s_curve",
+                    },
+                },
+            },
+        )
+
+        assert response.status_code == status.HTTP_201_CREATED
+
+    def test_submit_job_with_depth_curve_custom_points(
+        self, client: TestClient, mock_queue: MagicMock
+    ) -> None:
+        """Test job submission with custom depth curve control points."""
+        mock_job = MagicMock(spec=BatchJob)
+        mock_job.job_id = "test-job-id"
+        mock_job.status = JobStatus.PENDING
+        mock_queue.add_job.return_value = mock_job
+
+        response = client.post(
+            "/api/v1/jobs/",
+            json={
+                "input_file_id": "test-file-id",
+                "config": {
+                    "depth_curve": {
+                        "enabled": True,
+                        "control_points": [
+                            {"x": 0.0, "y": 0.0},
+                            {"x": 0.5, "y": 0.5},
+                            {"x": 1.0, "y": 1.0},
+                        ],
+                    },
+                },
+            },
+        )
+
+        assert response.status_code == status.HTTP_201_CREATED
+
+    def test_submit_job_with_both_depth_focus_and_curve(
+        self, client: TestClient, mock_queue: MagicMock
+    ) -> None:
+        """Test job submission with both depth focus and curve configuration."""
+        mock_job = MagicMock(spec=BatchJob)
+        mock_job.job_id = "test-job-id"
+        mock_job.status = JobStatus.PENDING
+        mock_queue.add_job.return_value = mock_job
+
+        response = client.post(
+            "/api/v1/jobs/",
+            json={
+                "input_file_id": "test-file-id",
+                "config": {
+                    "depth_focus": {
+                        "enabled": True,
+                        "focus_depth": 0.5,
+                        "focus_range": 0.3,
+                    },
+                    "depth_curve": {
+                        "enabled": True,
+                        "preset": "s_curve",
+                    },
+                },
+            },
+        )
+
+        assert response.status_code == status.HTTP_201_CREATED

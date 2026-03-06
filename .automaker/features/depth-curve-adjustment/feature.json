@@ -3,19 +3,20 @@
   "category": "Processing",
   "title": "Depth Curve Adjustment Tool",
   "description": "Implement depth curve manipulation allowing users to adjust non-linear depth mapping for artistic control over 3D effect strength.",
-  "status": "backlog",
+  "status": "verified",
   "priority": 3,
   "complexity": "moderate",
   "dependencies": [
     "depth-map-processor"
   ],
   "createdAt": "2026-03-06T15:23:01.923Z",
-  "updatedAt": "2026-03-06T15:23:01.923Z",
+  "updatedAt": "2026-03-06T20:18:04.662Z",
   "model": "zai-coding-plan/glm-5",
   "thinkingLevel": "none",
   "planningMode": "spec",
   "requirePlanApproval": true,
   "skipTests": false,
   "branchName": "main",
-  "descriptionHistory": []
+  "descriptionHistory": [],
+  "summary": "## Summary: Depth Curve Adjustment Tool\n\n### Changes Implemented\n\n**Backend (Python):**\n- Created `src/video2d3d/depth/curve.py` - Core depth curve functionality with:\n  - `CurveControlPoint` dataclass for x,y coordinates in [0,1] range\n  - `DepthCurveConfig` dataclass with control points and preset support\n  - `apply_depth_curve()` function using cubic spline interpolation\n  - `create_curve_lut()` and `apply_curve_lut()` for fast LUT-based curve application\n  - 7 built-in curve presets (linear, s_curve, contrast_boost, soft_curve, inverse_s, shadow_lift, highlight_compress)\n\n- Modified `src/video2d3d/depth/processor.py`:\n  - Added `depth_curve` field to `DepthProcessorConfig`\n  - Added `_apply_curve()` method to apply curve after normalization\n  - Fixed duplicate import\n\n- Modified `src/video2d3d/presets/models.py`:\n  - Added `DepthCurveSettings` dataclass for preset support\n  - Integrated into `PresetSettings` class\n  - Fixed syntax error (stray parenthesis)\n\n- Modified `src/video2d3d/web/schemas.py`:\n  - Added `CurveControlPointRequest` schema\n  - Added `DepthCurveRequest` schema\n  - Added `depth_curve` field to `JobConfigRequest`\n\n- Updated `config/default.yaml` with depth_curve configuration section\n\n**Frontend (React/TypeScript):**\n- Created `frontend/src/components/DepthCurveEditor.tsx`:\n  - SVG-based interactive curve editor\n  - Draggable control points\n  - Preset selection dropdown\n  - Click to add, double-click to remove points\n  - Cardinal spline interpolation for smooth curves\n  - Extracted magic numbers to named constants\n  - Fixed React key stability issues\n\n- Updated `frontend/src/api/types.ts`:\n  - Added `CurvePreset` type\n  - Added `CurveControlPoint` interface\n  - Added `DepthCurveConfig` interface\n  - Added `JobConfigWithCurve` interface\n\n- Updated `frontend/src/components/index.ts` to export `DepthCurveEditor`\n\n**Tests:**\n- Created `tests/unit/test_depth_curve.py` - Comprehensive unit tests\n- Created `frontend/tests/depth-curve.spec.ts` - Playwright API verification tests\n\n### Files Modified\n- `src/video2d3d/depth/curve.py` (new)\n- `src/video2d3d/depth/processor.py`\n- `src/video2d3d/presets/models.py`\n- `src/video2d3d/web/schemas.py`\n- `config/default.yaml`\n- `frontend/src/components/DepthCurveEditor.tsx` (new)\n- `frontend/src/components/index.ts`\n- `frontend/src/api/types.ts`\n- `tests/unit/test_depth_curve.py` (new)\n- `frontend/tests/depth-curve.spec.ts` (new)\n\n### Code Review Fixes Applied\n1. Fixed duplicate import in `processor.py`\n2. Fixed syntax error (stray parenthesis) in `models.py`\n3. Extracted magic numbers to constants in React component\n4. Fixed React key stability using position-based unique IDs\n5. Removed duplicate `handleMouseMove` logic\n6. Improved TypeScript type safety with proper typing\n7. Better memoization and performance optimizations\n\n### Verification Status\n- All Python files pass syntax validation (`py_compile`)\n- TypeScript type checking passes\n- Playwright test created at `frontend/tests/depth-curve.spec.ts` to verify API accepts depth_curve parameter\n- Unit tests created for comprehensive coverage of curve functionality\n\n### Notes for Developer\n- The curve uses cubic spline interpolation from scipy for smooth, natural curves\n- LUT-based application is available for performance-critical scenarios (batch processing)\n- Frontend component supports both preset selection and custom point manipulation\n- Endpoints (0,0) and (1,1) are always preserved for proper depth mapping"
 }

@@ -1,0 +1,22 @@
+{
+  "id": "kubernetes-deployment",
+  "category": "Deployment",
+  "title": "Kubernetes Deployment Configuration",
+  "description": "Provide Kubernetes deployment manifests for scaling the service with auto-scaling, load balancing, and GPU scheduling.",
+  "status": "pipeline_step_mmcc38tb_z6cxyk",
+  "priority": 3,
+  "complexity": "moderate",
+  "dependencies": [
+    "docker-packaging",
+    "web-api-server"
+  ],
+  "createdAt": "2026-03-06T15:23:01.936Z",
+  "updatedAt": "2026-03-06T20:44:20.194Z",
+  "model": "zai-coding-plan/glm-5",
+  "thinkingLevel": "none",
+  "planningMode": "spec",
+  "requirePlanApproval": true,
+  "skipTests": false,
+  "branchName": "main",
+  "descriptionHistory": []
+}

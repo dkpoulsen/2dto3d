@@ -3,12 +3,19 @@
   "category": "Output",
   "title": "VR Video Output Generator",
   "description": "Generate VR-compatible output formats including side-by-side 360° equirectangular projection and stereo VR video for Oculus, Vive, and other VR headsets.",
-  "status": "backlog",
+  "status": "verified",
   "priority": 2,
   "complexity": "complex",
   "dependencies": [
     "side-by-side-encoder"
   ],
   "createdAt": "2026-03-06T15:23:01.922Z",
-  "updatedAt": "2026-03-06T15:23:01.922Z"
+  "updatedAt": "2026-03-06T19:07:06.646Z",
+  "model": "zai-coding-plan/glm-5",
+  "thinkingLevel": "none",
+  "planningMode": "spec",
+  "requirePlanApproval": true,
+  "skipTests": false,
+  "branchName": "main",
+  "descriptionHistory": []
 }

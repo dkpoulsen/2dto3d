@@ -591,3 +591,165 @@ class TestBatchQueueStats:
         assert data["failed_jobs"] == 3
         assert data["total_frames_processed"] == 7000
         assert data["success_rate"] == pytest.approx(95.89, rel=0.01)
+
+
+class TestBatchJobScheduler:
+    """Tests for BatchJob scheduler properties and methods."""
+
+    def test_scheduled_at_none(self, mock_logger: None) -> None:
+        """Test scheduled_at defaults to None (immediate execution)."""
+        job = BatchJob()
+        assert job.scheduled_at is None
+
+    def test_scheduled_at_custom(self, mock_logger: None) -> None:
+        """Test scheduled_at can be set to a specific time."""
+        scheduled_time = datetime.now() + timedelta(hours=1)
+        job = BatchJob(scheduled_at=scheduled_time)
+        assert job.scheduled_at == scheduled_time
+
+    def test_is_scheduled_time_reached_none(self, mock_logger: None) -> None:
+        """Test is_scheduled_time_reached returns True when no schedule."""
+        job = BatchJob()
+        assert job.is_scheduled_time_reached is True
+
+    def test_is_scheduled_time_reached_future(self, mock_logger: None) -> None:
+        """Test is_scheduled_time_reached returns False for future time."""
+        job = BatchJob(scheduled_at=datetime.now() + timedelta(hours=1))
+        assert job.is_scheduled_time_reached is False
+
+    def test_is_scheduled_time_reached_past(self, mock_logger: None) -> None:
+        """Test is_scheduled_time_reached returns True for past time."""
+        job = BatchJob(scheduled_at=datetime.now() - timedelta(hours=1))
+        assert job.is_scheduled_time_reached is True
+
+    def test_has_dependencies_empty(self, mock_logger: None) -> None:
+        """Test has_dependencies returns False when no dependencies."""
+        job = BatchJob()
+        assert job.has_dependencies is False
+
+    def test_has_dependencies_with_deps(self, mock_logger: None) -> None:
+        """Test has_dependencies returns True when dependencies exist."""
+        job = BatchJob(depends_on=["job_123"])
+        assert job.has_dependencies is True
+
+    def test_depends_on_default_empty(self, mock_logger: None) -> None:
+        """Test depends_on defaults to empty list."""
+        job = BatchJob()
+        assert job.depends_on == []
+        assert isinstance(job.depends_on, list)
+
+    def test_dependent_jobs_default_empty(self, mock_logger: None) -> None:
+        """Test dependent_jobs defaults to empty list."""
+        job = BatchJob()
+        assert job.dependent_jobs == []
+        assert isinstance(job.dependent_jobs, list)
+
+    def test_check_dependencies_met_no_deps(self, mock_logger: None) -> None:
+        """Test check_dependencies_met returns True when no dependencies."""
+        job = BatchJob()
+        assert job.check_dependencies_met(set()) is True
+        assert job.check_dependencies_met({"job_123"}) is True
+
+    def test_check_dependencies_met_partial(self, mock_logger: None) -> None:
+        """Test check_dependencies_met returns False with partial completion."""
+        job = BatchJob(depends_on=["job_1", "job_2"])
+        assert job.check_dependencies_met({"job_1"}) is False
+        assert job.check_dependencies_met(set()) is False
+
+    def test_check_dependencies_met_all(self, mock_logger: None) -> None:
+        """Test check_dependencies_met returns True when all completed."""
+        job = BatchJob(depends_on=["job_1", "job_2"])
+        assert job.check_dependencies_met({"job_1", "job_2"}) is True
+        assert job.check_dependencies_met({"job_1", "job_2", "job_3"}) is True
+
+    def test_get_pending_dependencies_no_deps(self, mock_logger: None) -> None:
+        """Test get_pending_dependencies returns empty list when no deps."""
+        job = BatchJob()
+        assert job.get_pending_dependencies(set()) == []
+        assert job.get_pending_dependencies({"job_1"}) == []
+
+    def test_get_pending_dependencies_partial(self, mock_logger: None) -> None:
+        """Test get_pending_dependencies returns uncompleted dependencies."""
+        job = BatchJob(depends_on=["job_1", "job_2", "job_3"])
+        assert set(job.get_pending_dependencies({"job_1"})) == {"job_2", "job_3"}
+        assert set(job.get_pending_dependencies(set())) == {"job_1", "job_2", "job_3"}
+
+    def test_get_pending_dependencies_all(self, mock_logger: None) -> None:
+        """Test get_pending_dependencies returns empty list when all completed."""
+        job = BatchJob(depends_on=["job_1", "job_2"])
+        assert job.get_pending_dependencies({"job_1", "job_2"}) == []
+
+    def test_to_dict_with_scheduler_fields(self, mock_logger: None) -> None:
+        """Test to_dict includes scheduler fields."""
+        scheduled_time = datetime.now() + timedelta(hours=1)
+        job = BatchJob(
+            job_id="test-job-id",
+            input_path=Path("/input/video.mp4"),
+            scheduled_at=scheduled_time,
+            depends_on=["job_1", "job_2"],
+        )
+        data = job.to_dict()
+        assert "scheduled_at" in data
+        assert data["scheduled_at"] == scheduled_time.isoformat()
+        assert data["depends_on"] == ["job_1", "job_2"]
+        assert "dependent_jobs" in data
+        assert data["dependent_jobs"] == []
+
+    def test_to_dict_with_dependent_jobs(self, mock_logger: None) -> None:
+        """Test to_dict includes dependent_jobs field."""
+        job = BatchJob(
+            dependent_jobs=["waiting_job_1", "waiting_job_2"],
+        )
+        data = job.to_dict()
+        assert data["dependent_jobs"] == ["waiting_job_1", "waiting_job_2"]
+
+    def test_from_dict_with_scheduler_fields(self, mock_logger: None) -> None:
+        """Test from_dict parses scheduler fields correctly."""
+        scheduled_time = datetime.now() + timedelta(hours=1)
+        data = {
+            "job_id": "test-job-id",
+            "input_path": "/input/video.mp4",
+            "status": "pending",
+            "priority": 5,
+            "created_at": datetime.now().isoformat(),
+            "scheduled_at": scheduled_time.isoformat(),
+            "depends_on": ["job_1", "job_2"],
+            "dependent_jobs": ["waiting_job"],
+        }
+        job = BatchJob.from_dict(data)
+        assert job.scheduled_at is not None
+        # Compare ISO strings since microseconds might differ
+        assert job.scheduled_at.isoformat() == scheduled_time.isoformat()
+        assert job.depends_on == ["job_1", "job_2"]
+        assert job.dependent_jobs == ["waiting_job"]
+
+    def test_from_dict_scheduler_fields_optional(self, mock_logger: None) -> None:
+        """Test from_dict handles missing scheduler fields."""
+        data = {
+            "job_id": "test-job-id",
+            "input_path": "/input/video.mp4",
+            "status": "pending",
+            "priority": 5,
+            "created_at": datetime.now().isoformat(),
+        }
+        job = BatchJob.from_dict(data)
+        assert job.scheduled_at is None
+        assert job.depends_on == []
+        assert job.dependent_jobs == []
+
+    def test_roundtrip_scheduler_fields(self, mock_logger: None) -> None:
+        """Test roundtrip serialization preserves scheduler fields."""
+        scheduled_time = datetime.now() + timedelta(hours=1)
+        original = BatchJob(
+            job_id="test-job-id",
+            input_path=Path("/input/video.mp4"),
+            scheduled_at=scheduled_time,
+            depends_on=["job_1"],
+            dependent_jobs=["waiting_job"],
+        )
+        data = original.to_dict()
+        restored = BatchJob.from_dict(data)
+        assert restored.scheduled_at is not None
+        assert restored.scheduled_at.isoformat() == scheduled_time.isoformat()
+        assert restored.depends_on == ["job_1"]
+        assert restored.dependent_jobs == ["waiting_job"]

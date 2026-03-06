@@ -17,6 +17,23 @@ import type {
   DepthValidationSession,
   DepthMapCorrection,
   DepthMapCorrectionResponse,
+  ComparisonSession,
+  CreateComparisonRequest,
+  SubmitVoteRequest,
+  SubmitVoteResponse,
+  LeaderboardResponse,
+  Notification,
+  NotificationListResponse,
+  NotificationCountResponse,
+  MarkReadRequest,
+  MarkReadResponse,
+  DismissRequest,
+  DismissResponse,
+  WebhookConfig,
+  NotificationType,
+  ThumbnailFrame,
+  ThumbnailGridRequest,
+  ThumbnailGridResponse,
 } from './types';
 import { API_CONFIG } from '../utils/constants';
 
@@ -179,6 +196,139 @@ export const depthValidationApi = {
 
   markFrameValidated: async (jobId: string, frameIndex: number): Promise<void> => {
     await api.post(`/jobs/${jobId}/frames/${frameIndex}/validate`);
+  },
+};
+
+export const comparisonApi = {
+  /** Create a new comparison session for a job/frame */
+  createSession: async (request: CreateComparisonRequest): Promise<ComparisonSession> => {
+    const response = await api.post<ComparisonSession>('/comparison/', request);
+    return response.data;
+  },
+
+  /** Get an existing comparison session */
+  getSession: async (sessionId: string): Promise<ComparisonSession> => {
+    const response = await api.get<ComparisonSession>(`/comparison/${sessionId}`);
+    return response.data;
+  },
+
+  /** Get comparison session for a specific job and frame */
+  getSessionForJob: async (jobId: string, frameIndex?: number): Promise<ComparisonSession> => {
+    const params = frameIndex !== undefined ? { frame_index: frameIndex } : {};
+    const response = await api.get<ComparisonSession>(`/comparison/job/${jobId}`, { params });
+    return response.data;
+  },
+
+  /** Submit a vote for a model */
+  submitVote: async (request: SubmitVoteRequest): Promise<SubmitVoteResponse> => {
+    const response = await api.post<SubmitVoteResponse>(`/comparison/${request.session_id}/vote`, {
+      model: request.model,
+      comment: request.comment,
+    });
+    return response.data;
+  },
+
+  /** Remove user's vote from a session */
+  removeVote: async (sessionId: string): Promise<void> => {
+    await api.delete(`/comparison/${sessionId}/vote`);
+  },
+
+  /** Get the model leaderboard */
+  getLeaderboard: async (): Promise<LeaderboardResponse> => {
+    const response = await api.get<LeaderboardResponse>('/comparison/leaderboard');
+    return response.data;
+  },
+
+  /** Get random comparison session for voting */
+  getRandomSession: async (): Promise<ComparisonSession | null> => {
+    const response = await api.get<ComparisonSession | null>('/comparison/random');
+    return response.data;
+  },
+};
+
+export const notificationsApi = {
+  /** List notifications with optional filtering */
+  listNotifications: async (params?: {
+    include_read?: boolean;
+    include_dismissed?: boolean;
+    notification_type?: NotificationType;
+    job_id?: string;
+    page?: number;
+    page_size?: number;
+  }): Promise<NotificationListResponse> => {
+    const response = await api.get<NotificationListResponse>('/notifications/', { params });
+    return response.data;
+  },
+
+  /** Get a specific notification */
+  getNotification: async (notificationId: string): Promise<Notification> => {
+    const response = await api.get<Notification>(`/notifications/${notificationId}`);
+    return response.data;
+  },
+
+  /** Get notification counts */
+  getCounts: async (): Promise<NotificationCountResponse> => {
+    const response = await api.get<NotificationCountResponse>('/notifications/count');
+    return response.data;
+  },
+
+  /** Mark notifications as read */
+  markAsRead: async (request: MarkReadRequest): Promise<MarkReadResponse> => {
+    const response = await api.post<MarkReadResponse>('/notifications/mark-read', request);
+    return response.data;
+  },
+
+  /** Mark all notifications as read */
+  markAllAsRead: async (): Promise<MarkReadResponse> => {
+    const response = await api.post<MarkReadResponse>('/notifications/mark-all-read');
+    return response.data;
+  },
+
+  /** Dismiss notifications */
+  dismiss: async (request: DismissRequest): Promise<DismissResponse> => {
+    const response = await api.post<DismissResponse>('/notifications/dismiss', request);
+    return response.data;
+  },
+
+  /** Delete a notification */
+  deleteNotification: async (notificationId: string): Promise<void> => {
+    await api.delete(`/notifications/${notificationId}`);
+  },
+
+  /** Clear all notifications */
+  clearAll: async (): Promise<void> => {
+    await api.delete('/notifications/');
+  },
+
+  /** Add a webhook configuration */
+  addWebhook: async (config: WebhookConfig): Promise<{ message: string; url: string }> => {
+    const response = await api.post<{ message: string; url: string }>('/notifications/webhooks', config);
+    return response.data;
+  },
+
+  /** List webhook configurations */
+  listWebhooks: async (): Promise<WebhookConfig[]> => {
+    const response = await api.get<WebhookConfig[]>('/notifications/webhooks');
+    return response.data;
+  },
+
+  /** Remove a webhook configuration */
+  removeWebhook: async (url: string): Promise<void> => {
+    await api.delete('/notifications/webhooks', { params: { url } });
+  },
+};
+
+export const thumbnailApi = {
+  /** Get thumbnail grid data for a job */
+  getThumbnailGrid: async (jobId: string, options?: ThumbnailGridRequest): Promise<ThumbnailGridResponse> => {
+    const response = await api.get<ThumbnailGridResponse>(`/jobs/${jobId}/thumbnails`, { params: options });
+    return response.data;
+  },
+
+  /** Get a single frame thumbnail */
+  getFrameThumbnail: async (jobId: string, frameIndex: number): Promise<ThumbnailFrame> => {
+    const response = await api.get<ThumbnailFrame>(`/jobs/${jobId}/frames/${frameIndex}/thumbnail`);
+    return response.data;
   },
 };
 

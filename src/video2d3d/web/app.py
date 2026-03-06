@@ -39,7 +39,7 @@ from video2d3d.web.schemas import (
 from video2d3d.web.health import get_comprehensive_health, get_gpu_status
 
 # Import routers (will be created)
-from video2d3d.web.routers import crash, downloads, jobs, uploads
+from video2d3d.web.routers import auth, crash, downloads, jobs, notifications, uploads
 
 from video2d3d.web.state import AppState, app_state
 from video2d3d.web.exceptions import register_exception_handlers
@@ -84,12 +84,25 @@ def initialize_queue() -> BatchVideoQueue:
         )
 
     queue = BatchVideoQueue(config=batch_config, processor=placeholder_processor)
+    
+    # Hook up notification callbacks
+    from video2d3d.web.notification_manager import get_notification_manager
+    notification_manager = get_notification_manager()
+    
+    def on_job_completed(job):
+        notification_manager.on_job_completed(job)
+    
+    def on_job_error(job, error):
+        notification_manager.on_job_failed(job, error)
+    
+    queue.on_completion(on_job_completed)
+    queue.on_error(on_job_error)
+    
     queue.start()
 
     logger.info(f"Batch queue initialized with {batch_config.max_concurrent_jobs} workers")
 
     return queue
-
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -161,7 +174,19 @@ This REST API provides endpoints for:
 
 ## Authentication
 
-Currently, this API does not require authentication. All endpoints are publicly accessible.
+This API uses JWT-based authentication. Most endpoints require a valid access token.
+
+### Getting Started with Authentication
+
+1. Register a new account using `POST /api/v1/auth/register`
+2. Login using `POST /api/v1/auth/login` to get access and refresh tokens
+3. Include the access token in the `Authorization` header as `Bearer <token>`
+4. Use `POST /api/v1/auth/refresh` to get new tokens when the access token expires
+
+### Token Types
+
+- **Access Token**: Short-lived token (30 minutes default) for API requests
+- **Refresh Token**: Long-lived token (7 days default) for obtaining new access tokens
 """,
     version: str = __version__,
 ) -> FastAPI:
@@ -187,6 +212,11 @@ Currently, this API does not require authentication. All endpoints are publicly 
         {
             "name": "Info",
             "description": "API information and service metadata.",
+        {
+            "name": "Authentication",
+            "description": "User authentication endpoints. Register, login, and manage JWT tokens. "
+            "Includes role-based access control for protected resources.",
+        },
         },
         {
             "name": "Health",
@@ -213,6 +243,11 @@ Currently, this API does not require authentication. All endpoints are publicly 
             "name": "Crash Reports",
             "description": "View and manage crash reports for debugging and diagnostics. "
             "Includes crash history, system state at crash time, and manual reporting.",
+        },
+        {
+            "name": "Notifications",
+            "description": "Manage in-app notifications for job events, system alerts, "
+            "and webhook configurations. Includes notification preferences and history.",
         },
     ]
 
@@ -309,6 +344,17 @@ Currently, this API does not require authentication. All endpoints are publicly 
         prefix=f"{api_prefix}/crash-reports",
         tags=["Crash Reports"],
     )
+    app.include_router(
+        notifications.router,
+        prefix=f"{api_prefix}/notifications",
+        tags=["Notifications"],
+    )
+    app.include_router(
+        auth.router,
+        prefix=f"{api_prefix}/auth",
+        tags=["Authentication"],
+    )
+
 
     # Health check endpoint (basic)
     @app.get(

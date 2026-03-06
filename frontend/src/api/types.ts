@@ -30,6 +30,7 @@ export interface JobConfig {
   output_crf: number;
   extra_options?: Record<string, unknown>;
   depth_focus?: DepthFocusConfig;
+  upscaling?: UpscalingConfig;
 }
 
 export interface SubmitJobRequest {
@@ -83,9 +84,31 @@ export interface DepthFocusConfig {
   focus_range: number;
 }
 
+// Upscaling Types - AI-based video super-resolution
+export type UpscalingModelType =
+  | 'esrgan'
+  | 'realesrgan-x4plus'
+  | 'realesrgan-x4plus-anime'
+  | 'realesrgan-x2plus'
+  | 'realesrgan-general-x4v3';
+
+export interface UpscalingConfig {
+  /** Whether AI upscaling is enabled */
+  enabled: boolean;
+  /** Upscaling model to use */
+  model_type: UpscalingModelType;
+  /** Upscaling factor (2x or 4x) */
+  scale: number;
+  /** Tile size for processing large images. 0 = auto */
+  tile_size: number;
+  /** Denoising strength (0.0 = none, 1.0 = max) */
+  denoise_strength: number;
+}
+
 // Extended JobConfig with depth focus support
 export interface JobConfigWithFocus extends JobConfigWithCurve {
   depth_focus?: DepthFocusConfig;
+  upscaling?: UpscalingConfig;
 }
 
 // Response types
@@ -465,4 +488,125 @@ export interface LeaderboardResponse {
   total_votes: number;
   /** Last updated timestamp */
   updated_at: string;
+}
+
+// ============================================================================
+// Notification Types
+// ============================================================================
+
+/** Types of notifications supported by the system */
+export type NotificationType =
+  | 'job_completed'
+  | 'job_failed'
+  | 'job_cancelled'
+  | 'job_started'
+  | 'job_progress'
+  | 'job_retrying'
+  | 'system_alert'
+  | 'webhook_failed';
+
+/** Priority levels for notifications */
+export type NotificationPriority = 'low' | 'normal' | 'high' | 'urgent';
+
+/** A single notification */
+export interface Notification {
+  notification_id: string;
+  notification_type: NotificationType;
+  title: string;
+  message: string;
+  priority: NotificationPriority;
+  job_id: string | null;
+  data: Record<string, unknown>;
+  read: boolean;
+  dismissed: boolean;
+  created_at: string;
+  expires_at: string | null;
+}
+
+/** List of notifications with metadata */
+export interface NotificationListResponse {
+  notifications: Notification[];
+  total_count: number;
+  unread_count: number;
+  page: number;
+  page_size: number;
+}
+
+/** Notification count response */
+export interface NotificationCountResponse {
+  total: number;
+  unread: number;
+  dismissed: number;
+}
+
+/** Request to mark notifications as read */
+export interface MarkReadRequest {
+  notification_ids: string[];
+}
+
+/** Response after marking notifications as read */
+export interface MarkReadResponse {
+  updated_count: number;
+  message: string;
+}
+
+/** Request to dismiss notifications */
+export interface DismissRequest {
+  notification_ids: string[];
+}
+
+/** Response after dismissing notifications */
+export interface DismissResponse {
+  updated_count: number;
+  message: string;
+}
+
+/** Webhook configuration */
+export interface WebhookConfig {
+  url: string;
+  secret: string | null;
+  events: NotificationType[];
+  enabled: boolean;
+}
+
+// ============================================================================
+// Thumbnail Grid Types
+// ============================================================================
+
+/** A single frame thumbnail for the grid view */
+export interface ThumbnailFrame {
+  /** Frame index in the video */
+  frame_index: number;
+  /** Timestamp in seconds */
+  timestamp: number;
+  /** URL to the original frame image */
+  original_url: string;
+  /** URL to the depth map image */
+  depth_map_url: string;
+  /** Optional confidence score (0-1) */
+  confidence_score?: number;
+  /** Validation status */
+  validation_status?: 'pending' | 'validated' | 'corrected';
+}
+
+/** Request parameters for fetching thumbnail grid data */
+export interface ThumbnailGridRequest {
+  /** Number of thumbnails to fetch (evenly distributed across video) */
+  count?: number;
+  /** Start frame index (optional) */
+  start_frame?: number;
+  /** End frame index (optional) */
+  end_frame?: number;
+}
+
+/** Response containing thumbnail grid data */
+export interface ThumbnailGridResponse {
+  /** Job ID */
+  job_id: string;
+  /** List of thumbnail frames */
+  thumbnails: ThumbnailFrame[];
+  /** Total frames in the video */
+  total_frames: number;
+  /** Video duration in seconds */
+  duration_seconds: number;
 }

@@ -1,0 +1,21 @@
+{
+  "id": "adadepth-integration",
+  "category": "Core",
+  "title": "AdaDepth Model Integration",
+  "description": "Integrate AdaDepth adaptive depth estimation model for improved performance on varied scene types with automatic fallback to MiDaS.",
+  "status": "pipeline_step_mmcc3rzz_k0qltm",
+  "priority": 2,
+  "complexity": "moderate",
+  "dependencies": [
+    "depth-model-selection"
+  ],
+  "createdAt": "2026-03-06T15:23:01.919Z",
+  "updatedAt": "2026-03-06T17:53:24.520Z",
+  "model": "zai-coding-plan/glm-5",
+  "thinkingLevel": "none",
+  "planningMode": "spec",
+  "requirePlanApproval": true,
+  "skipTests": false,
+  "branchName": "main",
+  "descriptionHistory": []
+}

@@ -3,19 +3,20 @@
   "category": "Operations",
   "title": "Health Monitoring Endpoint",
   "description": "Add comprehensive health check endpoint monitoring GPU status, memory usage, queue depth, and overall system health.",
-  "status": "backlog",
+  "status": "verified",
   "priority": 2,
   "complexity": "simple",
   "dependencies": [
     "web-api-server"
   ],
   "createdAt": "2026-03-06T15:23:01.937Z",
-  "updatedAt": "2026-03-06T15:23:01.937Z",
+  "updatedAt": "2026-03-06T18:26:48.275Z",
   "model": "zai-coding-plan/glm-5",
   "thinkingLevel": "none",
   "planningMode": "spec",
   "requirePlanApproval": true,
   "skipTests": false,
   "branchName": "main",
-  "descriptionHistory": []
+  "descriptionHistory": [],
+  "summary": "## Commit Changes: Health Monitoring Feature\n\n### Commit Executed Successfully\n\n**Commit Hash:** `623f022d889b89c3e8d49f6a0c47ae27e6448972`\n\n**Commit Message:**\n```\nfeat(web-api): add comprehensive health monitoring endpoint\n\nAdd detailed health check endpoint monitoring GPU status, memory usage,\nqueue depth, and overall system health with three status levels:\nhealthy, degraded, and unhealthy.\n\nChanges:\n- Add /health/detailed endpoint with comprehensive system metrics\n- Add health.py module with GPU, memory, and queue monitoring utilities\n- Update /health endpoint to reflect actual queue status\n- Add unit tests for all health monitoring functions\n- Add verification script for testing health endpoints\n- Add psutil dependency for system memory monitoring\n\nThe health monitoring includes:\n- GPU availability, memory usage, and utilization\n- System memory statistics with warning/critical thresholds\n- Queue job counts, success rate, and running status\n- Individual component health checks\n```\n\n### Files Committed (5 files, 850 insertions, 7 deletions)\n\n| File | Status | Description |\n|------|--------|-------------|\n| `pyproject.toml` | Modified | Added psutil>=5.8.0 dependency |\n| `scripts/verify_health_monitoring.py` | Created | Verification script for testing health endpoints |\n| `src/video2d3d/web/app.py` | Modified | Added /health/detailed endpoint, updated /health endpoint |\n| `src/video2d3d/web/health.py` | Created | Health monitoring module with GPU/memory/queue utilities |\n| `tests/unit/test_health.py` | Created | Unit tests for health monitoring functions |\n\n### Conventional Commit Type\n- **Type:** `feat` (new feature)\n- **Scope:** `web-api` (API module)\n- **Subject:** add comprehensive health monitoring endpoint\n\n### Notes\n- Health schemas (GPUStatusResponse, ComprehensiveHealthResponse, HealthStatus) were already committed in a previous commit\n- The commit follows conventional commit format\n- All 5 health monitoring files were included in this atomic commit"
 }

@@ -3,19 +3,20 @@
   "category": "Performance",
   "title": "Memory Usage Monitor",
   "description": "Add real-time memory monitoring with automatic garbage collection and warnings when approaching memory limits.",
-  "status": "backlog",
+  "status": "verified",
   "priority": 2,
   "complexity": "simple",
   "dependencies": [
     "gpu-acceleration"
   ],
   "createdAt": "2026-03-06T15:23:01.929Z",
-  "updatedAt": "2026-03-06T15:23:01.929Z",
+  "updatedAt": "2026-03-06T18:15:21.153Z",
   "model": "zai-coding-plan/glm-5",
   "thinkingLevel": "none",
   "planningMode": "spec",
   "requirePlanApproval": true,
   "skipTests": false,
   "branchName": "main",
-  "descriptionHistory": []
+  "descriptionHistory": [],
+  "summary": "## Summary: Memory Usage Monitor\n\n### Changes Implemented\n- Created `MemoryMonitor` singleton class with thread-safe operations\n- Added `MemoryInfo` dataclass for memory statistics (total, used, available, process memory, warning level)\n- Added `MemoryWarningLevel` enum (NORMAL, WARNING, CRITICAL, EMERGENCY)\n- Implemented real-time memory tracking via psutil\n- Added automatic garbage collection when approaching memory limits\n- Added configurable warning thresholds (default: 75%/85%/95%)\n- Added callback system for memory warning notifications\n- Added context manager `memory_monitor_context()` for scoped monitoring\n- Integrated with existing GPU memory clearing utility\n- Exported all components from `utils/__init__.py`\n- Comprehensive unit tests with mocked psutil\n\n### Files Modified\n- `src/video2d3d/utils/memory_monitor.py` (new - 575 lines)\n- `src/video2d3d/utils/__init__.py` (modified - added exports)\n- `tests/unit/test_memory_monitor.py` (new - 723 lines)\n\n### Verification Status\n- Unit tests created with comprehensive coverage (mocked psutil for deterministic testing)\n- Tests cover: MemoryInfo, MemoryWarningLevel, MemoryMonitorConfig, MemoryMonitor singleton, callbacks, GC, context manager\n- Playwright verification not applicable - this is a Python backend module, not a web UI\n\n### Commit Details\n- **Commit Hash**: `18ccbc7cdb46f5c8918497d18859aca4e28fc39d`\n- **Commit Message**:\n  ```\n  feat(utils): add real-time memory monitoring with auto GC\n  \n  Add comprehensive memory monitoring capabilities:\n  - MemoryMonitor singleton with thread-safe operations\n  - Real-time tracking via psutil for system/process memory\n  - Configurable warning thresholds (warning/critical/emergency)\n  - Automatic garbage collection when approaching limits\n  - Callback system for memory warning notifications\n  - Context manager for scoped memory monitoring\n  - MemoryInfo dataclass with usage statistics\n  - MemoryWarningLevel enum for severity classification\n  - Unit tests with mocked psutil for deterministic testing\n  ```\n- **Files Changed**: 3 files, 1340 insertions(+)\n\n### Notes for Developer\n- Memory monitor uses singleton pattern - access via `get_memory_monitor()` or `MemoryMonitor()`\n- Default thresholds: Warning (75%), Critical (85%), Emergency (95%)\n- GC triggers at 80% (warning) and 90% (critical) by default\n- All thresholds are configurable via `MemoryMonitorConfig`\n- Callbacks receive `(MemoryInfo, MemoryWarningLevel)` when warnings occur"
 }

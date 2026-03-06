@@ -682,7 +682,7 @@ class OpticalFlowEngine:
         frame1: np.ndarray,
         frame2: np.ndarray,
     ) -> np.ndarray:
-        """Compute optical flow using Farneback algorithm (CPU fallback).
+        """Compute optical flow using Farneback algorithm (CPU fallback)."""
         # Convert to grayscale
         prev_gray = cv2.cvtColor(frame1, cv2.COLOR_RGB2GRAY)
         curr_gray = cv2.cvtColor(frame2, cv2.COLOR_RGB2GRAY)
@@ -796,6 +796,23 @@ class OpticalFlowEngine:
             magnitude = magnitude / magnitude.max()
         else:
             magnitude = np.zeros_like(magnitude)
+
+
+        # Create HSV image
+        hsv = np.zeros((flow.shape[0], flow.shape[1], 3), dtype=np.uint8)
+        hsv[..., 0] = angle * 180 / np.pi / 2  # Hue = direction
+        hsv[..., 1] = 255  # Saturation = full
+        hsv[..., 2] = (magnitude * 255).astype(np.uint8)  # Value = magnitude
+
+        # Convert to RGB
+        flow_vis = cv2.cvtColor(hsv, cv2.COLOR_HSV2RGB)
+
+        # Overlay on frame if provided
+        if frame is not None:
+            alpha = 0.5
+            flow_vis = cv2.addWeighted(frame, alpha, flow_vis, 1 - alpha, 0)
+
+        return flow_vis
 
     def __call__(
         self,

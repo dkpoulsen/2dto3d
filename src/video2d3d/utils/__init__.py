@@ -107,6 +107,22 @@ from video2d3d.utils.memory_monitor import (
     DEFAULT_GC_WARNING_THRESHOLD,
     DEFAULT_GC_CRITICAL_THRESHOLD,
 )
+from video2d3d.utils.profiler import (
+    # Classes
+    Profiler,
+    PipelineProfiler,
+    ComponentStats,
+    ProfilerResult,
+    # Decorators
+    profile_component,
+    # Context Managers
+    profile_block,
+    # Functions
+    get_profiler,
+    clear_profiler,
+    get_all_profilers,
+    timed_execution,
+)
 
 __all__ = [
     # Config
@@ -201,5 +217,15 @@ __all__ = [
     "DEFAULT_EMERGENCY_THRESHOLD",
     "DEFAULT_MONITOR_INTERVAL",
     "DEFAULT_GC_WARNING_THRESHOLD",
-    "DEFAULT_GC_CRITICAL_THRESHOLD",
+    # Profiler
+    "Profiler",
+    "PipelineProfiler",
+    "ComponentStats",
+    "ProfilerResult",
+    "profile_component",
+    "profile_block",
+    "get_profiler",
+    "clear_profiler",
+    "get_all_profilers",
+    "timed_execution",
 ]

@@ -3,12 +3,19 @@
   "category": "Processing",
   "title": "Edge-Aware Depth Smoothing",
   "description": "Implement bilateral filtering and guided filtering for depth maps that preserves object edges while smoothing noise.",
-  "status": "backlog",
+  "status": "verified",
   "priority": 2,
   "complexity": "simple",
   "dependencies": [
     "depth-map-processor"
   ],
   "createdAt": "2026-03-06T15:23:01.925Z",
-  "updatedAt": "2026-03-06T15:23:01.925Z"
+  "updatedAt": "2026-03-06T17:53:48.104Z",
+  "model": "zai-coding-plan/glm-5",
+  "thinkingLevel": "none",
+  "planningMode": "spec",
+  "requirePlanApproval": true,
+  "skipTests": false,
+  "branchName": "main",
+  "descriptionHistory": []
 }

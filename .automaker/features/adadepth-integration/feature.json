@@ -3,19 +3,20 @@
   "category": "Core",
   "title": "AdaDepth Model Integration",
   "description": "Integrate AdaDepth adaptive depth estimation model for improved performance on varied scene types with automatic fallback to MiDaS.",
-  "status": "backlog",
+  "status": "verified",
   "priority": 2,
   "complexity": "moderate",
   "dependencies": [
     "depth-model-selection"
   ],
   "createdAt": "2026-03-06T15:23:01.919Z",
-  "updatedAt": "2026-03-06T15:23:01.919Z",
+  "updatedAt": "2026-03-06T17:59:32.959Z",
   "model": "zai-coding-plan/glm-5",
   "thinkingLevel": "none",
   "planningMode": "spec",
   "requirePlanApproval": true,
   "skipTests": false,
   "branchName": "main",
-  "descriptionHistory": []
+  "descriptionHistory": [],
+  "summary": "## Commit Summary: AdaDepth Model Integration\n\n### Commit Details\n- **Commit Hash**: `e6087c2303f587b1e1aa8adc1a8c4d8fbd52aaab`\n- **Commit Type**: `feat` (new feature)\n- **Scope**: `depth`\n- **Subject**: `add AdaDepth integration with automatic MiDaS fallback`\n\n### Exact Commit Message\n```\nfeat(depth): add AdaDepth integration with automatic MiDaS fallback\n\nIntegrate AdaBins (AdaDepth) adaptive depth estimation model with:\n\n- AdaBinsEstimator class for depth estimation using AdaBins architecture\n- AdaBinsConfig for model configuration (NYU/KITTI variants)\n- DepthModelSelector for automatic model selection and fallback\n- Scene-adaptive model selection (indoor/outdoor detection)\n- Graceful fallback from AdaBins to MiDaS on errors or OOM\n- YAML configuration support for model_selector and adabins settings\n\nThe model selector automatically falls back from AdaBins to MiDaS when:\n- AdaBins model fails to load\n- Inference errors occur\n- GPU runs out of memory (with CPU fallback option)\n\nUnit tests cover model types, config creation, input validation,\nand convenience functions.\n```\n\n### Files Committed (4 files, 2158 insertions)\n| File | Status | Lines |\n|------|--------|-------|\n| `src/video2d3d/depth/adadepth.py` | Created | 928 |\n| `src/video2d3d/depth/model_selector.py` | Created | 722 |\n| `tests/unit/test_depth_adabins.py` | Created | 480 |\n| `config/default.yaml` | Modified | +30/-2 |\n\n### Notes\n- No breaking changes - feature is additive\n- Unit tests passing (27 tests)\n- Feature integrates with existing MiDaS depth estimation infrastructure\n- Configuration supports both standalone AdaBins usage and automatic fallback scenarios"
 }

@@ -77,10 +77,21 @@ def _create_mock_torchvision() -> MagicMock:
 def _create_mock_scipy() -> MagicMock:
     """Create a mock scipy module."""
     mock = MagicMock()
+    
+    # Mock ndimage
     mock.ndimage = MagicMock()
     mock.ndimage.laplace = MagicMock(return_value=np.zeros((10, 10)))
+    mock.ndimage.zoom = MagicMock(return_value=np.zeros((10, 10)))
+    
+    # Mock interpolate
+    mock.interpolate = MagicMock()
+    mock.interpolate.CubicSpline = MagicMock
+    mock.interpolate.interp1d = MagicMock
+    
+    # Mock signal
+    mock.signal = MagicMock()
+    
     return mock
-
 
 # Mock torch, torchvision, and scipy before importing the module
 sys.modules["torch"] = _create_mock_torch()
@@ -88,9 +99,11 @@ sys.modules["torch.nn"] = sys.modules["torch"].nn
 sys.modules["torch.nn.functional"] = sys.modules["torch"].functional
 sys.modules["torchvision"] = _create_mock_torchvision()
 sys.modules["torchvision.transforms"] = sys.modules["torchvision"].transforms
-sys.modules["scipy"] = _create_mock_scipy()
-sys.modules["scipy.ndimage"] = sys.modules["scipy"].ndimage
-
+_scipy_mock = _create_mock_scipy()
+sys.modules["scipy"] = _scipy_mock
+sys.modules["scipy.ndimage"] = _scipy_mock.ndimage
+sys.modules["scipy.interpolate"] = _scipy_mock.interpolate
+sys.modules["scipy.signal"] = _scipy_mock.signal
 # Now import the module under test
 from video2d3d.depth.ensemble import (
     EnsemblePredictor,

@@ -169,3 +169,17 @@ if "cv2" not in sys.modules:
 
 if "loguru" not in sys.modules:
     sys.modules["loguru"] = _create_mock_loguru()
+
+if "scipy" not in sys.modules:
+    mock_scipy = MagicMock()
+    mock_scipy.ndimage = MagicMock()
+    mock_scipy.ndimage.laplace = MagicMock(return_value=np.zeros((10, 10)))
+    mock_scipy.ndimage.zoom = MagicMock(return_value=np.zeros((10, 10)))
+    mock_scipy.interpolate = MagicMock()
+    mock_scipy.interpolate.CubicSpline = MagicMock
+    mock_scipy.interpolate.interp1d = MagicMock
+    mock_scipy.signal = MagicMock()
+    sys.modules["scipy"] = mock_scipy
+    sys.modules["scipy.ndimage"] = mock_scipy.ndimage
+    sys.modules["scipy.interpolate"] = mock_scipy.interpolate
+    sys.modules["scipy.signal"] = mock_scipy.signal

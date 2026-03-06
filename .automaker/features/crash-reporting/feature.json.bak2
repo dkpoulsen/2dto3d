@@ -1,0 +1,21 @@
+{
+  "id": "crash-reporting",
+  "category": "Reliability",
+  "title": "Crash Reporting and Diagnostics",
+  "description": "Implement crash detection and reporting system that captures system state, error logs, and diagnostics for debugging failures.",
+  "status": "pipeline_step_mmcc3rzz_k0qltm",
+  "priority": 3,
+  "complexity": "simple",
+  "dependencies": [
+    "logging-system"
+  ],
+  "createdAt": "2026-03-06T15:23:01.929Z",
+  "updatedAt": "2026-03-06T19:56:08.211Z",
+  "model": "zai-coding-plan/glm-5",
+  "thinkingLevel": "none",
+  "planningMode": "spec",
+  "requirePlanApproval": true,
+  "skipTests": false,
+  "branchName": "main",
+  "descriptionHistory": []
+}

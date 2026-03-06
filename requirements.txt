@@ -52,3 +52,11 @@ matplotlib>=3.5.0
 
 # Semantic Segmentation
 segment-anything>=1.0  # Meta SAM model for object segmentation
+
+
+# Authentication
+python-jose[cryptography]>=3.3.0
+passlib[bcrypt]>=1.7.4
+
+# Database
+sqlalchemy>=2.0.0

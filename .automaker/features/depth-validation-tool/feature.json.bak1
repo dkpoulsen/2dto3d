@@ -3,12 +3,19 @@
   "category": "Validation",
   "title": "Interactive Depth Validation Tool",
   "description": "Create an interactive tool allowing users to visualize and manually correct depth maps on problematic frames with brush-based editing.",
-  "status": "backlog",
+  "status": "verified",
   "priority": 3,
   "complexity": "complex",
   "dependencies": [
     "video-preview"
   ],
   "createdAt": "2026-03-06T15:23:01.927Z",
-  "updatedAt": "2026-03-06T15:23:01.927Z"
+  "updatedAt": "2026-03-06T20:49:31.918Z",
+  "model": "zai-coding-plan/glm-5",
+  "thinkingLevel": "none",
+  "planningMode": "spec",
+  "requirePlanApproval": true,
+  "skipTests": false,
+  "branchName": "main",
+  "descriptionHistory": []
 }

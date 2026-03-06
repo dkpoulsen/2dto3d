@@ -3,19 +3,20 @@
   "category": "Reliability",
   "title": "Crash Reporting and Diagnostics",
   "description": "Implement crash detection and reporting system that captures system state, error logs, and diagnostics for debugging failures.",
-  "status": "backlog",
+  "status": "verified",
   "priority": 3,
   "complexity": "simple",
   "dependencies": [
     "logging-system"
   ],
   "createdAt": "2026-03-06T15:23:01.929Z",
-  "updatedAt": "2026-03-06T15:23:01.929Z",
+  "updatedAt": "2026-03-06T20:05:14.008Z",
   "model": "zai-coding-plan/glm-5",
   "thinkingLevel": "none",
   "planningMode": "spec",
   "requirePlanApproval": true,
   "skipTests": false,
   "branchName": "main",
-  "descriptionHistory": []
+  "descriptionHistory": [],
+  "summary": "## Summary: Crash Reporting and Diagnostics - Commit Phase\n\n### Changes Committed\n\nAll changes for the crash reporting feature have been successfully committed to git.\n\n### Commit Details\n\n**Commit Message:**\n```\nfeat(crash): add crash detection and reporting system\n\nImplement comprehensive crash detection and reporting for debugging failures:\n\n- Add crash module with models, reporter, and state capture components\n- Implement automatic capture of uncaught exceptions via sys.excepthook\n- Add signal handlers for graceful shutdown (SIGTERM, SIGINT, etc.)\n- Capture system state at crash time: GPU, memory, process info, active jobs\n- Create crash reports stored as JSON files with full diagnostics\n- Add API router for crash report management (list, get, delete, manual report)\n- Integrate crash reporter with FastAPI application lifecycle\n\nThe system captures:\n- Exception type, message, and full traceback\n- GPU memory usage and device information\n- System memory and swap utilization\n- Process CPU, memory, threads, and uptime\n- Active batch jobs and queue statistics\n- Platform and Python version information\n\nCrash reports are saved to the crashes/ directory and can be retrieved\nvia the /api/v1/crash-reports endpoint.\n```\n\n**Commit Hash:** `fdae0034713a7dbb355bc608f16a23a1edd74fca`\n\n**Commit Type:** `feat` (new feature)\n\n**Scope:** `crash` (crash reporting module)\n\n### Files Committed (8 files, 2046 insertions, 5 deletions)\n\n| File | Status | Lines |\n|------|--------|-------|\n| `src/video2d3d/crash/__init__.py` | New | 64 |\n| `src/video2d3d/crash/models.py` | New | 382 |\n| `src/video2d3d/crash/reporter.py` | New | 721 |\n| `src/video2d3d/crash/state_capture.py` | New | 296 |\n| `src/video2d3d/web/routers/crash.py` | New | 324 |\n| `src/video2d3d/web/app.py` | Modified | +31/-4 |\n| `src/video2d3d/web/routers/__init__.py` | Modified | +4/-1 |\n| `src/video2d3d/web/schemas.py` | Modified | +229/-0 |\n\n### Notes\n- No breaking changes\n- Feature is backward compatible\n- All new code follows existing codebase patterns\n- Follows conventional commit format (feat)"
 }
