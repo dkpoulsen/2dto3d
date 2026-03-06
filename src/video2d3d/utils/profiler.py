@@ -65,14 +65,6 @@ MAX_STORED_TIMES = 10000  # Maximum times to store per component for stats
 
 F = TypeVar("F", bound=Callable[..., Any])
 
-from video2d3d.utils.logger import get_logger, log_performance
-
-if TYPE_CHECKING:
-    from loguru import Logger
-
-
-F = TypeVar("F", bound=Callable[..., Any])
-
 
 @dataclass
 class ComponentStats:

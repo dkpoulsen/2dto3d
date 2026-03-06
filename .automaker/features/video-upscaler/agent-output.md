@@ -653,3 +653,10 @@ Input: {
   "description": "Verify upscaler base module",
   "timeout": 30000
 }
+
+🔧 Tool: bash
+Input: {
+  "command": "cd /home/dkp/Documents/Automaker/2dto3d/frontend && npx tsc --noEmit --skipLibCheck src/api/types.ts 2>&1 | head -20",
+  "description": "Verify frontend types compile",
+  "timeout": 60000
+}

@@ -954,3 +954,91 @@ Input: {
   "offset": 60,
   "limit": 100
 }
+
+🔧 Tool: read
+Input: {
+  "filePath": "/home/dkp/Documents/Automaker/2dto3d/src/video2d3d/utils/profiler.py",
+  "limit": 80
+}
+
+🔧 Tool: edit
+Input: {
+  "edits": [
+    {
+      "end": "76#JW|",
+      "lines": [
+        "\"\"\"Profiling tools for identifying bottlenecks in the processing pipeline.",
+        "",
+        "This module provides per-component timing analysis and profiling utilities:",
+        "- Profiler class for tracking component timings",
+        "- Context manager and decorator for easy profiling",
+        "- Statistics aggregation and reporting",
+        "- Memory usage tracking integration",
+        "",
+        "Example usage:",
+        "    ```python",
+        "    from video2d3d.utils.profiler import Profiler, profile_component",
+        "",
+        "    # Using the profiler directly",
+        "    profiler = Profiler(\"video_conversion\")",
+        "    with profiler.measure(\"depth_estimation\"):",
+        "        # ... depth estimation code ...",
+        "        pass",
+        "    with profiler.measure(\"stereo_generation\"):",
+        "        # ... stereo generation code ...",
+        "        pass",
+        "    print(profiler.get_summary())",
+        "",
+        "    # Using the decorator",
+        "    @profile_component(\"depth_estimation\")",
+        "    def estimate_depth(frame):",
+        "        # ... code ...",
+        "        pass",
+        "",
+        "    # Using the context manager",
+        "    with profile_block(\"stereo_generation\"):",
+        "        # ... code ...",
+        "        pass",
+        "    ```",
+        "\"\"\"",
+        "",
+        "from __future__ import annotations",
+        "",
+        "import time",
+        "from contextlib import contextmanager",
+        "from dataclasses import dataclass, field",
+        "from functools import wraps",
+        "from statistics import median, stdev",
+        "from threading import Lock",
+        "from typing import (",
+        "    TYPE_CHECKING,",
+        "    Any,",
+        "    Callable,",
+        "    Dict,",
+        "    Generator,",
+        "    List,",
+        "    Optional,",
+        "    TypeVar,",
+        ")",
+        "",
+        "from video2d3d.utils.logger import get_logger, log_performance",
+        "",
+        "if TYPE_CHECKING:",
+        "    from loguru import Logger",
+        "",
+        "",
+        "# Constants",
+        "DEFAULT_BOTTLENECK_THRESHOLD = 15.0  # Percentage of total time",
+        "DEFAULT_TOP_N_COMPONENTS = 10",
+        "MAX_STORED_TIMES = 10000  # Maximum times to store per component for stats",
+        "",
+        "F = TypeVar(\"F\", bound=Callable[..., Any])",
+        "",
+        ""
+      ],
+      "op": "replace",
+      "pos": "1#XS|"
+    }
+  ],
+  "filePath": "/home/dkp/Documents/Automaker/2dto3d/src/video2d3d/utils/profiler.py"
+}

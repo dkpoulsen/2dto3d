@@ -554,3 +554,40 @@ Input: {
   "command": "export CI=true DEBIAN_FRONTEND=noninteractive GIT_TERMINAL_PROMPT=0 GCM_INTERACTIVE=never HOMEBREW_NO_AUTO_UPDATE=1 GIT_EDITOR=: EDITOR=: VISUAL='' GIT_SEQUENCE_EDITOR=: GIT_MERGE_AUTOEDIT=no GIT_PAGER=cat PAGER=cat npm_config_yes=true PIP_NO_INPUT=1 YARN_ENABLE_IMMUTABLE_INSTALLS=false; git show 9f18853 --stat 2>&1",
   "description": "Verify bug fix commit"
 }
+The commit was created successfully. Let me provide the final summary:
+
+<summary>
+## Summary: Depth-of-Focus Control - Commit Changes
+
+### Changes Committed
+- **Critical Bug Fix**: Removed duplicate `job_config` assignment in `src/video2d3d/web/routers/jobs.py` that was overwriting the first definition
+- The bug caused `depth_focus` and `depth_curve` settings to be completely lost when submitting jobs via the API
+- The first `job_config` properly included depth_focus/depth_curve additions, but the second assignment (without these fields) overwrote it entirely
+
+### Files Modified
+- `src/video2d3d/web/routers/jobs.py` - 93 insertions, 10 deletions
+
+### Commit Details
+- **Commit Hash**: `9f18853d3ad7330199b43cd27f4445a180524169`
+- **Commit Message**: 
+  ```
+  fix(jobs): remove duplicate job_config that overwrote depth_focus
+  
+  The submit_job endpoint had a duplicate job_config assignment that was
+  overwriting the first one. This caused depth_focus and depth_curve
+  settings to be lost when submitting jobs.
+  
+  The first job_config included depth_focus and depth_curve additions,
+  but the second assignment (without these fields) overwrote it entirely.
+  ```
+
+### Notes for Developer
+- The depth-focus-control feature was originally implemented in commit `0630973`
+- This bug fix (commit `9f18853`) addresses a critical issue where job submissions would silently lose the depth_focus configuration
+- The fix ensures that when users specify depth focus settings, they are properly passed through to the job queue
+
+### Verification Status
+- The original feature tests passed before this bug was discovered during code review
+- The fix removes the problematic duplicate assignment, preserving the correct job_config that includes depth_focus and depth_curve
+- Tests for the depth_focus schema validation continue to pass
+</summary>

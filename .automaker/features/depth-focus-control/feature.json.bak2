@@ -3,14 +3,14 @@
   "category": "Processing",
   "title": "Depth-of-Focus Control",
   "description": "Add depth-of-focus adjustment allowing users to specify which depth range should appear at screen plane and which should recede or project.",
-  "status": "backlog",
+  "status": "pipeline_step_mmcbz6pm_scmfew",
   "priority": 3,
   "complexity": "moderate",
   "dependencies": [
     "depth-curve-adjustment"
   ],
   "createdAt": "2026-03-06T15:23:01.923Z",
-  "updatedAt": "2026-03-06T21:51:44.114Z",
+  "updatedAt": "2026-03-06T21:54:01.420Z",
   "model": "zai-coding-plan/glm-5",
   "thinkingLevel": "none",
   "planningMode": "spec",
