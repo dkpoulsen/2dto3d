@@ -10,5 +10,12 @@
     "dibr-engine"
   ],
   "createdAt": "2026-03-06T15:23:01.921Z",
-  "updatedAt": "2026-03-06T15:23:01.921Z"
+  "updatedAt": "2026-03-06T15:23:01.921Z",
+  "model": "zai-coding-plan/glm-5",
+  "thinkingLevel": "none",
+  "planningMode": "spec",
+  "requirePlanApproval": true,
+  "skipTests": false,
+  "branchName": "main",
+  "descriptionHistory": []
 }
