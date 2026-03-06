@@ -1,0 +1,54 @@
+{
+  "id": "builtin-web-anaglyph",
+  "name": "Web (Anaglyph)",
+  "description": "Anaglyph format for easy web sharing. Works with standard red-cyan glasses. Small file sizes, fast processing. Great for social media and quick previews.",
+  "category": "web",
+  "tags": ["web", "anaglyph", "social-media", "sharing", "glasses"],
+  "settings": {
+    "depth_estimation": {
+      "model": "midas_small",
+      "output_width": 384,
+      "output_height": 384,
+      "min_depth": 0.0,
+      "max_depth": 1.0,
+      "temporal_consistency": true,
+      "temporal_smoothing_factor": 0.5
+    },
+    "stereo_generation": {
+      "format": "anaglyph",
+      "baseline": 0.05,
+      "focal_length": 1.0,
+      "convergence": 0.5,
+      "anaglyph_type": "red_cyan",
+      "anaglyph_color_method": "dubois",
+      "sbs_layout": "horizontal",
+      "sbs_swap_eyes": false,
+      "sbs_half_width": false
+    },
+    "video_output": {
+      "format": "mp4",
+      "codec": "libx264",
+      "preset": "fast",
+      "crf": 24,
+      "pixel_format": "yuv420p"
+    },
+    "processing": {
+      "batch_size": 4,
+      "num_workers": 4,
+      "use_gpu": true,
+      "gpu_device": 0,
+      "mixed_precision": true,
+      "max_memory_percent": 80
+    },
+    "quality": {
+      "preset": "fast",
+      "post_processing": true,
+      "calculate_metrics": false
+    }
+  },
+  "created_at": "2024-01-01T00:00:00",
+  "updated_at": "2024-01-01T00:00:00",
+  "is_builtin": true,
+  "version": "1.0.0",
+  "author": "2Dto3D"
+}

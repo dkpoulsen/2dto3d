@@ -1,0 +1,54 @@
+{
+  "id": "builtin-fast-preview",
+  "name": "Fast Preview",
+  "description": "Quick preview preset for testing and fast iterations. Uses fastest settings for minimal processing time. Not recommended for final output.",
+  "category": "general",
+  "tags": ["fast", "preview", "test", "quick"],
+  "settings": {
+    "depth_estimation": {
+      "model": "midas_small",
+      "output_width": 384,
+      "output_height": 384,
+      "min_depth": 0.0,
+      "max_depth": 1.0,
+      "temporal_consistency": true,
+      "temporal_smoothing_factor": 0.5
+    },
+    "stereo_generation": {
+      "format": "side_by_side",
+      "baseline": 0.05,
+      "focal_length": 1.0,
+      "convergence": 0.5,
+      "anaglyph_type": "red_cyan",
+      "anaglyph_color_method": "dubois",
+      "sbs_layout": "horizontal",
+      "sbs_swap_eyes": false,
+      "sbs_half_width": false
+    },
+    "video_output": {
+      "format": "mp4",
+      "codec": "libx264",
+      "preset": "ultrafast",
+      "crf": 28,
+      "pixel_format": "yuv420p"
+    },
+    "processing": {
+      "batch_size": 8,
+      "num_workers": 4,
+      "use_gpu": true,
+      "gpu_device": 0,
+      "mixed_precision": true,
+      "max_memory_percent": 80
+    },
+    "quality": {
+      "preset": "fast",
+      "post_processing": true,
+      "calculate_metrics": false
+    }
+  },
+  "created_at": "2024-01-01T00:00:00",
+  "updated_at": "2024-01-01T00:00:00",
+  "is_builtin": true,
+  "version": "1.0.0",
+  "author": "2Dto3D"
+}
