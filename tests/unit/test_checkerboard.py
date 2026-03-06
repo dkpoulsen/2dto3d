@@ -470,10 +470,9 @@ class TestEdgeCases:
         encoder = CheckerboardEncoder()
         left = np.zeros((0, 10, 3), dtype=np.uint8)
         right = np.zeros((0, 10, 3), dtype=np.uint8)
-
         with pytest.raises(ValueError, match="dimensions must be positive"):
+            encoder.encode(left, right)
 
-    def test_odd_dimensions(
     def test_odd_dimensions(
         self,
         mock_logger: MagicMock,

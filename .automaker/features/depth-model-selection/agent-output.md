@@ -432,3 +432,58 @@ Input: {
     }
   ]
 }
+
+🔧 Tool: bash
+Input: {
+  "command": "export CI=true DEBIAN_FRONTEND=noninteractive GIT_TERMINAL_PROMPT=0 GCM_INTERACTIVE=never HOMEBREW_NO_AUTO_UPDATE=1 GIT_EDITOR=: EDITOR=: VISUAL='' GIT_SEQUENCE_EDITOR=: GIT_MERGE_AUTOEDIT=no GIT_PAGER=cat PAGER=cat npm_config_yes=true PIP_NO_INPUT=1 YARN_ENABLE_IMMUTABLE_INSTALLS=false; git add -A && git status",
+  "description": "Stage all changes"
+}
+
+🔧 Tool: todowrite
+Input: {
+  "todos": [
+    {
+      "content": "Review all pending changes",
+      "priority": "high",
+      "status": "completed"
+    },
+    {
+      "content": "Stage all changes for commit",
+      "priority": "high",
+      "status": "completed"
+    },
+    {
+      "content": "Create conventional commit message",
+      "priority": "high",
+      "status": "in_progress"
+    },
+    {
+      "content": "Execute git commit",
+      "priority": "high",
+      "status": "pending"
+    },
+    {
+      "content": "Verify commit was created",
+      "priority": "high",
+      "status": "pending"
+    }
+  ]
+}
+
+🔧 Tool: bash
+Input: {
+  "command": "export CI=true DEBIAN_FRONTEND=noninteractive GIT_TERMINAL_PROMPT=0 GCM_INTERACTIVE=never HOMEBREW_NO_AUTO_UPDATE=1 GIT_EDITOR=: EDITOR=: VISUAL='' GIT_SEQUENCE_EDITOR=: GIT_MERGE_AUTOEDIT=no GIT_PAGER=cat PAGER=cat npm_config_yes=true PIP_NO_INPUT=1 YARN_ENABLE_IMMUTABLE_INSTALLS=false; git commit -m \"feat(depth): add depth model selection exploration and checkerboard encoder\n\n- Research multiple depth estimation models (MiDaS, ZoeDepth, Depth-Anything)\n- Document model loading patterns and auto-download mechanisms\n- Add checkerboard stereoscopic format encoder as parallel feature\n- Update stereo module to support checkerboard format\n- Add unit tests for checkerboard encoder\n- Update pipeline metadata for multiple features\"",
+  "description": "Commit all staged changes"
+}
+
+🔧 Tool: bash
+Input: {
+  "command": "export CI=true DEBIAN_FRONTEND=noninteractive GIT_TERMINAL_PROMPT=0 GCM_INTERACTIVE=never HOMEBREW_NO_AUTO_UPDATE=1 GIT_EDITOR=: EDITOR=: VISUAL='' GIT_SEQUENCE_EDITOR=: GIT_MERGE_AUTOEDIT=no GIT_PAGER=cat PAGER=cat npm_config_yes=true PIP_NO_INPUT=1 YARN_ENABLE_IMMUTABLE_INSTALLS=false; git log -1 --stat",
+  "description": "Verify commit details"
+}
+
+🔧 Tool: bash
+Input: {
+  "command": "export CI=true DEBIAN_FRONTEND=noninteractive GIT_TERMINAL_PROMPT=0 GCM_INTERACTIVE=never HOMEBREW_NO_AUTO_UPDATE=1 GIT_EDITOR=: EDITOR=: VISUAL='' GIT_SEQUENCE_EDITOR=: GIT_MERGE_AUTOEDIT=no GIT_PAGER=cat PAGER=cat npm_config_yes=true PIP_NO_INPUT=1 YARN_ENABLE_IMMUTABLE_INSTALLS=false; git status",
+  "description": "Verify clean working tree"
+}
