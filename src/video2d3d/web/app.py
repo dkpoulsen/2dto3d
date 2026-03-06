@@ -19,8 +19,8 @@ from typing import Optional
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.openapi.utils import get_openapi
-from fastapi.responses import Response
-
+from fastapi.responses import FileResponse, Response
+from fastapi.staticfiles import StaticFiles
 from video2d3d import __version__
 from video2d3d.batch import BatchQueueConfig, BatchVideoQueue
 from video2d3d.utils.config import get_config
@@ -333,18 +333,29 @@ Currently, this API does not require authentication. All endpoints are publicly 
             uptime_seconds=app_state.uptime_seconds,
         )
 
-    # Root endpoint with API info
-    @app.get(
-        "/",
-        response_model=APIInfoResponse,
-        tags=["Info"],
-        summary="API information",
-    )
-    async def root():
-        """Get API information and available endpoints."""
-        return APIInfoResponse(
-            version=__version__,
+    # Root endpoint - serve frontend or API info
+    frontend_dist = Path(__file__).parent.parent.parent.parent / "frontend" / "dist"
+    frontend_index = frontend_dist / "index.html"
+    
+    if frontend_index.exists():
+        # Serve frontend
+        @app.get("/", include_in_schema=False)
+        async def root():
+            """Serve the web dashboard."""
+            return FileResponse(str(frontend_index))
+    else:
+        # Serve API info when frontend not built
+        @app.get(
+            "/",
+            response_model=APIInfoResponse,
+            tags=["Info"],
+            summary="API information",
         )
+        async def root():
+            """Get API information and available endpoints."""
+            return APIInfoResponse(
+                version=__version__,
+            )
 
     # Queue status endpoint at root level
     @app.get(
@@ -399,6 +410,31 @@ Currently, this API does not require authentication. All endpoints are publicly 
             routes=app.routes,
             tags=tags_metadata,
         )
+
+    # Serve static frontend files (if built)
+    if frontend_dist.exists() and frontend_dist.is_dir():
+        # Mount static assets
+        assets_dir = frontend_dist / "assets"
+        if assets_dir.exists():
+            app.mount("/assets", StaticFiles(directory=str(assets_dir)), name="assets")
+        
+        logger.info(f"Serving frontend from {frontend_dist}")
+
+        # Serve index.html for all non-API routes (SPA routing)
+        @app.get("/{full_path:path}", include_in_schema=False)
+        async def serve_spa(full_path: str):
+            """Serve the SPA for all non-API routes."""
+            # Check if requesting a static file that exists
+            file_path = frontend_dist / full_path
+            if file_path.exists() and file_path.is_file():
+                return FileResponse(str(file_path))
+            
+            # For all other routes, serve index.html (SPA routing)
+            index_path = frontend_dist / "index.html"
+            if index_path.exists():
+                return FileResponse(str(index_path))
+            
+            return {"error": "Frontend not built. Run 'npm run build' in frontend/"}
 
     logger.info(f"FastAPI app created with prefix: {api_prefix}")
 
