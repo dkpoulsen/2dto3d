@@ -55,7 +55,11 @@ OUTPUT_FORMATS: dict[str, str] = {
     "side_by_side": "Side-by-side (left-right) stereoscopic view",
     "anaglyph": "Anaglyph (red-cyan glasses required)",
     "interlaced": "Interlaced (row-alternating)",
-    "vr": "VR format (over-under)",
+    "checkerboard": "Checkerboard pattern (3D displays)",
+    "top_bottom": "Top-bottom (over-under) stereoscopic",
+    "vr": "VR format - side-by-side 360° equirectangular (Oculus, Vive, Quest)",
+    "vr_top_bottom": "VR format - top-bottom 360° equirectangular",
+    "vr180": "VR180 format - 180° field of view (Oculus, Vive)",
 }
 
 # Valid choices for CLI options
@@ -717,6 +721,134 @@ def serve(
         log_exception("Server error", exception=e)
         console.print(f"[red]Error: {e}[/red]")
         raise typer.Exit(code=1)
+
+
+@app.command("config-export")
+def config_export(
+    output_file: str = typer.Argument(
+        ...,
+        help="Path to output configuration file (e.g., config.json or config.yaml)",
+        metavar="OUTPUT_FILE"
+    ),
+    format: str = typer.Option(
+        "auto",
+        "--format",
+        "-f",
+        help="Output format: json, yaml, or auto (detect from file extension)"
+    ),
+) -> None:
+    """Export the current configuration to a JSON or YAML file.
+
+    This command exports all configuration parameters, including processing
+    settings, depth estimation options, stereo generation settings, and more.
+
+    Examples:
+        video2d3d config-export my-config.json
+        video2d3d config-export my-config.yaml
+        video2d3d config-export config.json --format json
+    """
+    from pathlib import Path
+    from video2d3d.utils.config import export_current_config
+
+    logger = get_logger("config_export")
+
+    output_path = Path(output_file)
+
+    # Determine format
+    if format == "auto":
+        suffix = output_path.suffix.lower()
+        if suffix == ".json":
+            actual_format = "json"
+        elif suffix in (".yaml", ".yml"):
+            actual_format = "yaml"
+        else:
+            console.print(f"[red]Cannot auto-detect format from extension '{suffix}'[/red]")
+            console.print("[yellow]Use --format json or --format yaml[/yellow]")
+            raise typer.Exit(code=1)
+    else:
+        actual_format = format.lower()
+
+    try:
+        export_current_config(output_path, actual_format)
+        console.print(f"[green]Configuration exported to:[/green] {output_path}")
+        logger.info(f"Configuration exported to {output_path}")
+    except ValueError as e:
+        console.print(f"[red]Error: {e}[/red]")
+        raise typer.Exit(code=1)
+    except Exception as e:
+        log_exception("Failed to export configuration", exception=e)
+        console.print(f"[red]Error exporting configuration: {e}[/red]")
+        raise typer.Exit(code=1)
+
+
+@app.command("config-import")
+def config_import(
+    input_file: str = typer.Argument(
+        ...,
+        help="Path to configuration file to import (JSON or YAML)",
+        metavar="INPUT_FILE"
+    ),
+    apply: bool = typer.Option(
+        False,
+        "--apply",
+        "-a",
+        help="Apply imported configuration as the global (active) configuration"
+    ),
+) -> None:
+    """Import configuration from a JSON or YAML file.
+
+    This command imports configuration from a file. By default, it validates
+    the configuration and displays a summary. Use --apply to make it the
+    active configuration.
+
+    Examples:
+        video2d3d config-import my-config.json
+        video2d3d config-import my-config.yaml --apply
+    """
+    from pathlib import Path
+    from video2d3d.utils.config import import_config, import_and_apply_config
+
+    logger = get_logger("config_import")
+
+    input_path = Path(input_file)
+
+    if not input_path.exists():
+        console.print(f"[red]Error: File not found: {input_path}[/red]")
+        raise typer.Exit(code=1)
+
+    try:
+        config = import_and_apply_config(input_path) if apply else import_config(input_path)
+
+        if apply:
+            console.print(f"[green]Configuration imported and applied from:[/green] {input_path}")
+            logger.info(f"Configuration imported and applied from {input_path}")
+        else:
+            console.print(f"[green]Configuration imported from:[/green] {input_path}")
+            logger.info(f"Configuration imported from {input_path}")
+
+        # Display summary
+        console.print(f"\n[bold]Configuration Summary:[/bold]")
+        console.print(f"  Project: {config.project_name}")
+        console.print(f"  Version: {config.version}")
+        console.print(f"  Processing: batch_size={config.processing.batch_size}, workers={config.processing.num_workers}")
+        console.print(f"  Depth Model: {config.depth_estimation.model}")
+        console.print(f"  Output Format: {config.stereo_generation.format}")
+
+        if not apply:
+            console.print(f"\n[dim]Use --apply to make this the active configuration[/dim]")
+
+    except FileNotFoundError as e:
+        console.print(f"[red]Error: {e}[/red]")
+        raise typer.Exit(code=1)
+    except ValueError as e:
+        console.print(f"[red]Error: {e}[/red]")
+        raise typer.Exit(code=1)
+    except Exception as e:
+        log_exception("Failed to import configuration", exception=e)
+        console.print(f"[red]Error importing configuration: {e}[/red]")
+        raise typer.Exit(code=1)
+
+
 
 def main() -> None:
     """Main entry point for the CLI application.

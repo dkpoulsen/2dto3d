@@ -53,6 +53,24 @@ from video2d3d.stereo.top_bottom import (
     encode_top_bottom,
     create_top_bottom_encoder,
 )
+from video2d3d.stereo.vr import (
+    VREncoder,
+    VREncoderConfig,
+    VREncoderError,
+    VRMetadata,
+    VROutputFormat,
+    VRProjectionType,
+    VRStereoGenerator,
+    create_vr_encoder,
+    encode_vr_sbs,
+    encode_vr_top_bottom,
+    encode_vr180,
+    get_vr_metadata_for_format,
+    VR_RESOLUTION_4K,
+    VR_RESOLUTION_4K_PLUS,
+    VR_RESOLUTION_8K,
+    DEFAULT_IPD,
+)
 
 from video2d3d.utils.logger import (
     get_logger,

@@ -173,6 +173,30 @@ stereo_generation:
     swap_eyes: false
     half_width: false  # Half-resolution for each eye
 
+  # VR output settings (when format is 'vr', 'vr_top_bottom', or 'vr180')
+  vr:
+    # Target resolution for VR output
+    target_width: 3840  # 4K VR SBS width (1920 per eye)
+    target_height: 1080  # Height for VR output
+
+    # Interpupillary distance in meters (affects stereo separation)
+    ipd: 0.063  # 63mm - average adult IPD
+
+    # Projection type: equirectangular (360°), vr180 (180°), perspective
+    projection: equirectangular  # Options: equirectangular, vr180, perspective
+
+    # Eye ordering for VR output
+    swap_eyes: false  # Set to true for cross-eye viewing
+
+    # Use half-width mode (each eye at half resolution)
+    half_width: true  # Standard for VR video players
+
+    # Embed VR metadata in output file
+    embed_metadata: true  # For VR players to recognize format
+
+    # Quality preset for VR encoding (affects interpolation)
+    quality: high  # Options: fast, balanced, high
+
 # Quality Settings
 quality:
   # Processing quality preset
