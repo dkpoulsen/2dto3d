@@ -53,13 +53,37 @@ class JobStatus(Enum):
 
 
 class JobPriority(Enum):
-    """Priority levels for batch jobs."""
+    """Priority levels for batch jobs.
+
+    Higher values indicate higher priority. Jobs with higher priority
+    are processed before jobs with lower priority.
+
+    Attributes:
+        LOW: Background jobs with minimal urgency (value: 1)
+        NORMAL: Default priority for most jobs (value: 5)
+        HIGH: Important jobs that should be processed soon (value: 10)
+        URGENT: Critical jobs that must be processed immediately (value: 20)
+    """
 
     LOW = 1
     NORMAL = 5
     HIGH = 10
     URGENT = 20
 
+    @classmethod
+    def from_value(cls, value: int) -> "JobPriority":
+        """Get JobPriority from its numeric value.
+
+        Args:
+            value: Numeric priority value.
+
+        Returns:
+            Corresponding JobPriority enum, or NORMAL if not found.
+        """
+        for priority in cls:
+            if priority.value == value:
+                return priority
+        return cls.NORMAL
 
 @dataclass
 class BatchJobResult:

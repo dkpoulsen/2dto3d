@@ -10,6 +10,7 @@ import json
 import threading
 import time
 import uuid
+from collections import deque
 from concurrent.futures import Future, ThreadPoolExecutor
 from datetime import datetime
 from pathlib import Path
@@ -158,12 +159,13 @@ class BatchVideoQueue:
         if dep_job and job_id in dep_job.depends_on:
             return True
 
-        # Check if any of dependency_id's dependencies depend on job_id
+        # BFS to check if any of dependency_id's dependencies depend on job_id
+        # Using deque for O(1) popleft operation
         visited: set[str] = set()
-        to_check = list(dep_job.depends_on) if dep_job else []
+        to_check = deque(dep_job.depends_on) if dep_job else deque()
 
         while to_check:
-            current_id = to_check.pop(0)
+            current_id = to_check.popleft()
             if current_id in visited:
                 continue
             visited.add(current_id)
@@ -176,7 +178,6 @@ class BatchVideoQueue:
                 to_check.extend(current_job.depends_on)
 
         return False
-
     def add_job(
         self,
         input_path: Path,
@@ -212,15 +213,19 @@ class BatchVideoQueue:
         if not input_path.exists():
             raise FileNotFoundError(f"Input file not found: {input_path}")
 
-        # Create job first to get its ID for validation
+        # Validate and normalize depends_on parameter
         depends_on = depends_on or []
+        if not isinstance(depends_on, list):
+            raise TypeError("depends_on must be a list of job IDs")
+        for dep_id in depends_on:
+            if not isinstance(dep_id, str):
+                raise TypeError(f"Dependency ID must be a string, got {type(dep_id).__name__}")
 
         # Validate dependencies
         with self._lock:
             # Create a temporary job_id for validation
             temp_job_id = str(uuid.uuid4())
             self._validate_dependencies(temp_job_id, depends_on)
-
 
         if output_path is None:
             output_path = self.config.get_output_path(input_path)
@@ -512,6 +517,15 @@ class BatchVideoQueue:
         """Register an error callback."""
         self._error_callbacks.append(callback)
 
+    def on_dependency(self, callback: Callable[[BatchJob, str], None]) -> None:
+        """Register a dependency status callback.
+
+        The callback receives the job and a status string:
+        - "dependencies_met": All dependencies completed, job is ready to run
+        - "dependency_failed": A dependency has failed
+        - "dependency_cancelled": A dependency was cancelled
+        """
+        self._dependency_callbacks.append(callback)
     def set_processor(self, processor: Callable[[Path, Path], BatchJobResult]) -> None:
         """Set the video processor function."""
         self._processor = processor
@@ -682,15 +696,22 @@ class BatchVideoQueue:
         if not completed_job.dependent_jobs:
             return
 
+        self._logger.debug(
+            f"Notifying {len(completed_job.dependent_jobs)} dependent jobs of {completed_job.job_id}"
+        )
+
         for dep_job_id in completed_job.dependent_jobs:
             dep_job = self._jobs.get(dep_job_id)
             if not dep_job:
+                self._logger.warning(
+                    f"Dependent job {dep_job_id} not found (may have been removed)"
+                )
                 continue
 
             # Check if all dependencies are now met
             if dep_job.check_dependencies_met(self._completed_jobs):
                 self._logger.info(
-                    f"Job {dep_job_id} dependencies met, ready to run"
+                    f"Job {dep_job_id} dependencies met after {completed_job.job_id} completed, ready to run"
                 )
                 # Call any dependency callbacks
                 for callback in self._dependency_callbacks:
@@ -698,6 +719,11 @@ class BatchVideoQueue:
                         callback(dep_job, "dependencies_met")
                     except Exception as e:
                         self._logger.error(f"Dependency callback error: {e}")
+            else:
+                pending = dep_job.get_pending_dependencies(self._completed_jobs)
+                self._logger.debug(
+                    f"Job {dep_job_id} still waiting for dependencies: {pending}"
+                )
 
     def _start_folder_watcher(self) -> None:
         """Start folder monitoring."""

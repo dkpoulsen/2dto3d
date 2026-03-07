@@ -1,0 +1,21 @@
+{
+  "id": "priority-based-scheduling",
+  "category": "Workflow",
+  "title": "Priority-Based Job Scheduling",
+  "description": "Implement dynamic job scheduling based on priority levels, deadlines, and resource availability.",
+  "status": "backlog",
+  "priority": 1,
+  "complexity": "moderate",
+  "dependencies": [
+    "job-scheduler"
+  ],
+  "createdAt": "2026-03-06T22:35:43.374Z",
+  "updatedAt": "2026-03-07T07:25:58.995Z",
+  "model": "zai-coding-plan/glm-5",
+  "thinkingLevel": "none",
+  "planningMode": "spec",
+  "requirePlanApproval": true,
+  "skipTests": false,
+  "branchName": "main",
+  "descriptionHistory": []
+}

@@ -32,6 +32,11 @@ from video2d3d.web.auth.database import (
     UserModel,
     get_session,
     init_database,
+    session_scope,
+)
+    UserModel,
+    get_session,
+    init_database,
 )
 from video2d3d.web.auth.jwt_service import (
     authenticate_user,
@@ -79,6 +84,10 @@ __all__ = [
     "TokenPayload",
     "AuthConfig",
     # Database
+    "UserModel",
+    "init_database",
+    "get_session",
+    "session_scope",
     "UserModel",
     "init_database",
     "get_session",

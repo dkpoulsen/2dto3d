@@ -657,3 +657,9 @@ Input: {
   "description": "Find existing depth focus tests",
   "prompt": "I'm reviewing test coverage for the Depth-of-Focus Control feature. I need to find all existing tests.\n\nCONTEXT: This feature adds depth-of-focus adjustment to the 2dto3d video conversion application.\n\nGOAL: Find all test files that test depth_focus functionality - both frontend and backend.\n\nDOWNSTREAM: I will identify gaps in test coverage and write additional tests.\n\nREQUEST: Find all test files containing \"depth_focus\", \"DepthFocus\", \"depthFocus\", or related test patterns. List file paths with brief descriptions of what each test file covers."
 }
+Let me collect the background task results and then identify test coverage gaps:
+
+🔧 Tool: background_output
+Input: {
+  "task_id": "bg_e298153c"
+}

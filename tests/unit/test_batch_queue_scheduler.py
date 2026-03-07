@@ -20,7 +20,7 @@ import pytest
 if TYPE_CHECKING:
     from collections.abc import Generator
 
-from video2d3d.batch.config import BatchConfig
+from video2d3d.batch.config import BatchQueueConfig
 from video2d3d.batch.exceptions import (
     CircularDependencyError,
     DependencyFailedError,
@@ -33,14 +33,13 @@ from video2d3d.batch.queue import BatchVideoQueue
 @pytest.fixture
 def temp_queue(tmp_path: Path) -> Generator[BatchVideoQueue, None, None]:
     """Create a temporary queue for testing."""
-    config = BatchConfig(
-        input_dir=tmp_path / "input",
-        output_dir=tmp_path / "output",
+    config = BatchQueueConfig(
+        output_directory=tmp_path / "output",
         state_file=tmp_path / "state.json",
         auto_start=False,
     )
-    config.input_dir.mkdir(parents=True, exist_ok=True)
-    config.output_dir.mkdir(parents=True, exist_ok=True)
+    (tmp_path / "input").mkdir(parents=True, exist_ok=True)
+    (tmp_path / "output").mkdir(parents=True, exist_ok=True)
 
     with patch("video2d3d.batch.queue.get_logger"):
         queue = BatchVideoQueue(config)
@@ -198,14 +197,11 @@ class TestCircularDependencyDetection:
             depends_on=[job_a.job_id],
         )
 
-        # Try to update job A to depend on B (would create cycle)
-        # This should be caught when trying to add a new job
-        with pytest.raises(CircularDependencyError):
-            temp_queue.add_job(
-                input_path=sample_video,
-                job_id=job_a.job_id,  # Re-using ID (simulated)
-                depends_on=[job_b.job_id],
-            )
+        # A circular dependency would occur if A tried to depend on B,
+        # since B already depends on A. Test the internal cycle detection.
+        # Note: add_job doesn't allow reusing existing job_ids, so we test
+        # _would_create_cycle directly.
+        assert temp_queue._would_create_cycle(job_a.job_id, job_b.job_id)
 
     def test_indirect_circular_dependency(
         self, temp_queue: BatchVideoQueue, sample_video: Path
