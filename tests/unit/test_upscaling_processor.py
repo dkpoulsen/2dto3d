@@ -11,8 +11,8 @@ import pytest
 
 from video2d3d.upscaling.config import ModelType, UpscalerConfig
 from video2d3d.upscaling.processor import (
-    VideoUpscaleStats,
     VideoUpscaler,
+    VideoUpscaleStats,
     upscale_frames,
     upscale_video,
 )

@@ -200,7 +200,7 @@ class TestProfilerMemoryBoundedIntegration:
 
     def test_memory_bounded_with_many_measurements(self) -> None:
         """Test that memory is bounded when many measurements are taken."""
-        from video2d3d.utils.profiler import ComponentStats, MAX_STORED_TIMES
+        from video2d3d.utils.profiler import MAX_STORED_TIMES, ComponentStats
 
         stats = ComponentStats(name="test")
 
@@ -227,8 +227,8 @@ class TestProfilerGlobalRegistryIntegration:
         """Test using shared profiler from registry across functions."""
         from video2d3d.utils.profiler import (
             clear_profiler,
-            get_profiler,
             get_all_profilers,
+            get_profiler,
         )
 
         # Get shared profiler

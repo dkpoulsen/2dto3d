@@ -139,7 +139,7 @@ class TestComponentStats:
 
     def test_bounded_times_storage(self) -> None:
         """Test times storage is bounded for memory efficiency."""
-        from video2d3d.utils.profiler import ComponentStats, MAX_STORED_TIMES
+        from video2d3d.utils.profiler import MAX_STORED_TIMES, ComponentStats
 
         stats = ComponentStats(name="test", _max_times=100)  # Use smaller limit for testing
 
