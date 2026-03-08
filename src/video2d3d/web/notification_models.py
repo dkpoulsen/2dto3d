@@ -6,16 +6,14 @@ email notifications, and webhook callbacks.
 
 from __future__ import annotations
 
-import uuid
 import re
+import uuid
 from datetime import UTC, datetime
 from enum import Enum
 from typing import Any
 from urllib.parse import urlparse
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
-
-from pydantic import BaseModel, ConfigDict, Field
 
 
 class NotificationType(str, Enum):

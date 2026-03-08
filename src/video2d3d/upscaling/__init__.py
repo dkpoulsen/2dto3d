@@ -49,15 +49,13 @@ from video2d3d.upscaling.config import (
     get_model_scale,
     list_available_models,
 )
-from video2d3d.upscaling.esrgan import RealESRGANUpscaler, DummyUpscaler, create_upscaler
+from video2d3d.upscaling.esrgan import DummyUpscaler, RealESRGANUpscaler, create_upscaler
 from video2d3d.upscaling.processor import (
     VideoUpscaler,
     VideoUpscaleStats,
-    upscale_video,
     upscale_frames,
+    upscale_video,
 )
-from video2d3d.upscaling.esrgan import RealESRGANUpscaler
-from video2d3d.upscaling.processor import VideoUpscaler
 
 __all__ = [
     # Configuration
