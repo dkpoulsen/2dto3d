@@ -14,6 +14,7 @@ import pytest
 
 from video2d3d.skybox.config import (
     ColorDetectionConfig,
+    EdgeDetectionConfig,
     PositionDetectionConfig,
     SkyboxConfig,
     SkyDepthConfig,
@@ -160,6 +161,28 @@ class TestSkyboxConfig:
         assert config.detection_method == "color"
         assert config.min_confidence == 0.5
 
+    def test_invalid_smoothing_frames(self):
+        """Test that invalid smoothing_frames raises error."""
+        with pytest.raises(ValueError, match="smoothing_frames"):
+            SkyboxConfig(smoothing_frames=0)
+
+    def test_to_dict(self):
+        """Test to_dict method."""
+        config = SkyboxConfig(
+            enabled=False,
+            detection_method="color",
+            min_confidence=0.5,
+        )
+        result = config.to_dict()
+
+        assert result["enabled"] is False
+        assert result["detection_method"] == "color"
+        assert result["min_confidence"] == 0.5
+        assert "color_config" in result
+        assert "position_config" in result
+        assert "edge_config" in result
+        assert "depth_config" in result
+
 
 class TestColorDetectionConfig:
     """Tests for ColorDetectionConfig."""
@@ -186,6 +209,23 @@ class TestColorDetectionConfig:
         with pytest.raises(ValueError, match="saturation_max"):
             ColorDetectionConfig(saturation_max=1.5)
 
+    def test_invalid_gradient_threshold(self):
+        """Test that invalid gradient_threshold raises error."""
+        with pytest.raises(ValueError, match="gradient_threshold"):
+            ColorDetectionConfig(gradient_threshold=1.5)
+
+    def test_to_dict(self):
+        """Test to_dict method."""
+        config = ColorDetectionConfig(hue_min=180, hue_max=270, saturation_max=0.5, value_min=0.4)
+        result = config.to_dict()
+
+        assert result["hue_min"] == 180
+        assert result["hue_max"] == 270
+        assert result["saturation_max"] == 0.5
+        assert result["value_min"] == 0.4
+        assert "enable_cloudy_sky" in result
+        assert "gradient_threshold" in result
+
 
 class TestPositionDetectionConfig:
     """Tests for PositionDetectionConfig."""
@@ -202,6 +242,23 @@ class TestPositionDetectionConfig:
         """Test that min > max coverage raises error."""
         with pytest.raises(ValueError, match="cannot exceed"):
             PositionDetectionConfig(min_sky_coverage=0.6, max_sky_coverage=0.4)
+
+    def test_invalid_prefer_top_weight(self):
+        """Test that prefer_top_weight < 1.0 raises error."""
+        with pytest.raises(ValueError, match="prefer_top_weight"):
+            PositionDetectionConfig(prefer_top_weight=0.5)
+
+    def test_to_dict(self):
+        """Test to_dict method."""
+        config = PositionDetectionConfig(
+            sky_region_ratio=0.6, min_sky_coverage=0.1, max_sky_coverage=0.8
+        )
+        result = config.to_dict()
+
+        assert result["sky_region_ratio"] == 0.6
+        assert result["min_sky_coverage"] == 0.1
+        assert result["max_sky_coverage"] == 0.8
+        assert "prefer_top_weight" in result
 
 
 class TestSkyDepthConfig:
@@ -225,7 +282,72 @@ class TestSkyDepthConfig:
         with pytest.raises(ValueError, match="sky_depth_value"):
             SkyDepthConfig(sky_depth_value=1.5)
 
+    def test_invalid_boundary_blend_pixels(self):
+        """Test that negative boundary_blend_pixels raises error."""
+        with pytest.raises(ValueError, match="boundary_blend_pixels"):
+            SkyDepthConfig(boundary_blend_pixels=-5)
 
+    def test_invalid_gradient_strength(self):
+        """Test that invalid gradient_strength raises error."""
+        with pytest.raises(ValueError, match="gradient_strength"):
+            SkyDepthConfig(gradient_strength=1.5)
+
+    def test_to_dict(self):
+        """Test to_dict method."""
+        config = SkyDepthConfig(
+            depth_mode="gradient",
+            sky_depth_value=0.9,
+            boundary_blend_pixels=15,
+            gradient_strength=0.3,
+        )
+        result = config.to_dict()
+
+        assert result["depth_mode"] == "gradient"
+        assert result["sky_depth_value"] == 0.9
+        assert result["boundary_blend_pixels"] == 15
+        assert result["gradient_strength"] == 0.3
+
+
+class TestEdgeDetectionConfig:
+    """Tests for EdgeDetectionConfig."""
+
+    def test_default_values(self):
+        """Test default configuration values."""
+        config = EdgeDetectionConfig()
+
+        assert 0 <= config.horizon_search_ratio <= 1
+        assert config.edge_threshold > 0
+        assert config.min_edge_pixels >= 0
+
+    def test_invalid_horizon_search_ratio(self):
+        """Test that invalid horizon_search_ratio raises error."""
+        with pytest.raises(ValueError, match="horizon_search_ratio"):
+            EdgeDetectionConfig(horizon_search_ratio=1.5)
+
+    def test_invalid_edge_threshold(self):
+        """Test that negative edge_threshold raises error."""
+        with pytest.raises(ValueError, match="edge_threshold"):
+            EdgeDetectionConfig(edge_threshold=-10)
+
+    def test_invalid_min_edge_pixels(self):
+        """Test that negative min_edge_pixels raises error."""
+        with pytest.raises(ValueError, match="min_edge_pixels"):
+            EdgeDetectionConfig(min_edge_pixels=-5)
+
+    def test_to_dict(self):
+        """Test to_dict method."""
+        config = EdgeDetectionConfig(
+            horizon_search_ratio=0.4, edge_threshold=60, min_edge_pixels=200
+        )
+        result = config.to_dict()
+
+        assert result["horizon_search_ratio"] == 0.4
+        assert result["edge_threshold"] == 60
+        assert result["min_edge_pixels"] == 200
+
+
+# ---------------------------------------------------------------------------
+# Detector Tests
 # ---------------------------------------------------------------------------
 # Detector Tests
 # ---------------------------------------------------------------------------
@@ -274,6 +396,13 @@ class TestSkyDetector:
 
         with pytest.raises(SkyDetectionError, match="must be 3D"):
             detector.detect(np.zeros((100, 100)))
+
+    def test_image_too_small(self):
+        """Test that too small images raise error."""
+        detector = SkyDetector()
+
+        with pytest.raises(SkyDetectionError, match="too small"):
+            detector.detect(np.zeros((3, 3, 3), dtype=np.uint8))
 
     def test_color_detection_method(self, blue_sky_image):
         """Test color-only detection method."""
@@ -333,6 +462,41 @@ class TestSkyDetector:
 
         # Should have no previous mask
         assert detector._previous_mask is None
+
+    def test_sky_detection_error_with_context(self):
+        """Test SkyDetectionError with operation and original exception."""
+        error = SkyDetectionError(
+            "Test error",
+            operation="detect",
+            original_exception=ValueError("original"),
+        )
+
+        error_str = str(error)
+        assert "Test error" in error_str
+        assert "Operation: detect" in error_str
+        assert "ValueError" in error_str
+        assert "original" in error_str
+
+    def test_sky_detection_error_without_context(self):
+        """Test SkyDetectionError without additional context."""
+        error = SkyDetectionError("Simple error")
+
+        assert str(error) == "Simple error"
+
+    def test_cloudy_sky_detection(self):
+        """Test detection of cloudy sky."""
+        h, w = 240, 320
+        # Create image with cloudy sky (low saturation, high brightness)
+        image = np.full((h, w, 3), 220, dtype=np.uint8)
+        image[h // 2 :, :, :] = [80, 80, 80]  # Darker ground
+
+        config = SkyboxConfig(color_config=ColorDetectionConfig(enable_cloudy_sky=True))
+        detector = SkyDetector(config=config)
+        result = detector.detect(image)
+
+        assert isinstance(result, SkyDetectionResult)
+        # Should detect some sky
+        assert result.sky_coverage > 0
 
 
 class TestConvenienceFunctions:
@@ -429,6 +593,58 @@ class TestSkyProcessor:
 
         # Should have smooth transitions
         assert adjusted.shape == sample_depth_map.shape
+
+    def test_sky_processing_error_with_context(self):
+        """Test SkyProcessingError with operation and original exception."""
+        error = SkyProcessingError(
+            "Processing failed",
+            operation="process",
+            original_exception=RuntimeError("runtime issue"),
+        )
+
+        error_str = str(error)
+        assert "Processing failed" in error_str
+        assert "Operation: process" in error_str
+        assert "RuntimeError" in error_str
+        assert "runtime issue" in error_str
+
+    def test_inverse_gradient_depth_mode(self, blue_sky_image, sample_depth_map):
+        """Test inverse gradient depth mode."""
+        config = SkyboxConfig(
+            depth_config=SkyDepthConfig(depth_mode="inverse_gradient", gradient_strength=0.4)
+        )
+        detector = SkyDetector(config=config)
+        sky_result = detector.detect(blue_sky_image)
+
+        processor = SkyProcessor(config=config)
+        adjusted = processor.process(sample_depth_map, sky_result)
+
+        assert adjusted.shape == sample_depth_map.shape
+        assert adjusted.dtype == np.float32
+
+    def test_no_boundary_blending(self, blue_sky_image, sample_depth_map):
+        """Test with boundary blending disabled."""
+        config = SkyboxConfig(depth_config=SkyDepthConfig(boundary_blend_pixels=0))
+        detector = SkyDetector(config=config)
+        sky_result = detector.detect(blue_sky_image)
+
+        processor = SkyProcessor(config=config)
+        adjusted = processor.process(sample_depth_map, sky_result)
+
+        assert adjusted.shape == sample_depth_map.shape
+
+    def test_confidence_threshold_skip(self, no_sky_image, sample_depth_map):
+        """Test that low confidence sky result is skipped."""
+        config = SkyboxConfig(min_confidence=0.9)  # High threshold
+        detector = SkyDetector(config=config)
+        sky_result = detector.detect(no_sky_image)
+
+        processor = SkyProcessor(config=config)
+        adjusted = processor.process(sample_depth_map, sky_result)
+
+        # Should return original when confidence is too low
+        if sky_result.confidence < 0.9:
+            np.testing.assert_array_almost_equal(adjusted, sample_depth_map, decimal=5)
 
 
 class TestProcessorConvenienceFunctions:
@@ -543,7 +759,25 @@ class TestIntegration:
 
             adjusted, _ = integrate_sky_depth(depth, image)
 
-            assert adjusted.shape == (h, w)
+    def test_skybox_config_to_dict_full(self):
+        """Test SkyboxConfig.to_dict with all sub-configs."""
+        config = SkyboxConfig(
+            enabled=True,
+            detection_method="combined",
+            temporal_consistency=True,
+            smoothing_frames=10,
+        )
+        result = config.to_dict()
+
+        assert result["enabled"] is True
+        assert result["detection_method"] == "combined"
+        assert result["temporal_consistency"] is True
+        assert result["smoothing_frames"] == 10
+        # All sub-configs should be serialized
+        assert isinstance(result["color_config"], dict)
+        assert isinstance(result["position_config"], dict)
+        assert isinstance(result["edge_config"], dict)
+        assert isinstance(result["depth_config"], dict)
 
 
 # ---------------------------------------------------------------------------

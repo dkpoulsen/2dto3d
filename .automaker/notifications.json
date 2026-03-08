@@ -691,6 +691,116 @@
       "dismissed": false,
       "featureId": "depth-focus-control",
       "projectPath": "/home/dkp/Documents/Automaker/2dto3d"
+    },
+    {
+      "id": "aa95caf0-a973-42c7-9b32-58c48acdd710",
+      "type": "feature_verified",
+      "title": "Feature Verified",
+      "message": "\"notification-system\" has been verified and is complete.",
+      "createdAt": "2026-03-08T17:43:21.814Z",
+      "read": false,
+      "dismissed": false,
+      "featureId": "notification-system",
+      "projectPath": "/home/dkp/Documents/Automaker/2dto3d"
+    },
+    {
+      "id": "faf7ed84-0a60-4a3a-a02e-cbc4eaca695d",
+      "type": "feature_verified",
+      "title": "Feature Verified",
+      "message": "\"priority-based-scheduling\" has been verified and is complete.",
+      "createdAt": "2026-03-08T17:50:25.212Z",
+      "read": false,
+      "dismissed": false,
+      "featureId": "priority-based-scheduling",
+      "projectPath": "/home/dkp/Documents/Automaker/2dto3d"
+    },
+    {
+      "id": "f0ddfa4a-d208-4700-80b7-e14153c50f69",
+      "type": "feature_verified",
+      "title": "Feature Verified",
+      "message": "\"profiling-tools\" has been verified and is complete.",
+      "createdAt": "2026-03-08T18:03:42.250Z",
+      "read": false,
+      "dismissed": false,
+      "featureId": "profiling-tools",
+      "projectPath": "/home/dkp/Documents/Automaker/2dto3d"
+    },
+    {
+      "id": "8df069de-afcd-4e46-88f6-c6de76fa5875",
+      "type": "feature_verified",
+      "title": "Feature Verified",
+      "message": "\"skybox-separation\" has been verified and is complete.",
+      "createdAt": "2026-03-08T18:07:22.940Z",
+      "read": false,
+      "dismissed": false,
+      "featureId": "skybox-separation",
+      "projectPath": "/home/dkp/Documents/Automaker/2dto3d"
+    },
+    {
+      "id": "1e069a92-d0d4-481d-92c0-f8a1af981b0c",
+      "type": "feature_verified",
+      "title": "Feature Verified",
+      "message": "\"user-authentication\" has been verified and is complete.",
+      "createdAt": "2026-03-08T18:08:55.058Z",
+      "read": false,
+      "dismissed": false,
+      "featureId": "user-authentication",
+      "projectPath": "/home/dkp/Documents/Automaker/2dto3d"
+    },
+    {
+      "id": "86ed23ff-75e0-4e68-87d4-8a40a50e6395",
+      "type": "feature_verified",
+      "title": "Feature Verified",
+      "message": "\"notification-system\" has been verified and is complete.",
+      "createdAt": "2026-03-08T18:16:31.755Z",
+      "read": false,
+      "dismissed": false,
+      "featureId": "notification-system",
+      "projectPath": "/home/dkp/Documents/Automaker/2dto3d"
+    },
+    {
+      "id": "ac09cb5d-a346-4845-9af3-9af1610fcbf7",
+      "type": "feature_verified",
+      "title": "Feature Verified",
+      "message": "\"video-denoiser\" has been verified and is complete.",
+      "createdAt": "2026-03-08T18:21:53.623Z",
+      "read": false,
+      "dismissed": false,
+      "featureId": "video-denoiser",
+      "projectPath": "/home/dkp/Documents/Automaker/2dto3d"
+    },
+    {
+      "id": "97fabbd7-d040-4451-9e18-79effbbb29e9",
+      "type": "feature_verified",
+      "title": "Feature Verified",
+      "message": "\"video-upscaler\" has been verified and is complete.",
+      "createdAt": "2026-03-08T18:22:59.947Z",
+      "read": false,
+      "dismissed": false,
+      "featureId": "video-upscaler",
+      "projectPath": "/home/dkp/Documents/Automaker/2dto3d"
+    },
+    {
+      "id": "40d22913-dde6-49a3-b987-edb859304426",
+      "type": "feature_verified",
+      "title": "Feature Verified",
+      "message": "\"preview-thumbnail-grid\" has been verified and is complete.",
+      "createdAt": "2026-03-08T18:43:13.858Z",
+      "read": false,
+      "dismissed": false,
+      "featureId": "preview-thumbnail-grid",
+      "projectPath": "/home/dkp/Documents/Automaker/2dto3d"
+    },
+    {
+      "id": "754641f5-ddbf-4fd2-af5d-43cf4ec63c8e",
+      "type": "feature_verified",
+      "title": "Feature Verified",
+      "message": "\"priority-based-scheduling\" has been verified and is complete.",
+      "createdAt": "2026-03-08T18:58:16.302Z",
+      "read": false,
+      "dismissed": false,
+      "featureId": "priority-based-scheduling",
+      "projectPath": "/home/dkp/Documents/Automaker/2dto3d"
     }
   ]
 }

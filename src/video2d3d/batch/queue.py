@@ -364,6 +364,7 @@ class BatchVideoQueue:
             self._notify_dependent_jobs(job_to_notify, "cancelled")
 
         return True
+
     def retry_job(self, job_id: str) -> bool:
         """Retry a failed job."""
         with self._lock:
@@ -437,7 +438,9 @@ class BatchVideoQueue:
         stale_ids = self._completed_jobs - existing_job_ids - needed_dependency_ids
         if stale_ids:
             self._completed_jobs -= stale_ids
-            self._logger.debug(f"Cleaned up {len(stale_ids)} stale entries from completed jobs tracking")
+            self._logger.debug(
+                f"Cleaned up {len(stale_ids)} stale entries from completed jobs tracking"
+            )
 
     def get_stats(self) -> BatchQueueStats:
         """Get queue statistics."""
@@ -714,7 +717,9 @@ class BatchVideoQueue:
             self._completed_jobs.add(job_id)
             self._notify_dependent_jobs(job, "completed")
         elif job.status in (JobStatus.FAILED, JobStatus.CANCELLED):
-            self._notify_dependent_jobs(job, "failed" if job.status == JobStatus.FAILED else "cancelled")
+            self._notify_dependent_jobs(
+                job, "failed" if job.status == JobStatus.FAILED else "cancelled"
+            )
 
     def _notify_dependent_jobs(self, completed_job: BatchJob, status: str = "completed") -> None:
         """Notify jobs that depend on a completed, failed, or cancelled job.
@@ -753,7 +758,9 @@ class BatchVideoQueue:
                             self._logger.error(f"Dependency callback error: {e}")
                 else:
                     pending = dep_job.get_pending_dependencies(self._completed_jobs)
-                    self._logger.debug(f"Job {dep_job_id} still waiting for dependencies: {pending}")
+                    self._logger.debug(
+                        f"Job {dep_job_id} still waiting for dependencies: {pending}"
+                    )
             elif status in ("failed", "cancelled"):
                 # Dependency failed or was cancelled - notify waiting jobs
                 self._logger.warning(

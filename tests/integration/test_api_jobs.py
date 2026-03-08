@@ -707,7 +707,9 @@ class TestSubmitJobWithDepthCurve:
         # Verify depth_focus was passed to add_job in job_config
         call_args = mock_queue.add_job.call_args
         assert call_args is not None
-        job_config = call_args.kwargs.get("job_config", call_args.args[2] if len(call_args.args) > 2 else {})
+        job_config = call_args.kwargs.get(
+            "job_config", call_args.args[2] if len(call_args.args) > 2 else {}
+        )
         assert "depth_focus" in job_config
         assert job_config["depth_focus"]["enabled"] is True
         assert job_config["depth_focus"]["focus_depth"] == 0.7
@@ -745,8 +747,10 @@ class TestSubmitJobWithDepthCurve:
         # Verify both depth configs were passed to add_job
         call_args = mock_queue.add_job.call_args
         assert call_args is not None
-        job_config = call_args.kwargs.get("job_config", call_args.args[2] if len(call_args.args) > 2 else {})
-        
+        job_config = call_args.kwargs.get(
+            "job_config", call_args.args[2] if len(call_args.args) > 2 else {}
+        )
+
         # Both depth_focus and depth_curve should be present
         assert "depth_focus" in job_config, "depth_focus was lost from job_config"
         assert "depth_curve" in job_config, "depth_curve was lost from job_config"

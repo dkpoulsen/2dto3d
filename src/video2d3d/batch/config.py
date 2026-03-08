@@ -247,7 +247,9 @@ class BatchQueueConfig:
         """Create from dictionary."""
         return cls(
             max_concurrent_jobs=data.get("max_concurrent_jobs", 1),
-            default_priority=JobPriority.from_value(data.get("default_priority", JobPriority.NORMAL.value)),
+            default_priority=JobPriority.from_value(
+                data.get("default_priority", JobPriority.NORMAL.value)
+            ),
             auto_start=data.get("auto_start", True),
             retry_failed=data.get("retry_failed", True),
             max_retries=data.get("max_retries", 3),

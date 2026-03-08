@@ -39,7 +39,7 @@ class UserBase(BaseModel):
     @classmethod
     def validate_username(cls, v: str) -> str:
         """Validate username format.
-        
+
         Username must contain only alphanumeric characters, underscores, or hyphens.
         """
         # Check each character is valid
@@ -65,7 +65,7 @@ class UserCreate(UserBase):
     @classmethod
     def validate_password(cls, v: str) -> str:
         """Validate password strength.
-        
+
         Requirements:
         - At least 8 characters (handled by Field min_length)
         - At least one uppercase letter

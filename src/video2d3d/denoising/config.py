@@ -24,6 +24,7 @@ _DEFAULT_BATCH_SIZE: int = 4
 # Pixel value normalization constant for uint8 to float conversion
 _UINT8_MAX_VALUE: float = 255.0
 
+
 class DenoiserModelType(Enum):
     """Available video denoising model types."""
 

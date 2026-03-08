@@ -65,6 +65,7 @@ class InferenceError(VideoDenoisingError):
         self.attempted_models = attempted_models or []
         self.original_exceptions = original_exceptions or []
 
+
 class UnsupportedModelError(VideoDenoisingError):
     """Exception raised when an unsupported model type is requested."""
 

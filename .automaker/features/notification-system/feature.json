@@ -3,14 +3,14 @@
   "category": "Management",
   "title": "Notification System",
   "description": "Add notification system for job completion, failures, and status updates via email, webhooks, or in-app notifications.",
-  "status": "pipeline_step_mmcc3rzz_k0qltm",
+  "status": "verified",
   "priority": 3,
   "complexity": "simple",
   "dependencies": [
     "job-scheduler"
   ],
   "createdAt": "2026-03-06T15:23:01.933Z",
-  "updatedAt": "2026-03-08T17:35:30.348Z",
+  "updatedAt": "2026-03-08T18:16:31.754Z",
   "model": "zai-coding-plan/glm-5",
   "thinkingLevel": "none",
   "planningMode": "spec",

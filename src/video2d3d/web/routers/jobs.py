@@ -57,6 +57,7 @@ DEFAULT_TOTAL_FRAMES = 0
 THUMBNAIL_COUNT_MIN = 1
 THUMBNAIL_COUNT_MAX = 100
 
+
 def priority_to_model(priority: JobPriorityRequest) -> JobPriority:
     """Convert API priority enum to batch model priority."""
     mapping = {
@@ -617,10 +618,10 @@ async def get_queue_stats() -> QueueStatsResponse:
 async def get_thumbnail_grid(
     job_id: str,
     count: int | None = Query(
-        default=DEFAULT_THUMBNAIL_COUNT, 
-        ge=THUMBNAIL_COUNT_MIN, 
-        le=THUMBNAIL_COUNT_MAX, 
-        description="Number of thumbnails"
+        default=DEFAULT_THUMBNAIL_COUNT,
+        ge=THUMBNAIL_COUNT_MIN,
+        le=THUMBNAIL_COUNT_MAX,
+        description="Number of thumbnails",
     ),
     start_frame: int | None = Query(default=None, ge=0, description="Start frame index"),
     end_frame: int | None = Query(default=None, ge=0, description="End frame index"),

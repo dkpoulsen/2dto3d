@@ -1,0 +1,11 @@
+{
+  "id": "evt-1772992875207-c500afee",
+  "trigger": "feature_error",
+  "timestamp": "2026-03-08T18:01:15.207Z",
+  "projectPath": "/home/dkp/Documents/Automaker/2dto3d",
+  "projectName": "2dto3d",
+  "featureId": "model-performance-comparison",
+  "featureName": "Model Comparison Dashboard",
+  "error": "Agent execution ended with: error",
+  "errorType": "execution"
+}

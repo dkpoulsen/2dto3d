@@ -280,6 +280,42 @@
       <name>Feature: feature-1772987391102-1obz8fr5o51</name>
       <description>fix github action</description>
     </feature>
+    <feature>
+      <name>Depth-of-Focus Control</name>
+      <description>Add depth-of-focus adjustment allowing users to specify which depth range should appear at screen plane and which should recede or project.</description>
+    </feature>
+    <feature>
+      <name>Notification System</name>
+      <description>Add notification system for job completion, failures, and status updates via email, webhooks, or in-app notifications.</description>
+    </feature>
+    <feature>
+      <name>Priority-Based Job Scheduling</name>
+      <description>Implement dynamic job scheduling based on priority levels, deadlines, and resource availability.</description>
+    </feature>
+    <feature>
+      <name>Performance Profiling Tools</name>
+      <description>Add profiling tools to identify bottlenecks in the processing pipeline with per-component timing analysis.</description>
+    </feature>
+    <feature>
+      <name>Sky/Background Plane Detection</name>
+      <description>Add automatic detection of sky and background planes for proper depth assignment to avoid 3D artifacts in outdoor scenes.</description>
+    </feature>
+    <feature>
+      <name>User Authentication System</name>
+      <description>Add authentication to web API with JWT tokens, user registration, login, and role-based access control.</description>
+    </feature>
+    <feature>
+      <name>Video Denoising Module</name>
+      <description>Add video denoising using AI models (FastDVDNet, BasicVSR++) to reduce noise before depth estimation for cleaner depth maps.</description>
+    </feature>
+    <feature>
+      <name>AI Video Upscaling Integration</name>
+      <description>Integrate AI-based video upscaling models (ESRGAN, Real-ESRGAN) to enhance output resolution during conversion.</description>
+    </feature>
+    <feature>
+      <name>Thumbnail Grid Preview</name>
+      <description>Add thumbnail grid view showing multiple frames at different timestamps with their depth maps for quick quality assessment.</description>
+    </feature>
   </implemented_features>
 
   <additional_requirements>

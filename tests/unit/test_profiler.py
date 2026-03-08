@@ -137,6 +137,34 @@ class TestComponentStats:
         assert result["call_count"] == 1
         assert result["total_time_ms"] == 10.5
 
+    def test_bounded_times_storage(self) -> None:
+        """Test times storage is bounded for memory efficiency."""
+        from video2d3d.utils.profiler import ComponentStats, MAX_STORED_TIMES
+
+        stats = ComponentStats(name="test", _max_times=100)  # Use smaller limit for testing
+
+        # Add more measurements than the limit
+        for i in range(150):
+            stats.add_measurement(float(i))
+
+        # call_count should still be accurate
+        assert stats.call_count == 150
+        # times list should be bounded
+        assert len(stats.times) <= 100
+        assert stats.total_time_ms > 0  # Total still tracked
+
+    def test_min_max_tracking(self) -> None:
+        """Test min and max are tracked correctly."""
+        from video2d3d.utils.profiler import ComponentStats
+
+        stats = ComponentStats(name="test")
+        stats.add_measurement(5.0)
+        stats.add_measurement(100.0)
+        stats.add_measurement(50.0)
+
+        assert stats.min_time_ms == 5.0
+        assert stats.max_time_ms == 100.0
+
 
 class TestProfilerResult:
     """Tests for ProfilerResult dataclass."""
@@ -215,6 +243,24 @@ class TestProfilerResult:
         assert d["session_name"] == "session"
         assert "components" in d
         assert "bottlenecks" in d
+
+    def test_get_bottlenecks_empty_components(self) -> None:
+        """Test bottleneck detection with empty components."""
+        from video2d3d.utils.profiler import ProfilerResult
+
+        result = ProfilerResult(session_name="test")
+        bottlenecks = result.get_bottlenecks(threshold_percent=15.0)
+
+        assert bottlenecks == []
+
+    def test_get_sorted_components_empty(self) -> None:
+        """Test sorted components with empty result."""
+        from video2d3d.utils.profiler import ProfilerResult
+
+        result = ProfilerResult(session_name="test")
+        sorted_comps = result.get_sorted_components()
+
+        assert sorted_comps == []
 
 
 class TestProfiler:
@@ -369,6 +415,56 @@ class TestProfilerRegistry:
 
         assert profiler1 is profiler2
 
+    def test_get_profiler_without_create_returns_none(self) -> None:
+        """Test get_profiler with create=False returns None for nonexistent profiler."""
+        from video2d3d.utils.profiler import get_profiler
+
+        profiler = get_profiler("nonexistent", create=False)
+        assert profiler is None
+
+    def test_clear_profiler(self) -> None:
+        """Test clear_profiler removes profiler."""
+        from video2d3d.utils.profiler import clear_profiler, get_profiler
+
+        get_profiler("to_clear")
+        result = clear_profiler("to_clear")
+        assert result is True
+
+        result2 = clear_profiler("nonexistent")
+        assert result2 is False
+
+    def test_get_all_profilers(self) -> None:
+        """Test get_all_profilers returns all registered profilers."""
+        from video2d3d.utils.profiler import get_all_profilers, get_profiler
+
+        get_profiler("session1")
+        get_profiler("session2")
+
+        all_profilers = get_all_profilers()
+        assert "session1" in all_profilers
+        assert "session2" in all_profilers
+
+
+class TestProfilerRegistry:
+    """Tests for global profiler registry."""
+
+    def test_get_profiler_creates_new(self) -> None:
+        """Test get_profiler creates new profiler."""
+        from video2d3d.utils.profiler import get_profiler
+
+        profiler = get_profiler("new_session")
+        assert profiler is not None
+        assert profiler.session_name == "new_session"
+
+    def test_get_profiler_returns_existing(self) -> None:
+        """Test get_profiler returns existing profiler."""
+        from video2d3d.utils.profiler import get_profiler
+
+        profiler1 = get_profiler("session")
+        profiler2 = get_profiler("session")
+
+        assert profiler1 is profiler2
+
     def test_clear_profiler(self) -> None:
         """Test clear_profiler removes profiler."""
         from video2d3d.utils.profiler import clear_profiler, get_profiler
@@ -436,6 +532,30 @@ class TestProfileBlock:
         # Check that the block was profiled
         mock_logger.info.assert_called()
 
+    def test_profile_block_with_profiler_name(
+        self, mock_logger: MagicMock, mock_log_performance: MagicMock
+    ) -> None:
+        """Test profile_block with named profiler."""
+        from video2d3d.utils.profiler import get_profiler, profile_block
+
+        # Create a profiler first
+        get_profiler("named_profiler")
+
+        with profile_block("test_block", profiler_name="named_profiler"):
+            time.sleep(0.005)
+
+        mock_logger.info.assert_called()
+
+    def test_profile_block_yields_profiler(
+        self, mock_logger: MagicMock, mock_log_performance: MagicMock
+    ) -> None:
+        """Test profile_block yields profiler instance."""
+        from video2d3d.utils.profiler import profile_block
+
+        with profile_block("test_block") as profiler:
+            assert profiler is not None
+            assert profiler.session_name == "test_block"
+
 
 class TestPipelineProfiler:
     """Tests for PipelineProfiler class."""
@@ -474,6 +594,31 @@ class TestPipelineProfiler:
         report = pipeline.get_report()
         assert "test_pipeline" in report
         assert "stage1" in report
+
+    def test_pipeline_get_result(self) -> None:
+        """Test pipeline get_result returns ProfilerResult."""
+        from video2d3d.utils.profiler import PipelineProfiler
+
+        pipeline = PipelineProfiler("test_pipeline", auto_log=False)
+        pipeline.start()
+
+        with pipeline.stage("stage1"):
+            pass
+
+        pipeline.stop()
+
+        result = pipeline.get_result()
+        assert result.session_name == "test_pipeline"
+        assert "stage1" in result.components
+
+    def test_pipeline_start_returns_self(self) -> None:
+        """Test pipeline start returns self for chaining."""
+        from video2d3d.utils.profiler import PipelineProfiler
+
+        pipeline = PipelineProfiler("test", auto_log=False)
+        result = pipeline.start()
+
+        assert result is pipeline
 
 
 class TestTimedExecution:

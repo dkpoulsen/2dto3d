@@ -3,19 +3,20 @@
   "category": "Enhancement",
   "title": "Video Denoising Module",
   "description": "Add video denoising using AI models (FastDVDNet, BasicVSR++) to reduce noise before depth estimation for cleaner depth maps.",
-  "status": "backlog",
+  "status": "verified",
   "priority": 3,
   "complexity": "moderate",
   "dependencies": [
     "video-input-handler"
   ],
   "createdAt": "2026-03-06T15:23:01.925Z",
-  "updatedAt": "2026-03-06T21:52:14.009Z",
+  "updatedAt": "2026-03-08T18:21:53.629Z",
   "model": "zai-coding-plan/glm-5",
   "thinkingLevel": "none",
   "planningMode": "spec",
   "requirePlanApproval": true,
   "skipTests": false,
   "branchName": "main",
-  "descriptionHistory": []
+  "descriptionHistory": [],
+  "summary": "## Summary: Video Denoiser Code Review and Quality Improvements\n\n### Changes Implemented\n- **Type Hint Fix**: Changed `progress_callback: callable | None` to `progress_callback: Callable[[int, int], None] | None` using proper `Callable` from `typing` module\n- **InferenceError Enhancement**: Added `attempted_models` and `original_exceptions` attributes to `InferenceError` class for better error tracking during fallback model selection\n- **Magic Number Elimination**: Extracted hardcoded `255.0` to `_UINT8_MAX_VALUE` constant for pixel value normalization\n- **Import Organization**: Added proper imports for type hints in config.py\n\n### Files Modified\n- `src/video2d3d/denoising/__init__.py` - Export `_UINT8_MAX_VALUE` constant\n- `src/video2d3d/denoising/config.py` - Added `Callable` import, defined `_UINT8_MAX_VALUE` constant, fixed type hint\n- `src/video2d3d/denoising/exceptions.py` - Enhanced `InferenceError` with tracking attributes\n- `src/video2d3d/denoising/fastdvdnet.py` - Use `_UINT8_MAX_VALUE` instead of magic number\n- `src/video2d3d/denoising/basicvsr_plusplus.py` - Use `_UINT8_MAX_VALUE` instead of magic number\n\n### Notes for Developer\n- The `InferenceError` now supports tracking which models were attempted and what exceptions occurred, useful for debugging fallback scenarios\n- The normalization constant `_UINT8_MAX_VALUE` is now exported from the denoising module's public API\n\n### Verification Status\n- Import verification passed: `from video2d3d.denoising import VideoDenoiserSelector, DenoiserModelType, VideoDenoiserConfig, _UINT8_MAX_VALUE` works correctly\n\n### Commit Details\n- **Commit Hash**: `d5b28a0f7c38ba41d9a113e1b4432af6a24dc8d2`\n- **Commit Message**:\n  ```\n  refactor(denoising): improve code quality and type safety\n  \n  - Fix type hint: use Callable from typing instead of builtin callable\n  - Add InferenceError attributes for attempted_models and original_exceptions\n  - Extract magic number 255.0 to _UINT8_MAX_VALUE constant\n  - Add missing imports for type hints in config.py\n  ```\n- **Files Committed**: 5 files changed, 40 insertions(+), 11 deletions(-)"
 }

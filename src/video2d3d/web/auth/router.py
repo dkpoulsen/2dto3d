@@ -53,8 +53,8 @@ def _validate_user_from_credentials(
     credentials: HTTPAuthorizationCredentials | None,
 ) -> UserModel | None:
     """Validate credentials and return user if valid.
-    
-    This is a private helper function shared by get_current_user and 
+
+    This is a private helper function shared by get_current_user and
     get_current_user_optional.
 
     Args:
@@ -94,14 +94,14 @@ async def get_current_user(
         HTTPException: 401 if not authenticated or token invalid.
     """
     user = _validate_user_from_credentials(credentials)
-    
+
     if user is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Could not validate credentials",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    
+
     return user
 
 

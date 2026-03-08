@@ -3,19 +3,20 @@
   "category": "Processing",
   "title": "Sky/Background Plane Detection",
   "description": "Add automatic detection of sky and background planes for proper depth assignment to avoid 3D artifacts in outdoor scenes.",
-  "status": "backlog",
+  "status": "verified",
   "priority": 3,
   "complexity": "moderate",
   "dependencies": [
     "depth-segmentation"
   ],
   "createdAt": "2026-03-06T15:23:01.926Z",
-  "updatedAt": "2026-03-06T21:52:14.007Z",
+  "updatedAt": "2026-03-08T18:07:22.943Z",
   "model": "zai-coding-plan/glm-5",
   "thinkingLevel": "none",
   "planningMode": "spec",
   "requirePlanApproval": true,
   "skipTests": false,
   "branchName": "main",
-  "descriptionHistory": []
+  "descriptionHistory": [],
+  "summary": "## Summary: Sky/Background Plane Detection - Code Quality Review\n\n### Changes Implemented\nThe skybox module code quality improvements were already committed in a previous session (commit 3ef3981):\n\n**config.py:**\n- Added `to_dict()` methods to all configuration classes (ColorDetectionConfig, PositionDetectionConfig, EdgeDetectionConfig, SkyDepthConfig, SkyboxConfig) for serialization\n\n**detector.py:**\n- Extracted magic numbers into module-level constants (`_CLOUDY_SKY_SATURATION_THRESHOLD`, `_CLOUDY_SKY_VALUE_THRESHOLD`, `_POSITION_ONLY_CONFIDENCE`, `_POSITION_LOW_CONFIDENCE`, `_EDGE_DETECTED_CONFIDENCE`, `_EDGE_NO_HORIZON_CONFIDENCE`, `_TEMPORAL_BLEND_THRESHOLD`, `_MIN_IMAGE_DIMENSION`)\n- Added `__str__` method to `SkyDetectionError` for better error context with operation and cause details\n- Added image dimension validation to prevent division by zero errors\n- Fixed unused variable in `_detect_position` method (y_coords calculation)\n- Fixed `cloudy_mask` calculation to properly handle disabled cloudy sky detection\n- Replaced hardcoded values with constants throughout\n\n**processor.py:**\n- Added `__str__` method to `SkyProcessingError` for better error context\n- Removed unused variables (`dilated_mask`, `dist_outside_sky`) in blend weight calculation\n- Fixed bug in `create_sky_depth_mask` where non-sky regions were incorrectly set to 0 instead of `max_depth`\n\n### Files Modified\n- `src/video2d3d/skybox/config.py` (+54 lines)\n- `src/video2d3d/skybox/detector.py` (+52 lines, -7 lines)\n- `src/video2d3d/skybox/processor.py` (+28 lines, -27 lines)\n\n### Commit Details\n- **Commit Hash:** 3ef39816a34b1c17794d76a6bcaed799dc5703aa\n- **Note:** The skybox changes were bundled with auth fixes in a single commit. The commit message focused on auth changes but included skybox refactoring.\n\n### Verification Status\n- Unit tests: All skybox unit tests pass\n- Code review: Identified and fixed multiple code quality issues including:\n  - Unused variables\n  - Hardcoded magic numbers\n  - Missing input validation\n  - Bug in depth mask creation\n  - Inconsistent error messages\n\n### Notes for Developer\n- The skybox module now follows better code quality standards\n- All configuration classes support serialization via `to_dict()`\n- Exception classes provide detailed error context\n- Constants are properly documented and named"
 }

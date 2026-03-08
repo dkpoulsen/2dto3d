@@ -103,6 +103,7 @@ class ColorDetectionConfig:
             "enable_cloudy_sky": self.enable_cloudy_sky,
         }
 
+
 @dataclass
 class PositionDetectionConfig:
     """Configuration for position-based sky detection.
@@ -144,6 +145,7 @@ class PositionDetectionConfig:
             "prefer_top_weight": self.prefer_top_weight,
         }
 
+
 @dataclass
 class EdgeDetectionConfig:
     """Configuration for edge-based horizon detection.
@@ -179,6 +181,7 @@ class EdgeDetectionConfig:
             "min_edge_pixels": self.min_edge_pixels,
             "use_hough_transform": self.use_hough_transform,
         }
+
 
 @dataclass
 class SkyDepthConfig:

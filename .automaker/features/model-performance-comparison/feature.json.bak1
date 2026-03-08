@@ -3,14 +3,14 @@
   "category": "Validation",
   "title": "Model Comparison Dashboard",
   "description": "Create comparison tool that visualizes depth estimation results side-by-side across multiple models with metrics and user voting.",
-  "status": "in_progress",
+  "status": "pipeline_step_mmcc3rzz_k0qltm",
   "priority": 3,
   "complexity": "moderate",
   "dependencies": [
     "benchmark-suite"
   ],
   "createdAt": "2026-03-06T15:23:01.928Z",
-  "updatedAt": "2026-03-08T17:31:55.860Z",
+  "updatedAt": "2026-03-08T17:45:55.940Z",
   "model": "zai-coding-plan/glm-5",
   "thinkingLevel": "none",
   "planningMode": "spec",

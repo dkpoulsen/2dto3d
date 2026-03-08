@@ -7,9 +7,13 @@ email notifications, and webhook callbacks.
 from __future__ import annotations
 
 import uuid
-from datetime import datetime
+import re
+from datetime import UTC, datetime
 from enum import Enum
 from typing import Any
+from urllib.parse import urlparse
+
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -71,7 +75,7 @@ class Notification:
         self.data = data or {}
         self.read = read
         self.dismissed = dismissed
-        self.created_at = created_at or datetime.utcnow()
+        self.created_at = created_at or datetime.now(UTC)
         self.expires_at = expires_at
 
     def to_dict(self) -> dict[str, Any]:
@@ -116,7 +120,7 @@ class Notification:
         """Check if notification has expired."""
         if self.expires_at is None:
             return False
-        return datetime.utcnow() > self.expires_at
+        return datetime.now(UTC) > self.expires_at
 
 
 # ============================================================================
@@ -146,6 +150,17 @@ class WebhookConfig(BaseModel):
     )
     enabled: bool = Field(default=True, description="Whether webhook is active")
 
+    @field_validator("url")
+    @classmethod
+    def validate_url(cls, v: str) -> str:
+        """Validate that URL is a valid HTTP/HTTPS URL."""
+        parsed = urlparse(v)
+        if parsed.scheme not in ("http", "https"):
+            raise ValueError("URL must use http or https scheme")
+        if not parsed.netloc:
+            raise ValueError("URL must have a valid host")
+        return v
+
 
 class EmailConfig(BaseModel):
     """Configuration for email notifications."""
@@ -166,6 +181,15 @@ class EmailConfig(BaseModel):
         description="Event types to trigger email",
     )
     enabled: bool = Field(default=True, description="Whether email notifications are active")
+
+    @field_validator("recipient_email")
+    @classmethod
+    def validate_email(cls, v: str) -> str:
+        """Validate email format using a simple regex pattern."""
+        email_pattern = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
+        if not re.match(email_pattern, v):
+            raise ValueError("Invalid email address format")
+        return v
 
 
 class NotificationPreferences(BaseModel):

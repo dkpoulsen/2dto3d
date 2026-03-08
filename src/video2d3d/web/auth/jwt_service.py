@@ -29,7 +29,7 @@ _auth_config: AuthConfig | None = None
 
 def get_auth_config() -> AuthConfig:
     """Get authentication configuration from environment or defaults.
-    
+
     Raises a warning if using the default secret key in production.
     """
     global _auth_config
@@ -38,7 +38,7 @@ def get_auth_config() -> AuthConfig:
             "JWT_SECRET_KEY",
             "change-me-in-production-use-environment-variable",
         )
-        
+
         # Warn if using default secret key
         if secret_key == "change-me-in-production-use-environment-variable":
             logger.warning(
@@ -46,7 +46,7 @@ def get_auth_config() -> AuthConfig:
                 "Set JWT_SECRET_KEY environment variable in production. "
                 "Authentication will work but tokens can be forged."
             )
-        
+
         _auth_config = AuthConfig(
             secret_key=secret_key,
             algorithm=os.environ.get("JWT_ALGORITHM", "HS256"),

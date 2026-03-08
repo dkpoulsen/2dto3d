@@ -93,8 +93,11 @@ class SkyDetectionError(Exception):
         if self.operation:
             parts.append(f"Operation: {self.operation}")
         if self.original_exception:
-            parts.append(f"Caused by: {type(self.original_exception).__name__}: {self.original_exception}")
+            parts.append(
+                f"Caused by: {type(self.original_exception).__name__}: {self.original_exception}"
+            )
         return " | ".join(parts)
+
 
 # ---------------------------------------------------------------------------
 # Result Classes
@@ -356,7 +359,9 @@ class SkyDetector:
 
         # Confidence based on whether coverage is in expected range
         if config.min_sky_coverage <= weighted_coverage <= config.max_sky_coverage:
-            confidence = _POSITION_ONLY_CONFIDENCE  # Reasonable confidence for position-only detection
+            confidence = (
+                _POSITION_ONLY_CONFIDENCE  # Reasonable confidence for position-only detection
+            )
         else:
             confidence = _POSITION_LOW_CONFIDENCE  # Low confidence if coverage is unusual
 

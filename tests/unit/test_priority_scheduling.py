@@ -636,3 +636,314 @@ class TestJobPriorityFromValue:
         assert JobPriority.from_value(2) == JobPriority.NORMAL
         assert JobPriority.from_value(7) == JobPriority.NORMAL
         assert JobPriority.from_value(15) == JobPriority.NORMAL
+
+
+class TestCleanupCompletedJobs:
+    """Tests for _cleanup_completed_jobs memory leak prevention."""
+
+    def test_cleanup_removes_stale_entries(
+        self, temp_queue: BatchVideoQueue, sample_video: Path
+    ) -> None:
+        """Test that stale entries are removed from _completed_jobs."""
+        # Add and complete a job
+        job_a = temp_queue.add_job(input_path=sample_video)
+        job_b = temp_queue.add_job(input_path=sample_video)
+
+        # Manually add to completed jobs
+        temp_queue._completed_jobs.add(job_a.job_id)
+        temp_queue._completed_jobs.add(job_b.job_id)
+
+        # Remove job_b from queue (simulating it being deleted elsewhere)
+        del temp_queue._jobs[job_b.job_id]
+
+        # Run cleanup
+        temp_queue._cleanup_completed_jobs()
+
+        # job_a should still be in _completed_jobs (exists in queue)
+        assert job_a.job_id in temp_queue._completed_jobs
+        # job_b should be removed (no longer in queue)
+        assert job_b.job_id not in temp_queue._completed_jobs
+
+    def test_cleanup_keeps_needed_dependencies(
+        self, temp_queue: BatchVideoQueue, sample_video: Path
+    ) -> None:
+        """Test that completed jobs needed as dependencies are kept."""
+        # Create dependency chain
+        job_a = temp_queue.add_job(input_path=sample_video)
+        job_b = temp_queue.add_job(
+            input_path=sample_video,
+            depends_on=[job_a.job_id],
+        )
+
+        # Mark job_a as completed but remove from queue
+        temp_queue._completed_jobs.add(job_a.job_id)
+        del temp_queue._jobs[job_a.job_id]
+
+        # Run cleanup
+        temp_queue._cleanup_completed_jobs()
+
+        # job_a should be kept (still needed as dependency)
+        assert job_a.job_id in temp_queue._completed_jobs
+
+    def test_cleanup_removes_unneeded_completed_dependencies(
+        self, temp_queue: BatchVideoQueue, sample_video: Path
+    ) -> None:
+        """Test that completed dependencies are removed when no longer needed."""
+        # Create dependency chain
+        job_a = temp_queue.add_job(input_path=sample_video)
+        job_b = temp_queue.add_job(
+            input_path=sample_video,
+            depends_on=[job_a.job_id],
+        )
+
+        # Mark job_a as completed
+        temp_queue._completed_jobs.add(job_a.job_id)
+
+        # Complete job_b (now job_a is no longer needed as dependency)
+        job_b.status = JobStatus.COMPLETED
+
+        # Remove job_a from queue
+        del temp_queue._jobs[job_a.job_id]
+
+        # Run cleanup
+        temp_queue._cleanup_completed_jobs()
+
+        # job_a should be removed (no longer needed)
+        assert job_a.job_id not in temp_queue._completed_jobs
+
+    def test_clear_completed_calls_cleanup(
+        self, temp_queue: BatchVideoQueue, sample_video: Path
+    ) -> None:
+        """Test that clear_completed calls _cleanup_completed_jobs."""
+        # Add jobs
+        job_a = temp_queue.add_job(input_path=sample_video)
+        job_b = temp_queue.add_job(input_path=sample_video)
+
+        # Complete them
+        job_a.mark_completed(BatchJobResult(success=True))
+        job_b.mark_completed(BatchJobResult(success=True))
+        temp_queue._completed_jobs.add(job_a.job_id)
+        temp_queue._completed_jobs.add(job_b.job_id)
+
+        # Clear completed
+        count = temp_queue.clear_completed()
+
+        # Should have cleared 2 jobs
+        assert count == 2
+        # _completed_jobs should be empty
+        assert len(temp_queue._completed_jobs) == 0
+
+
+class TestDependencyFailureNotification:
+    """Tests for dependency failure/cancellation notification."""
+
+    def test_notify_on_dependency_failed(
+        self, temp_queue: BatchVideoQueue, sample_video: Path
+    ) -> None:
+        """Test that dependent jobs are notified when dependency fails."""
+        callback_invocations: list[tuple[BatchJob, str]] = []
+
+        def callback(job: BatchJob, status: str) -> None:
+            callback_invocations.append((job, status))
+
+        temp_queue.on_dependency(callback)
+
+        # Add dependency job and dependent job
+        dep_job = temp_queue.add_job(input_path=sample_video)
+        dependent = temp_queue.add_job(
+            input_path=sample_video,
+            depends_on=[dep_job.job_id],
+        )
+
+        # Fail the dependency
+        dep_job.mark_failed(RuntimeError("Processing failed"))
+
+        # Notify dependent jobs
+        temp_queue._notify_dependent_jobs(dep_job, "failed")
+
+        # Callback should have been invoked with dependency_failed status
+        assert len(callback_invocations) == 1
+        assert callback_invocations[0][0].job_id == dependent.job_id
+        assert callback_invocations[0][1] == "dependency_failed"
+
+    def test_notify_on_dependency_cancelled(
+        self, temp_queue: BatchVideoQueue, sample_video: Path
+    ) -> None:
+        """Test that dependent jobs are notified when dependency is cancelled."""
+        callback_invocations: list[tuple[BatchJob, str]] = []
+
+        def callback(job: BatchJob, status: str) -> None:
+            callback_invocations.append((job, status))
+
+        temp_queue.on_dependency(callback)
+
+        # Add dependency job and dependent job
+        dep_job = temp_queue.add_job(input_path=sample_video)
+        dependent = temp_queue.add_job(
+            input_path=sample_video,
+            depends_on=[dep_job.job_id],
+        )
+
+        # Cancel the dependency
+        dep_job.mark_cancelled()
+
+        # Notify dependent jobs
+        temp_queue._notify_dependent_jobs(dep_job, "cancelled")
+
+        # Callback should have been invoked with dependency_cancelled status
+        assert len(callback_invocations) == 1
+        assert callback_invocations[0][0].job_id == dependent.job_id
+        assert callback_invocations[0][1] == "dependency_cancelled"
+
+    def test_cancel_job_notifies_dependents(
+        self, temp_queue: BatchVideoQueue, sample_video: Path
+    ) -> None:
+        """Test that cancel_job notifies dependent jobs."""
+        callback_invocations: list[tuple[BatchJob, str]] = []
+
+        def callback(job: BatchJob, status: str) -> None:
+            callback_invocations.append((job, status))
+
+        temp_queue.on_dependency(callback)
+
+        # Add dependency job and dependent job
+        dep_job = temp_queue.add_job(input_path=sample_video)
+        dependent = temp_queue.add_job(
+            input_path=sample_video,
+            depends_on=[dep_job.job_id],
+        )
+
+        # Cancel the dependency job via cancel_job
+        result = temp_queue.cancel_job(dep_job.job_id)
+
+        assert result is True
+        # Callback should have been invoked
+        assert len(callback_invocations) == 1
+        assert callback_invocations[0][1] == "dependency_cancelled"
+
+
+class TestDependencyListDeduplication:
+    """Tests for dependency list deduplication in __post_init__."""
+
+    def test_depends_on_deduplication(
+        self, temp_queue: BatchVideoQueue, sample_video: Path
+    ) -> None:
+        """Test that duplicate dependencies are removed."""
+        # Add a job to depend on
+        dep_job = temp_queue.add_job(input_path=sample_video)
+
+        # Create job with duplicate dependencies
+        # Note: We need to create directly to bypass add_job's validation
+        job = BatchJob(
+            input_path=sample_video,
+            depends_on=[dep_job.job_id, dep_job.job_id, dep_job.job_id],
+        )
+
+        # Duplicates should be removed
+        assert len(job.depends_on) == 1
+        assert job.depends_on == [dep_job.job_id]
+
+    def test_dependent_jobs_deduplication(self, sample_video: Path) -> None:
+        """Test that duplicate dependent_jobs are removed."""
+        job = BatchJob(
+            input_path=sample_video,
+            dependent_jobs=["job-1", "job-2", "job-1", "job-3", "job-2"],
+        )
+
+        # Duplicates should be removed, order preserved
+        assert job.dependent_jobs == ["job-1", "job-2", "job-3"]
+
+    def test_empty_lists_unaffected(self, sample_video: Path) -> None:
+        """Test that empty dependency lists are not affected."""
+        job = BatchJob(input_path=sample_video)
+
+        assert job.depends_on == []
+        assert job.dependent_jobs == []
+
+
+class TestConfigPriorityValidation:
+    """Tests for BatchQueueConfig priority validation in from_dict."""
+
+    def test_from_dict_valid_priority(self) -> None:
+        """Test that valid priority values are correctly parsed."""
+        for priority in [JobPriority.LOW, JobPriority.NORMAL, JobPriority.HIGH, JobPriority.URGENT]:
+            config = BatchQueueConfig.from_dict({"default_priority": priority.value})
+            assert config.default_priority == priority
+
+    def test_from_dict_unknown_priority_defaults_to_normal(self) -> None:
+        """Test that unknown priority values default to NORMAL."""
+        config = BatchQueueConfig.from_dict({"default_priority": 99})
+        assert config.default_priority == JobPriority.NORMAL
+
+        config = BatchQueueConfig.from_dict({"default_priority": 0})
+        assert config.default_priority == JobPriority.NORMAL
+
+        config = BatchQueueConfig.from_dict({"default_priority": -1})
+        assert config.default_priority == JobPriority.NORMAL
+
+    def test_from_dict_missing_priority_defaults_to_normal(self) -> None:
+        """Test that missing priority defaults to NORMAL."""
+        config = BatchQueueConfig.from_dict({})
+        assert config.default_priority == JobPriority.NORMAL
+
+    def test_default_priority_round_trip(self) -> None:
+        """Test that default_priority survives to_dict/from_dict round trip."""
+        config = BatchQueueConfig(default_priority=JobPriority.URGENT)
+        restored = BatchQueueConfig.from_dict(config.to_dict())
+        assert restored.default_priority == JobPriority.URGENT
+
+
+class TestBatchJobSerializationWithScheduling:
+    """Tests for BatchJob serialization with scheduling fields."""
+
+    def test_to_dict_includes_all_scheduling_fields(self, sample_video: Path) -> None:
+        """Test that to_dict includes all scheduling fields."""
+        scheduled_time = datetime.now() + timedelta(hours=1)
+        job = BatchJob(
+            input_path=sample_video,
+            priority=JobPriority.HIGH,
+            scheduled_at=scheduled_time,
+            depends_on=["dep-1", "dep-2"],
+            dependent_jobs=["child-1"],
+        )
+
+        data = job.to_dict()
+
+        assert data["priority"] == JobPriority.HIGH.value
+        assert data["scheduled_at"] == scheduled_time.isoformat()
+        assert data["depends_on"] == ["dep-1", "dep-2"]
+        assert data["dependent_jobs"] == ["child-1"]
+
+    def test_from_dict_handles_unknown_priority(self, sample_video: Path) -> None:
+        """Test that from_dict handles unknown priority values gracefully."""
+        data = {
+            "job_id": "test-job",
+            "input_path": str(sample_video),
+            "status": "pending",
+            "priority": 999,  # Unknown priority
+        }
+
+        job = BatchJob.from_dict(data)
+
+        # Should default to NORMAL
+        assert job.priority == JobPriority.NORMAL
+
+    def test_round_trip_preserves_all_scheduling_fields(self, sample_video: Path) -> None:
+        """Test that all scheduling fields survive round trip serialization."""
+        scheduled_time = datetime.now() + timedelta(hours=2)
+        original = BatchJob(
+            input_path=sample_video,
+            priority=JobPriority.URGENT,
+            scheduled_at=scheduled_time,
+            depends_on=["a", "b", "c"],
+            dependent_jobs=["x", "y"],
+        )
+
+        # Round trip
+        restored = BatchJob.from_dict(original.to_dict())
+
+        assert restored.priority == original.priority
+        assert restored.scheduled_at is not None
+        assert restored.scheduled_at.isoformat() == scheduled_time.isoformat()
+        assert restored.depends_on == ["a", "b", "c"]
+        assert restored.dependent_jobs == ["x", "y"]

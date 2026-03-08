@@ -15,6 +15,8 @@ from video2d3d.web.notification_models import (
     DismissResponse,
     MarkReadRequest,
     MarkReadResponse,
+    Notification,
+    NotificationCountResponse,
     NotificationListResponse,
     NotificationResponse,
     NotificationType,
@@ -24,7 +26,8 @@ from video2d3d.web.notification_models import (
 router = APIRouter(prefix="/notifications", tags=["Notifications"])
 
 
-def _notification_to_response(notification) -> NotificationResponse:
+def _notification_to_response(notification: Notification) -> NotificationResponse:
+    """Convert Notification domain model to API response."""
     """Convert Notification domain model to API response."""
     return NotificationResponse(
         notification_id=notification.notification_id,
@@ -79,11 +82,11 @@ async def list_notifications(
 
 @router.get(
     "/count",
-    response_model=dict,
+    response_model=NotificationCountResponse,
     summary="Get notification counts",
     description="Get total, unread, and dismissed notification counts.",
 )
-async def get_notification_counts() -> dict:
+async def get_notification_counts() -> NotificationCountResponse:
     """Get notification counts."""
     manager = get_notification_manager()
     notifications, total, unread = manager.get_notifications(
@@ -93,11 +96,11 @@ async def get_notification_counts() -> dict:
 
     dismissed = sum(1 for n in notifications if n.dismissed)
 
-    return {
-        "total": total,
-        "unread": unread,
-        "dismissed": dismissed,
-    }
+    return NotificationCountResponse(
+        total=total,
+        unread=unread,
+        dismissed=dismissed,
+    )
 
 
 @router.get(

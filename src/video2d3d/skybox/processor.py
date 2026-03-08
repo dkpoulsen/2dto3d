@@ -68,8 +68,11 @@ class SkyProcessingError(Exception):
         if self.operation:
             parts.append(f"Operation: {self.operation}")
         if self.original_exception:
-            parts.append(f"Caused by: {type(self.original_exception).__name__}: {self.original_exception}")
+            parts.append(
+                f"Caused by: {type(self.original_exception).__name__}: {self.original_exception}"
+            )
         return " | ".join(parts)
+
 
 # ---------------------------------------------------------------------------
 # Logger

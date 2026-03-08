@@ -3,12 +3,19 @@
   "category": "Processing",
   "title": "Sky/Background Plane Detection",
   "description": "Add automatic detection of sky and background planes for proper depth assignment to avoid 3D artifacts in outdoor scenes.",
-  "status": "backlog",
+  "status": "pipeline_step_mmcc38tb_z6cxyk",
   "priority": 3,
   "complexity": "moderate",
   "dependencies": [
     "depth-segmentation"
   ],
   "createdAt": "2026-03-06T15:23:01.926Z",
-  "updatedAt": "2026-03-06T15:23:01.926Z"
+  "updatedAt": "2026-03-08T17:58:40.491Z",
+  "model": "zai-coding-plan/glm-5",
+  "thinkingLevel": "none",
+  "planningMode": "spec",
+  "requirePlanApproval": true,
+  "skipTests": false,
+  "branchName": "main",
+  "descriptionHistory": []
 }

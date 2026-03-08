@@ -3,14 +3,14 @@
   "category": "Performance",
   "title": "Performance Profiling Tools",
   "description": "Add profiling tools to identify bottlenecks in the processing pipeline with per-component timing analysis.",
-  "status": "in_progress",
+  "status": "pipeline_step_mmcc38tb_z6cxyk",
   "priority": 3,
   "complexity": "simple",
   "dependencies": [
     "progress-tracking"
   ],
   "createdAt": "2026-03-06T15:23:01.930Z",
-  "updatedAt": "2026-03-06T21:51:48.205Z",
+  "updatedAt": "2026-03-08T17:51:25.773Z",
   "model": "zai-coding-plan/glm-5",
   "thinkingLevel": "none",
   "planningMode": "spec",

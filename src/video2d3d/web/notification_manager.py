@@ -12,9 +12,18 @@ import json
 import threading
 import uuid
 from concurrent.futures import ThreadPoolExecutor
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
+
+# Optional import for webhook support
+try:
+    import requests
+
+    REQUESTS_AVAILABLE = True
+except ImportError:
+    requests = None  # type: ignore[assignment]
+    REQUESTS_AVAILABLE = False
 
 from video2d3d.utils.logger import get_logger, log_exception
 
@@ -29,7 +38,6 @@ from .notification_models import (
 
 if TYPE_CHECKING:
     from video2d3d.batch.models import BatchJob
-
 logger = get_logger("notification_manager")
 
 
@@ -102,7 +110,7 @@ class NotificationManager:
             The created Notification instance.
         """
         expiry_hours = expires_in_hours or self._default_expiry_hours
-        expires_at = datetime.utcnow() + timedelta(hours=expiry_hours) if expiry_hours > 0 else None
+        expires_at = datetime.now(UTC) + timedelta(hours=expiry_hours) if expiry_hours > 0 else None
 
         notification = Notification(
             notification_id=str(uuid.uuid4()),
@@ -112,7 +120,7 @@ class NotificationManager:
             priority=priority,
             job_id=job_id,
             data=data or {},
-            created_at=datetime.utcnow(),
+            created_at=datetime.now(UTC),
             expires_at=expires_at,
         )
 
@@ -474,11 +482,15 @@ class NotificationManager:
         data: dict[str, Any],
     ) -> None:
         """Send a webhook POST request."""
-        import requests
+        if not REQUESTS_AVAILABLE:
+            self._logger.warning(
+                f"Cannot send webhook to {config.url}: 'requests' package not installed"
+            )
+            return
 
         payload = WebhookPayload(
             event_type=event_type,
-            timestamp=datetime.utcnow(),
+            timestamp=datetime.now(UTC),
             job_id=job_id,
             data=data,
         )
@@ -496,7 +508,7 @@ class NotificationManager:
                 ).hexdigest()
                 headers["X-Webhook-Signature"] = f"sha256={signature}"
 
-            response = requests.post(
+            response = requests.post(  # type: ignore[union-attr]
                 config.url,
                 data=payload.model_dump_json(),
                 headers=headers,
@@ -554,7 +566,7 @@ class NotificationManager:
                     ],
                     "webhook_configs": [c.model_dump() for c in self._webhook_configs],
                     "email_configs": [c.model_dump() for c in self._email_configs],
-                    "saved_at": datetime.utcnow().isoformat(),
+                    "saved_at": datetime.now(UTC).isoformat(),
                 }
 
             # Atomic write: write to temp file, then rename

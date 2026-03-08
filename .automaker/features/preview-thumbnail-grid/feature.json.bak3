@@ -3,14 +3,14 @@
   "category": "UI",
   "title": "Thumbnail Grid Preview",
   "description": "Add thumbnail grid view showing multiple frames at different timestamps with their depth maps for quick quality assessment.",
-  "status": "backlog",
+  "status": "pipeline_step_mmcc38tb_z6cxyk",
   "priority": 3,
   "complexity": "moderate",
   "dependencies": [
     "video-preview"
   ],
   "createdAt": "2026-03-06T15:23:01.932Z",
-  "updatedAt": "2026-03-06T21:52:14.006Z",
+  "updatedAt": "2026-03-08T18:26:47.228Z",
   "model": "zai-coding-plan/glm-5",
   "thinkingLevel": "none",
   "planningMode": "spec",

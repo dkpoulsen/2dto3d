@@ -58,6 +58,7 @@ MAX_STORED_TIMES = 10000  # Maximum times to store per component for stats
 
 F = TypeVar("F", bound=Callable[..., Any])
 
+
 @dataclass
 class ComponentStats:
     """Statistics for a single profiled component.
@@ -403,7 +404,9 @@ class Profiler:
         # Bottleneck analysis
         bottlenecks = result.get_bottlenecks(threshold_percent=DEFAULT_BOTTLENECK_THRESHOLD)
         if bottlenecks:
-            lines.append(f"\nPotential Bottlenecks (>{DEFAULT_BOTTLENECK_THRESHOLD}% of total time):")
+            lines.append(
+                f"\nPotential Bottlenecks (>{DEFAULT_BOTTLENECK_THRESHOLD}% of total time):"
+            )
             for b in bottlenecks:
                 percent = (
                     (b.total_time_ms / result.total_time_ms * 100)
