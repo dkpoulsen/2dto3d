@@ -110,3 +110,15 @@ Input: {
   "command": "cd /home/dkp/Documents/Automaker/2dto3d && find . -type f -name \"*.py\" -exec grep -l \"comparison\" {} \\; 2>/dev/null | head -20",
   "description": "Find backend comparison files"
 }
+
+🔧 Tool: bash
+Input: {
+  "command": "cd /home/dkp/Documents/Automaker/2dto3d && grep -rn \"comparison\" src/video2d3d/api/ --include=\"*.py\" 2>/dev/null | head -30",
+  "description": "Find comparison API routes"
+}
+
+🔧 Tool: bash
+Input: {
+  "command": "cd /home/dkp/Documents/Automaker/2dto3d && find src -name \"*.py\" -path \"*/api/*\" | head -20",
+  "description": "Find API files"
+}

@@ -816,3 +816,30 @@ Input: {
 Input: {
   "filePath": "/home/dkp/Documents/Automaker/2dto3d/frontend/src/components/test/DepthFocusControl.test.tsx"
 }
+
+🔧 Tool: glob
+Input: {
+  "pattern": "frontend/src/components/test/*.tsx"
+}
+
+🔧 Tool: bash
+Input: {
+  "command": "find /home/dkp/Documents/Automaker/2dto3d/frontend/src/components -name \"*test*\" -o -name \"*Test*\" 2>/dev/null | head -20",
+  "description": "Find test files in components"
+}
+
+🔧 Tool: bash
+Input: {
+  "command": "ls -la /home/dkp/Documents/Automaker/2dto3d/frontend/src/components/ 2>/dev/null",
+  "description": "List components directory"
+}
+
+🔧 Tool: glob
+Input: {
+  "pattern": "frontend/**/*.test.tsx"
+}
+
+🔧 Tool: glob
+Input: {
+  "pattern": "frontend/**/__tests__/*.tsx"
+}
