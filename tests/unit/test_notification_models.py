@@ -329,7 +329,9 @@ class TestWebhookConfig:
 
     def test_model_validation_missing_url(self) -> None:
         """Test validation fails without URL."""
-        with pytest.raises(Exception):  # Pydantic ValidationError
+        from pydantic import ValidationError
+
+        with pytest.raises(ValidationError):
             WebhookConfig()  # type: ignore
 
 

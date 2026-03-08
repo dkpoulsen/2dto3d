@@ -197,7 +197,9 @@ class TestSessionScope:
                 session.add(user)
 
             # Try to create duplicate (should fail)
-            with pytest.raises(Exception):
+            from sqlalchemy.exc import IntegrityError
+
+            with pytest.raises(IntegrityError):
                 with session_scope() as session:
                     duplicate = UserModel(
                         email="test@example.com",  # Same email
