@@ -189,7 +189,12 @@ class BatchJob:
             self.input_path = Path(self.input_path)
         if isinstance(self.output_path, str):
             self.output_path = Path(self.output_path)
-
+        
+        # Deduplicate dependency lists to prevent duplicate tracking
+        if self.depends_on:
+            self.depends_on = list(dict.fromkeys(self.depends_on))
+        if self.dependent_jobs:
+            self.dependent_jobs = list(dict.fromkeys(self.dependent_jobs))
     @property
     def elapsed_time(self) -> float | None:
         """Get elapsed time in seconds since job started."""
@@ -350,7 +355,7 @@ class BatchJob:
             input_path=Path(data["input_path"]),
             output_path=Path(data["output_path"]) if data.get("output_path") else None,
             status=JobStatus(data["status"]),
-            priority=JobPriority(data.get("priority", 5)),
+            priority=JobPriority.from_value(data.get("priority", 5)),
             created_at=datetime.fromisoformat(data["created_at"]),
             started_at=(
                 datetime.fromisoformat(data["started_at"]) if data.get("started_at") else None

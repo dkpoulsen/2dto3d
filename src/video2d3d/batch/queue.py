@@ -216,49 +216,46 @@ class BatchVideoQueue:
             if not isinstance(dep_id, str):
                 raise TypeError(f"Dependency ID must be a string, got {type(dep_id).__name__}")
 
-        # Validate dependencies
+        # Use a single lock for the entire job creation to prevent race conditions
         with self._lock:
             # Create a temporary job_id for validation
             temp_job_id = str(uuid.uuid4())
             self._validate_dependencies(temp_job_id, depends_on)
 
-        if output_path is None:
-            output_path = self.config.get_output_path(input_path)
+            if output_path is None:
+                output_path = self.config.get_output_path(input_path)
 
-        if self.config.skip_existing and output_path.exists():
-            self._logger.info(f"Skipping {input_path}, output already exists")
+            if self.config.skip_existing and output_path.exists():
+                self._logger.info(f"Skipping {input_path}, output already exists")
+                job = BatchJob(
+                    input_path=input_path,
+                    output_path=output_path,
+                    priority=priority or self.config.default_priority,
+                    config=config or {},
+                    source=source,
+                    scheduled_at=scheduled_at,
+                    depends_on=depends_on,
+                )
+                job.mark_skipped("Output file already exists")
+                self._jobs[job.job_id] = job
+                return job
+
             job = BatchJob(
                 input_path=input_path,
                 output_path=output_path,
                 priority=priority or self.config.default_priority,
+                max_retries=self.config.max_retries,
                 config=config or {},
                 source=source,
                 scheduled_at=scheduled_at,
                 depends_on=depends_on,
             )
-            job.mark_skipped("Output file already exists")
-            with self._lock:
-                self._jobs[job.job_id] = job
-            return job
 
-        job = BatchJob(
-            input_path=input_path,
-            output_path=output_path,
-            priority=priority or self.config.default_priority,
-            max_retries=self.config.max_retries,
-            config=config or {},
-            source=source,
-            scheduled_at=scheduled_at,
-            depends_on=depends_on,
-        )
-
-        # Register reverse dependencies
-        with self._lock:
+            # Register reverse dependencies (within same lock)
             for dep_id in depends_on:
                 if dep_id in self._jobs:
                     self._jobs[dep_id].dependent_jobs.append(job.job_id)
 
-        with self._lock:
             self._jobs[job.job_id] = job
             self._enqueue_job(job.job_id)
 
@@ -342,7 +339,8 @@ class BatchVideoQueue:
             return sorted(jobs, key=lambda j: (-j.priority.value, j.created_at))
 
     def cancel_job(self, job_id: str) -> bool:
-        """Cancel a job."""
+        """Cancel a job and notify dependent jobs."""
+        job_to_notify = None
         with self._lock:
             job = self._jobs.get(job_id)
             if not job:
@@ -357,8 +355,15 @@ class BatchVideoQueue:
 
             self._logger.info(f"Cancelled job {job_id}")
             self._state_dirty = True
-            return True
 
+            # Store job for notification after lock release
+            job_to_notify = job
+
+        # Notify dependent jobs after releasing the lock
+        if job_to_notify and job_to_notify.dependent_jobs:
+            self._notify_dependent_jobs(job_to_notify, "cancelled")
+
+        return True
     def retry_job(self, job_id: str) -> bool:
         """Retry a failed job."""
         with self._lock:
@@ -394,7 +399,7 @@ class BatchVideoQueue:
             return True
 
     def clear_completed(self) -> int:
-        """Remove all completed jobs."""
+        """Remove all completed jobs and clean up stale tracking entries."""
         count = 0
         with self._lock:
             to_remove = [job_id for job_id, job in self._jobs.items() if job.status.is_terminal]
@@ -402,11 +407,37 @@ class BatchVideoQueue:
                 del self._jobs[job_id]
                 count += 1
 
+            # Clean up stale entries in _completed_jobs
+            self._cleanup_completed_jobs()
+
         if count > 0:
             self._logger.info(f"Cleared {count} completed jobs")
             self._state_dirty = True
 
         return count
+
+    def _cleanup_completed_jobs(self) -> None:
+        """Clean up stale entries from _completed_jobs tracking set.
+
+        Removes job IDs that are no longer in the queue or no longer needed
+        for dependency tracking. This prevents unbounded memory growth.
+        """
+        # Get all job IDs that still exist in the queue
+        existing_job_ids = set(self._jobs.keys())
+
+        # Get all job IDs that are still dependencies of pending jobs
+        needed_dependency_ids: set[str] = set()
+        for job in self._jobs.values():
+            if job.status.is_waiting and job.depends_on:
+                needed_dependency_ids.update(job.depends_on)
+
+        # Keep only completed jobs that:
+        # 1. Still exist in the queue, OR
+        # 2. Are still needed as dependencies for waiting jobs
+        stale_ids = self._completed_jobs - existing_job_ids - needed_dependency_ids
+        if stale_ids:
+            self._completed_jobs -= stale_ids
+            self._logger.debug(f"Cleaned up {len(stale_ids)} stale entries from completed jobs tracking")
 
     def get_stats(self) -> BatchQueueStats:
         """Get queue statistics."""
@@ -678,21 +709,25 @@ class BatchVideoQueue:
         self._state_dirty = True
 
         # Track completed jobs and handle dependent jobs
+        # Also handle failure/cancellation to notify blocked jobs
         if job.status == JobStatus.COMPLETED:
             self._completed_jobs.add(job_id)
-            self._notify_dependent_jobs(job)
+            self._notify_dependent_jobs(job, "completed")
+        elif job.status in (JobStatus.FAILED, JobStatus.CANCELLED):
+            self._notify_dependent_jobs(job, "failed" if job.status == JobStatus.FAILED else "cancelled")
 
-    def _notify_dependent_jobs(self, completed_job: BatchJob) -> None:
-        """Notify jobs that depend on a completed job.
+    def _notify_dependent_jobs(self, completed_job: BatchJob, status: str = "completed") -> None:
+        """Notify jobs that depend on a completed, failed, or cancelled job.
 
         Args:
-            completed_job: The job that just completed successfully.
+            completed_job: The job that just completed/failed/was cancelled.
+            status: Status of the job - "completed", "failed", or "cancelled".
         """
         if not completed_job.dependent_jobs:
             return
 
         self._logger.debug(
-            f"Notifying {len(completed_job.dependent_jobs)} dependent jobs of {completed_job.job_id}"
+            f"Notifying {len(completed_job.dependent_jobs)} dependent jobs of {completed_job.job_id} (status: {status})"
         )
 
         for dep_job_id in completed_job.dependent_jobs:
@@ -703,18 +738,32 @@ class BatchVideoQueue:
                 )
                 continue
 
-            # Check if all dependencies are now met
-            if dep_job.check_dependencies_met(self._completed_jobs):
-                self._logger.info(
-                    f"Job {dep_job_id} dependencies met after {completed_job.job_id} completed, ready to run"
+            # Handle different completion statuses
+            if status == "completed":
+                # Check if all dependencies are now met
+                if dep_job.check_dependencies_met(self._completed_jobs):
+                    self._logger.info(
+                        f"Job {dep_job_id} dependencies met after {completed_job.job_id} completed, ready to run"
+                    )
+                    # Call any dependency callbacks
+                    for callback in self._dependency_callbacks:
+                        try:
+                            callback(dep_job, "dependencies_met")
+                        except Exception as e:
+                            self._logger.error(f"Dependency callback error: {e}")
+                else:
+                    pending = dep_job.get_pending_dependencies(self._completed_jobs)
+                    self._logger.debug(f"Job {dep_job_id} still waiting for dependencies: {pending}")
+            elif status in ("failed", "cancelled"):
+                # Dependency failed or was cancelled - notify waiting jobs
+                self._logger.warning(
+                    f"Job {dep_job_id} has a {status} dependency: {completed_job.job_id}"
                 )
-                # Call any dependency callbacks
                 for callback in self._dependency_callbacks:
                     try:
-                        callback(dep_job, "dependencies_met")
+                        callback(dep_job, f"dependency_{status}")
                     except Exception as e:
                         self._logger.error(f"Dependency callback error: {e}")
-            else:
                 pending = dep_job.get_pending_dependencies(self._completed_jobs)
                 self._logger.debug(f"Job {dep_job_id} still waiting for dependencies: {pending}")
 
