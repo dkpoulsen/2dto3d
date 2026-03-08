@@ -2,6 +2,13 @@
   "version": 1,
   "events": [
     {
+      "id": "evt-1772991606524-6de2e61b",
+      "trigger": "feature_success",
+      "timestamp": "2026-03-08T17:40:06.524Z",
+      "featureName": "Depth-of-Focus Control",
+      "featureId": "depth-focus-control"
+    },
+    {
       "id": "evt-1772990383897-6c496e45",
       "trigger": "feature_success",
       "timestamp": "2026-03-08T17:19:43.897Z",
