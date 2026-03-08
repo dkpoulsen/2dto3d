@@ -38,10 +38,32 @@ class ModelLoadError(VideoDenoisingError):
 
 
 class InferenceError(VideoDenoisingError):
-    """Exception raised when denoising inference fails."""
+    """Exception raised when denoising inference fails.
 
-    pass
+    Attributes:
+        attempted_models: List of model names that were attempted before failure.
+        original_exceptions: List of original exceptions from each attempt.
+    """
 
+    def __init__(
+        self,
+        message: str,
+        *,
+        attempted_models: list[str] | None = None,
+        original_exceptions: list[Exception] | None = None,
+        **kwargs,
+    ) -> None:
+        """Initialize the inference error.
+
+        Args:
+            message: Error description.
+            attempted_models: List of model names that were attempted.
+            original_exceptions: List of exceptions from each attempt.
+            **kwargs: Additional arguments passed to parent.
+        """
+        super().__init__(message, **kwargs)
+        self.attempted_models = attempted_models or []
+        self.original_exceptions = original_exceptions or []
 
 class UnsupportedModelError(VideoDenoisingError):
     """Exception raised when an unsupported model type is requested."""

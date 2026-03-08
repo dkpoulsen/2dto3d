@@ -26,7 +26,7 @@ from video2d3d.utils.gpu import clear_gpu_memory
 from video2d3d.utils.logger import log_exception
 
 from .base import VideoDenoiserBase
-from .config import BasicVSRPlusPlusConfig
+from .config import _UINT8_MAX_VALUE, BasicVSRPlusPlusConfig
 from .exceptions import InferenceError, ModelLoadError, PretrainedModelError
 
 if TYPE_CHECKING:
@@ -439,8 +439,7 @@ class BasicVSRPlusPlusDenoiser(VideoDenoiserBase):
         """
         frame_tensors = []
         for frame in frames:
-            # Convert to float and normalize
-            tensor = torch.from_numpy(frame.astype(np.float32) / 255.0)
+            tensor = torch.from_numpy(frame.astype(np.float32) / _UINT8_MAX_VALUE)
             # (H, W, C) -> (C, H, W)
             tensor = tensor.permute(2, 0, 1)
             frame_tensors.append(tensor)
@@ -469,7 +468,7 @@ class BasicVSRPlusPlusDenoiser(VideoDenoiserBase):
             frame = frame.permute(1, 2, 0)
             # Clip and convert to uint8
             frame = frame.clamp(0, 1).numpy()
-            frame = (frame * 255).astype(np.uint8)
+            frame = (frame * _UINT8_MAX_VALUE).astype(np.uint8)
             frames.append(frame)
 
         return frames

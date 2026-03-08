@@ -9,6 +9,10 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from enum import Enum
 from pathlib import Path
+from typing import TYPE_CHECKING, Callable
+
+if TYPE_CHECKING:
+    pass
 
 from video2d3d.utils.gpu import GPUConfig, select_device
 
@@ -17,6 +21,8 @@ _DEFAULT_NUM_INPUT_FRAMES: int = 5  # Number of frames for temporal denoising
 _DEFAULT_NOISE_LEVEL: float = 30.0  # Default noise level (sigma)
 _DEFAULT_BATCH_SIZE: int = 4
 
+# Pixel value normalization constant for uint8 to float conversion
+_UINT8_MAX_VALUE: float = 255.0
 
 class DenoiserModelType(Enum):
     """Available video denoising model types."""
@@ -255,7 +261,7 @@ class VideoDenoisingPipelineConfig:
 
     buffer_size: int = 30
     overlap: int = 2
-    progress_callback: callable | None = None
+    progress_callback: Callable[[int, int], None] | None = None
     enable_profiling: bool = False
 
     def __post_init__(self) -> None:
@@ -279,4 +285,5 @@ __all__ = [
     "_DEFAULT_NUM_INPUT_FRAMES",
     "_DEFAULT_NOISE_LEVEL",
     "_DEFAULT_BATCH_SIZE",
+    "_UINT8_MAX_VALUE",
 ]

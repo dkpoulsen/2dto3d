@@ -25,7 +25,7 @@ from video2d3d.utils.gpu import clear_gpu_memory
 from video2d3d.utils.logger import log_exception
 
 from .base import VideoDenoiserBase
-from .config import FastDVDNetConfig
+from .config import _UINT8_MAX_VALUE, FastDVDNetConfig
 from .exceptions import InferenceError, ModelLoadError, PretrainedModelError
 
 if TYPE_CHECKING:
@@ -270,8 +270,7 @@ class FastDVDNetDenoiser(VideoDenoiserBase):
         # Stack frames and convert to tensor
         frame_tensors = []
         for frame in frames:
-            # Convert to float and normalize to [0, 1]
-            tensor = torch.from_numpy(frame.astype(np.float32) / 255.0)
+            tensor = torch.from_numpy(frame.astype(np.float32) / _UINT8_MAX_VALUE)
             # Change from (H, W, C) to (C, H, W)
             tensor = tensor.permute(2, 0, 1)
             frame_tensors.append(tensor)
@@ -301,7 +300,7 @@ class FastDVDNetDenoiser(VideoDenoiserBase):
 
         # Clip and convert to uint8
         frame = tensor.clamp(0, 1).numpy()
-        frame = (frame * 255).astype(np.uint8)
+        frame = (frame * _UINT8_MAX_VALUE).astype(np.uint8)
 
         return frame
 

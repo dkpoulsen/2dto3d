@@ -45,6 +45,7 @@ from video2d3d.denoising.config import (
     _DEFAULT_BATCH_SIZE,
     _DEFAULT_NOISE_LEVEL,
     _DEFAULT_NUM_INPUT_FRAMES,
+    _UINT8_MAX_VALUE,
     BasicVSRPlusPlusConfig,
     DenoiserModelType,
     FastDVDNetConfig,
@@ -111,4 +112,5 @@ __all__ = [
     "_DEFAULT_NUM_INPUT_FRAMES",
     "_DEFAULT_NOISE_LEVEL",
     "_DEFAULT_BATCH_SIZE",
+    "_UINT8_MAX_VALUE",
 ]
