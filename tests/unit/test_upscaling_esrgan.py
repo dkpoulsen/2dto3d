@@ -11,7 +11,7 @@ import pytest
 
 from video2d3d.upscaling.base import InferenceError, ModelLoadError, ModelNotFoundError
 from video2d3d.upscaling.config import ModelType, UpscalerConfig
-    from video2d3d.upscaling.esrgan import (
+from video2d3d.upscaling.esrgan import (
     DummyUpscaler,
     RealESRGANUpscaler,
     create_upscaler,
