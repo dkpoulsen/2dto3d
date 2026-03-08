@@ -1,11 +1,11 @@
-import { useState, useCallback } from 'react';
+import { memo, useState, useCallback, useMemo } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Image, ChevronLeft, ChevronRight, RefreshCw, Shuffle } from 'lucide-react';
 import { DepthMapCard } from './DepthMapCard';
 import { MetricsPanel } from './MetricsPanel';
 import { VotingWidget } from './VotingWidget';
 import { comparisonApi } from '../api';
-import type { ComparisonSession, ComparisonModel } from '../api';
+import type { ComparisonSession, ComparisonModel, ModelResult } from '../api';
 
 interface ModelComparisonViewProps {
   /** The comparison session to display */
@@ -22,7 +22,19 @@ interface ModelComparisonViewProps {
 
 type ViewMode = 'grid' | 'metrics' | 'split';
 
-export function ModelComparisonView({
+/** Helper to find the best model by a given metric */
+function findBestModel(
+  results: ModelResult[],
+  selector: (r: ModelResult) => number,
+  compare: (a: number, b: number) => boolean = (a, b) => a > b
+): ModelResult | undefined {
+  if (results.length === 0) return undefined;
+  return results.reduce((best, current) => 
+    compare(selector(current), selector(best)) ? current : best
+  );
+}
+
+function ModelComparisonViewInternal({
   session,
   onLoadNewSession,
   onLoadRandomSession,
@@ -34,6 +46,42 @@ export function ModelComparisonView({
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
   const [currentModelIndex, setCurrentModelIndex] = useState(0);
 
+  // Memoized derived stats - computed once per session change
+  const quickStats = useMemo(() => {
+    const fastest = findBestModel(
+      session.results,
+      (r) => r.metrics.processing_time_seconds,
+      (a, b) => a < b // Lower is better
+    );
+    
+    const mostConfident = findBestModel(
+      session.results,
+      (r) => r.metrics.avg_confidence,
+      (a, b) => a > b
+    );
+    
+    const mostVotes = findBestModel(
+      session.results,
+      (r) => r.votes,
+      (a, b) => a > b
+    );
+    
+    const maxVotes = Math.max(0, ...session.results.map((r) => r.votes));
+
+    return {
+      fastestModel: fastest?.model_name ?? 'N/A',
+      mostConfidentModel: mostConfident?.model_name ?? 'N/A',
+      mostVotedModel: mostVotes?.model_name ?? 'N/A',
+      maxVotes,
+    };
+  }, [session.results]);
+
+  // Ensure currentModelIndex is within bounds
+  const safeCurrentIndex = useMemo(() => {
+    if (session.results.length === 0) return 0;
+    return Math.min(currentModelIndex, session.results.length - 1);
+  }, [currentModelIndex, session.results.length]);
+
   // Vote mutation
   const voteMutation = useMutation({
     mutationFn: ({ model, comment }: { model: ComparisonModel; comment?: string }) =>
@@ -43,7 +91,6 @@ export function ModelComparisonView({
         comment,
       }),
     onSuccess: () => {
-      // Invalidate and refetch session data
       queryClient.invalidateQueries({ queryKey: ['comparison', session.session_id] });
     },
   });
@@ -64,17 +111,31 @@ export function ModelComparisonView({
     removeVoteMutation.mutate();
   }, [removeVoteMutation]);
 
-  const handlePrevModel = () => {
-    setCurrentModelIndex((prev) => 
-      prev > 0 ? prev - 1 : session.results.length - 1
-    );
-  };
+  const handlePrevModel = useCallback(() => {
+    setCurrentModelIndex((prev) => {
+      const len = session.results.length;
+      if (len === 0) return 0;
+      return prev > 0 ? prev - 1 : len - 1;
+    });
+  }, [session.results.length]);
 
-  const handleNextModel = () => {
-    setCurrentModelIndex((prev) => 
-      prev < session.results.length - 1 ? prev + 1 : 0
-    );
-  };
+  const handleNextModel = useCallback(() => {
+    setCurrentModelIndex((prev) => {
+      const len = session.results.length;
+      if (len === 0) return 0;
+      return prev < len - 1 ? prev + 1 : 0;
+    });
+  }, [session.results.length]);
+
+  const handleSetViewMode = useCallback((mode: ViewMode) => {
+    setViewMode(mode);
+  }, []);
+
+  const handleSelectModel = useCallback((model: ComparisonModel) => {
+    setSelectedModel(model);
+  }, []);
+
+  const isSubmitting = voteMutation.isPending || removeVoteMutation.isPending;
 
   return (
     <div className={`model-comparison-view ${className}`}>
@@ -92,34 +153,43 @@ export function ModelComparisonView({
           
           <div className="flex items-center gap-2">
             {/* View Mode Toggle */}
-            <div className="flex items-center bg-gray-100 rounded-lg p-1">
+            <div className="flex items-center bg-gray-100 rounded-lg p-1" role="tablist" aria-label="View modes">
               <button
-                onClick={() => setViewMode('grid')}
-                className={`px-3 py-1 text-sm rounded ${
+                onClick={() => handleSetViewMode('grid')}
+                className={`px-3 py-1 text-sm rounded transition-colors ${
                   viewMode === 'grid'
                     ? 'bg-white text-gray-900 shadow'
                     : 'text-gray-600 hover:text-gray-900'
                 }`}
+                role="tab"
+                aria-selected={viewMode === 'grid'}
+                aria-controls="grid-panel"
               >
                 Grid
               </button>
               <button
-                onClick={() => setViewMode('metrics')}
-                className={`px-3 py-1 text-sm rounded ${
+                onClick={() => handleSetViewMode('metrics')}
+                className={`px-3 py-1 text-sm rounded transition-colors ${
                   viewMode === 'metrics'
                     ? 'bg-white text-gray-900 shadow'
                     : 'text-gray-600 hover:text-gray-900'
                 }`}
+                role="tab"
+                aria-selected={viewMode === 'metrics'}
+                aria-controls="metrics-panel"
               >
                 Metrics
               </button>
               <button
-                onClick={() => setViewMode('split')}
-                className={`px-3 py-1 text-sm rounded ${
+                onClick={() => handleSetViewMode('split')}
+                className={`px-3 py-1 text-sm rounded transition-colors ${
                   viewMode === 'split'
                     ? 'bg-white text-gray-900 shadow'
                     : 'text-gray-600 hover:text-gray-900'
                 }`}
+                role="tab"
+                aria-selected={viewMode === 'split'}
+                aria-controls="split-panel"
               >
                 Split
               </button>
@@ -130,10 +200,11 @@ export function ModelComparisonView({
               <button
                 onClick={onLoadRandomSession}
                 disabled={isLoading}
-                className="flex items-center gap-2 px-3 py-1.5 text-sm bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 disabled:opacity-50"
+                className="flex items-center gap-2 px-3 py-1.5 text-sm bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 disabled:opacity-50 transition-colors"
                 title="Load random comparison"
+                aria-label="Load random comparison session"
               >
-                <Shuffle className="h-4 w-4" />
+                <Shuffle className="h-4 w-4" aria-hidden="true" />
                 Random
               </button>
             )}
@@ -142,9 +213,10 @@ export function ModelComparisonView({
               <button
                 onClick={onLoadNewSession}
                 disabled={isLoading}
-                className="flex items-center gap-2 px-3 py-1.5 text-sm bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50"
+                className="flex items-center gap-2 px-3 py-1.5 text-sm bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50 transition-colors"
+                aria-label="Create new comparison session"
               >
-                <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+                <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} aria-hidden="true" />
                 New Comparison
               </button>
             )}
@@ -153,11 +225,11 @@ export function ModelComparisonView({
 
         {/* Session Info */}
         <div className="mt-4 flex items-center gap-6 text-sm text-gray-500">
-          <span>Session: {session.session_id.slice(0, 8)}...</span>
+          <span title={session.session_id}>Session: {session.session_id.slice(0, 8)}...</span>
           <span>Frame: {session.frame_index}</span>
           <span>{session.results.length} models</span>
           {session.job_id && (
-            <span>Job: {session.job_id.slice(0, 8)}...</span>
+            <span title={session.job_id}>Job: {session.job_id.slice(0, 8)}...</span>
           )}
         </div>
       </div>
@@ -168,14 +240,15 @@ export function ModelComparisonView({
         <div className="lg:col-span-3">
           <div className="bg-white rounded-lg border border-gray-200 p-4">
             <div className="flex items-center gap-2 mb-3">
-              <Image className="h-5 w-5 text-gray-400" />
+              <Image className="h-5 w-5 text-gray-400" aria-hidden="true" />
               <h3 className="text-sm font-medium text-gray-900">Original Frame</h3>
             </div>
             <div className="bg-gray-900 rounded-lg overflow-hidden">
               <img
                 src={session.original_frame_url}
-                alt="Original frame"
+                alt="Original frame for comparison"
                 className="mx-auto max-h-64 object-contain"
+                loading="lazy"
               />
             </div>
           </div>
@@ -184,13 +257,18 @@ export function ModelComparisonView({
         {/* Depth Maps Section */}
         <div className="lg:col-span-2">
           {viewMode === 'grid' && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div 
+              id="grid-panel"
+              className="grid grid-cols-1 md:grid-cols-2 gap-4"
+              role="tabpanel"
+              aria-label="Grid view of model results"
+            >
               {session.results.map((result) => (
                 <DepthMapCard
                   key={result.model}
                   result={result}
                   isSelected={selectedModel === result.model}
-                  onClick={() => setSelectedModel(result.model)}
+                  onClick={() => handleSelectModel(result.model)}
                   showMetrics={true}
                 />
               ))}
@@ -198,37 +276,46 @@ export function ModelComparisonView({
           )}
 
           {viewMode === 'metrics' && (
-            <MetricsPanel
-              results={session.results}
-              selectedModel={selectedModel}
-            />
+            <div id="metrics-panel" role="tabpanel" aria-label="Metrics comparison table">
+              <MetricsPanel
+                results={session.results}
+                selectedModel={selectedModel}
+              />
+            </div>
           )}
 
           {viewMode === 'split' && (
-            <div className="space-y-4">
+            <div 
+              id="split-panel"
+              className="space-y-4"
+              role="tabpanel"
+              aria-label="Split view of individual models"
+            >
               {/* Navigation */}
               <div className="flex items-center justify-between bg-white rounded-lg border border-gray-200 p-3">
                 <button
                   onClick={handlePrevModel}
-                  className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg"
+                  className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                  aria-label="Previous model"
                 >
-                  <ChevronLeft className="h-5 w-5" />
+                  <ChevronLeft className="h-5 w-5" aria-hidden="true" />
                 </button>
-                <span className="text-sm text-gray-700">
-                  {session.results[currentModelIndex]?.model_name} ({currentModelIndex + 1} of {session.results.length})
+                <span className="text-sm text-gray-700" aria-live="polite">
+                  {session.results[safeCurrentIndex]?.model_name} ({safeCurrentIndex + 1} of {session.results.length})
                 </span>
                 <button
                   onClick={handleNextModel}
-                  className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg"
+                  className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                  aria-label="Next model"
                 >
-                  <ChevronRight className="h-5 w-5" />
+                  <ChevronRight className="h-5 w-5" aria-hidden="true" />
                 </button>
               </div>
 
               {/* Single Model View */}
-              {session.results[currentModelIndex] && (
+              {session.results[safeCurrentIndex] && (
                 <DepthMapCard
-                  result={session.results[currentModelIndex]}
+                  result={session.results[safeCurrentIndex]}
                   showMetrics={true}
                 />
               )}
@@ -243,7 +330,7 @@ export function ModelComparisonView({
             results={session.results}
             onVote={handleVote}
             onRemoveVote={handleRemoveVote}
-            isSubmitting={voteMutation.isPending || removeVoteMutation.isPending}
+            isSubmitting={isSubmitting}
           />
 
           {/* Quick Stats */}
@@ -253,25 +340,19 @@ export function ModelComparisonView({
               <div className="flex justify-between">
                 <span className="text-gray-500">Fastest Model</span>
                 <span className="font-medium text-gray-900">
-                  {session.results.reduce((fastest, r) => 
-                    r.metrics.processing_time_seconds < fastest.metrics.processing_time_seconds ? r : fastest
-                  ).model_name}
+                  {quickStats.fastestModel}
                 </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-500">Highest Confidence</span>
                 <span className="font-medium text-gray-900">
-                  {session.results.reduce((best, r) => 
-                    r.metrics.avg_confidence > best.metrics.avg_confidence ? r : best
-                  ).model_name}
+                  {quickStats.mostConfidentModel}
                 </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-500">Most Votes</span>
                 <span className="font-medium text-gray-900">
-                  {session.results.reduce((top, r) => 
-                    r.votes > top.votes ? r : top
-                  ).model_name} ({Math.max(...session.results.map(r => r.votes))} votes)
+                  {quickStats.mostVotedModel} ({quickStats.maxVotes} votes)
                 </span>
               </div>
             </div>
@@ -282,4 +363,11 @@ export function ModelComparisonView({
   );
 }
 
+/**
+ * ModelComparisonView component for displaying side-by-side model comparisons
+ * Memoized to prevent unnecessary re-renders
+ */
+const ModelComparisonView = memo(ModelComparisonViewInternal);
+
+export { ModelComparisonView };
 export default ModelComparisonView;

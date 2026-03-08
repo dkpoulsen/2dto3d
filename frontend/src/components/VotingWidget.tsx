@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { memo, useState, useCallback, useMemo } from 'react';
 import { ThumbsUp, Check, X, MessageSquare, ChevronDown, ChevronUp } from 'lucide-react';
 import type { ModelResult, ComparisonModel, ComparisonSession } from '../api';
+import { COMPARISON } from '../utils/constants';
 
 interface VotingWidgetProps {
   /** Current comparison session */
@@ -17,7 +18,7 @@ interface VotingWidgetProps {
   className?: string;
 }
 
-export function VotingWidget({
+function VotingWidgetInternal({
   session,
   results,
   onVote,
@@ -32,34 +33,69 @@ export function VotingWidget({
   const [showComment, setShowComment] = useState(false);
   const [showConfirmRemove, setShowConfirmRemove] = useState(false);
 
-  const hasVoted = !!session.user_vote;
+  // Derived state
+  const hasVoted = Boolean(session.user_vote);
   const canVote = session.is_active && !isSubmitting;
 
-  const handleSelectModel = (model: ComparisonModel) => {
-    if (!canVote || hasVoted) return;
-    setSelectedModel(model);
-  };
+  // Sort results by vote count (memoized)
+  const sortedResults = useMemo(
+    () => [...results].sort((a, b) => b.votes - a.votes),
+    [results]
+  );
 
-  const handleSubmitVote = () => {
+  // Calculate vote percentages (memoized)
+  const votePercentages = useMemo(() => {
+    const percentages = new Map<ComparisonModel, number>();
+    if (session.total_votes === 0) {
+      results.forEach((r) => percentages.set(r.model, 0));
+    } else {
+      results.forEach((r) => {
+        percentages.set(r.model, (r.votes / session.total_votes) * 100);
+      });
+    }
+    return percentages;
+  }, [results, session.total_votes]);
+
+  // Handlers with useCallback
+  const handleSelectModel = useCallback(
+    (model: ComparisonModel) => {
+      if (!canVote || hasVoted) return;
+      setSelectedModel(model);
+    },
+    [canVote, hasVoted]
+  );
+
+  const handleSubmitVote = useCallback(() => {
     if (!selectedModel || !canVote) return;
-    onVote(selectedModel, comment || undefined);
-  };
+    // Trim and validate comment
+    const trimmedComment = comment.trim();
+    onVote(selectedModel, trimmedComment || undefined);
+  }, [selectedModel, canVote, comment, onVote]);
 
-  const handleRemoveVote = () => {
+  const handleRemoveVote = useCallback(() => {
     if (showConfirmRemove) {
       onRemoveVote();
       setShowConfirmRemove(false);
     } else {
       setShowConfirmRemove(true);
     }
-  };
+  }, [showConfirmRemove, onRemoveVote]);
 
-  const handleCancelRemove = () => {
+  const handleCancelRemove = useCallback(() => {
     setShowConfirmRemove(false);
-  };
+  }, []);
 
-  // Sort results by vote count
-  const sortedResults = [...results].sort((a, b) => b.votes - a.votes);
+  const handleToggleComment = useCallback(() => {
+    setShowComment((prev) => !prev);
+  }, []);
+
+  const handleCommentChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setComment(e.target.value);
+  }, []);
+
+  // Validate comment length
+  const commentLength = comment.length;
+  const isCommentValid = commentLength <= COMPARISON.MAX_COMMENT_LENGTH;
 
   return (
     <div className={`bg-white rounded-lg border border-gray-200 ${className}`}>
@@ -93,25 +129,31 @@ export function VotingWidget({
             </p>
             
             {/* Results Chart */}
-            <div className="space-y-2">
+            <div className="space-y-2" role="list" aria-label="Vote results">
               {sortedResults.map((result, index) => {
-                const votePercentage = session.total_votes > 0
-                  ? (result.votes / session.total_votes) * 100
-                  : 0;
+                const votePercentage = votePercentages.get(result.model) ?? 0;
                 const isUserVote = result.model === session.user_vote!.model;
+                const isWinner = index === 0 && result.votes > 0;
                 
                 return (
-                  <div key={result.model} className="relative">
+                  <div key={result.model} className="relative" role="listitem">
                     <div className="flex items-center justify-between mb-1">
                       <span className={`text-sm ${isUserVote ? 'font-semibold text-primary-700' : 'text-gray-700'}`}>
-                        {index === 0 && result.votes > 0 && '🏆 '}
+                        {isWinner && '🏆 '}
                         {result.model_name}
                       </span>
                       <span className="text-sm text-gray-500">
                         {result.votes} ({votePercentage.toFixed(0)}%)
                       </span>
                     </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+                    <div 
+                      className="w-full bg-gray-200 rounded-full h-2 overflow-hidden"
+                      role="progressbar"
+                      aria-valuenow={votePercentage}
+                      aria-valuemin={0}
+                      aria-valuemax={100}
+                      aria-label={`${result.model_name} vote percentage`}
+                    >
                       <div
                         className={`h-full rounded-full transition-all ${
                           isUserVote ? 'bg-primary-500' : 'bg-gray-400'
@@ -126,7 +168,7 @@ export function VotingWidget({
 
             {/* Remove Vote */}
             {showConfirmRemove ? (
-              <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+              <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg" role="alert">
                 <p className="text-sm text-yellow-800 mb-2">
                   Are you sure you want to remove your vote?
                 </p>
@@ -134,13 +176,15 @@ export function VotingWidget({
                   <button
                     onClick={handleRemoveVote}
                     disabled={isSubmitting}
-                    className="px-3 py-1 text-sm bg-yellow-600 text-white rounded hover:bg-yellow-700 disabled:opacity-50"
+                    className="px-3 py-1 text-sm bg-yellow-600 text-white rounded hover:bg-yellow-700 disabled:opacity-50 transition-colors"
+                    aria-label="Confirm remove vote"
                   >
                     Yes, remove
                   </button>
                   <button
                     onClick={handleCancelRemove}
-                    className="px-3 py-1 text-sm bg-white border border-gray-300 text-gray-700 rounded hover:bg-gray-50"
+                    className="px-3 py-1 text-sm bg-white border border-gray-300 text-gray-700 rounded hover:bg-gray-50 transition-colors"
+                    aria-label="Cancel remove vote"
                   >
                     Cancel
                   </button>
@@ -150,7 +194,8 @@ export function VotingWidget({
               <button
                 onClick={handleRemoveVote}
                 disabled={isSubmitting || !session.is_active}
-                className="mt-4 flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700 disabled:opacity-50"
+                className="mt-4 flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700 disabled:opacity-50 transition-colors"
+                aria-label="Remove your vote"
               >
                 <X className="h-4 w-4" />
                 Remove my vote
@@ -164,81 +209,100 @@ export function VotingWidget({
             </p>
 
             {/* Model Buttons */}
-            <div className="grid grid-cols-2 gap-2">
-              {results.map((result) => (
-                <button
-                  key={result.model}
-                  onClick={() => handleSelectModel(result.model)}
-                  disabled={!canVote}
-                  className={`p-3 rounded-lg border-2 text-left transition-all ${
-                    selectedModel === result.model
-                      ? 'border-primary-500 bg-primary-50'
-                      : 'border-gray-200 hover:border-gray-300'
-                  } ${!canVote ? 'opacity-50 cursor-not-allowed' : ''}`}
-                >
-                  <div className="flex items-center justify-between">
-                    <span className={`text-sm font-medium ${
-                      selectedModel === result.model ? 'text-primary-900' : 'text-gray-900'
-                    }`}>
-                      {result.model_name}
+            <div className="grid grid-cols-2 gap-2" role="radiogroup" aria-label="Select a model to vote for">
+              {results.map((result) => {
+                const isSelected = selectedModel === result.model;
+                
+                return (
+                  <button
+                    key={result.model}
+                    onClick={() => handleSelectModel(result.model)}
+                    disabled={!canVote}
+                    className={`p-3 rounded-lg border-2 text-left transition-all ${
+                      isSelected
+                        ? 'border-primary-500 bg-primary-50'
+                        : 'border-gray-200 hover:border-gray-300'
+                    } ${!canVote ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    role="radio"
+                    aria-checked={isSelected}
+                    aria-label={`Vote for ${result.model_name}, currently ${result.votes} votes`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className={`text-sm font-medium ${
+                        isSelected ? 'text-primary-900' : 'text-gray-900'
+                      }`}>
+                        {result.model_name}
+                      </span>
+                      {isSelected && (
+                        <Check className="h-4 w-4 text-primary-600" aria-hidden="true" />
+                      )}
+                    </div>
+                    <span className="text-xs text-gray-500">
+                      {result.votes} current votes
                     </span>
-                    {selectedModel === result.model && (
-                      <Check className="h-4 w-4 text-primary-600" />
-                    )}
-                  </div>
-                  <span className="text-xs text-gray-500">
-                    {result.votes} current votes
-                  </span>
-                </button>
-              ))}
+                  </button>
+                );
+              })}
             </div>
 
             {/* Optional Comment */}
             <div className="mt-3">
               <button
-                onClick={() => setShowComment(!showComment)}
-                className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700"
+                onClick={handleToggleComment}
+                className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700 transition-colors"
+                aria-expanded={showComment}
+                aria-controls="comment-section"
               >
                 {showComment ? (
                   <>
-                    <ChevronUp className="h-4 w-4" />
+                    <ChevronUp className="h-4 w-4" aria-hidden="true" />
                     Hide comment
                   </>
                 ) : (
                   <>
-                    <ChevronDown className="h-4 w-4" />
-                    <MessageSquare className="h-4 w-4" />
+                    <ChevronDown className="h-4 w-4" aria-hidden="true" />
+                    <MessageSquare className="h-4 w-4" aria-hidden="true" />
                     Add a comment (optional)
                   </>
                 )}
               </button>
               
               {showComment && (
-                <textarea
-                  value={comment}
-                  onChange={(e) => setComment(e.target.value)}
-                  placeholder="Explain why you chose this model..."
-                  className="mt-2 w-full px-3 py-2 border border-gray-300 rounded-lg text-sm resize-none focus:ring-primary-500 focus:border-primary-500"
-                  rows={3}
-                  maxLength={500}
-                />
+                <div id="comment-section" className="mt-2">
+                  <textarea
+                    value={comment}
+                    onChange={handleCommentChange}
+                    placeholder="Explain why you chose this model..."
+                    className={`w-full px-3 py-2 border rounded-lg text-sm resize-none focus:ring-primary-500 focus:border-primary-500 ${
+                      !isCommentValid ? 'border-red-300' : 'border-gray-300'
+                    }`}
+                    rows={3}
+                    maxLength={COMPARISON.MAX_COMMENT_LENGTH}
+                    aria-label="Optional comment for your vote"
+                    aria-describedby="comment-counter"
+                  />
+                  <div id="comment-counter" className="text-xs text-gray-400 mt-1 text-right">
+                    {commentLength}/{COMPARISON.MAX_COMMENT_LENGTH}
+                  </div>
+                </div>
               )}
             </div>
 
             {/* Submit Button */}
             <button
               onClick={handleSubmitVote}
-              disabled={!selectedModel || isSubmitting}
-              className="mt-4 w-full flex items-center justify-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={!selectedModel || isSubmitting || !isCommentValid}
+              className="mt-4 w-full flex items-center justify-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              aria-label="Submit your vote"
             >
               {isSubmitting ? (
                 <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" aria-hidden="true" />
                   Submitting...
                 </>
               ) : (
                 <>
-                  <ThumbsUp className="h-4 w-4" />
+                  <ThumbsUp className="h-4 w-4" aria-hidden="true" />
                   Submit Vote
                 </>
               )}
@@ -250,4 +314,11 @@ export function VotingWidget({
   );
 }
 
+/**
+ * VotingWidget component for casting and managing votes in model comparisons
+ * Memoized to prevent unnecessary re-renders
+ */
+const VotingWidget = memo(VotingWidgetInternal);
+
+export { VotingWidget };
 export default VotingWidget;

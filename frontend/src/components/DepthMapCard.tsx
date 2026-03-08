@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { memo, useState, useCallback } from 'react';
 import { ZoomIn, ZoomOut, RotateCcw, Image } from 'lucide-react';
-import type { ModelResult, ComparisonModel } from '../api';
+import type { ModelResult } from '../api';
+import { COMPARISON, MODEL_DESCRIPTIONS } from '../utils/constants';
 
 interface DepthMapCardProps {
   /** Model result to display */
@@ -15,15 +16,7 @@ interface DepthMapCardProps {
   className?: string;
 }
 
-// Model descriptions
-const MODEL_DESCRIPTIONS: Record<ComparisonModel, string> = {
-  midas_small: 'Fast and lightweight, good for real-time',
-  midas_hybrid: 'Balanced speed and quality',
-  dpt_large: 'Highest quality, slower processing',
-  dpt_hybrid: 'Good quality with reasonable speed',
-};
-
-export function DepthMapCard({
+function DepthMapCardInternal({
   result,
   isSelected = false,
   onClick,
@@ -34,17 +27,62 @@ export function DepthMapCard({
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
 
-  const handleZoomIn = () => {
-    setZoom((z) => Math.min(4, z + 0.5));
-  };
+  const handleZoomIn = useCallback(() => {
+    setZoom((z) => Math.min(COMPARISON.ZOOM_MAX, z + COMPARISON.ZOOM_STEP));
+  }, []);
 
-  const handleZoomOut = () => {
-    setZoom((z) => Math.max(0.5, z - 0.5));
-  };
+  const handleZoomOut = useCallback(() => {
+    setZoom((z) => Math.max(COMPARISON.ZOOM_MIN, z - COMPARISON.ZOOM_STEP));
+  }, []);
 
-  const handleResetZoom = () => {
+  const handleResetZoom = useCallback(() => {
     setZoom(1);
-  };
+  }, []);
+
+  const handleImageLoad = useCallback(() => {
+    setImageLoaded(true);
+  }, []);
+
+  const handleImageError = useCallback(() => {
+    setImageError(true);
+  }, []);
+
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (onClick && (e.key === 'Enter' || e.key === ' ')) {
+        e.preventDefault();
+        onClick();
+      }
+    },
+    [onClick]
+  );
+
+  const handleZoomOutClick = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+      handleZoomOut();
+    },
+    [handleZoomOut]
+  );
+
+  const handleZoomInClick = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+      handleZoomIn();
+    },
+    [handleZoomIn]
+  );
+
+  const handleResetZoomClick = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+      handleResetZoom();
+    },
+    [handleResetZoom]
+  );
+
+  // Get model description from constants or use model_name as fallback
+  const modelDescription = MODEL_DESCRIPTIONS[result.model] ?? result.model_name;
 
   return (
     <div
@@ -56,12 +94,7 @@ export function DepthMapCard({
       onClick={onClick}
       role={onClick ? 'button' : undefined}
       tabIndex={onClick ? 0 : undefined}
-      onKeyDown={(e) => {
-        if (onClick && (e.key === 'Enter' || e.key === ' ')) {
-          e.preventDefault();
-          onClick();
-        }
-      }}
+      onKeyDown={handleKeyDown}
       aria-pressed={isSelected}
       aria-label={`Select ${result.model_name} depth map`}
     >
@@ -73,7 +106,7 @@ export function DepthMapCard({
               {result.model_name}
             </h3>
             <p className="text-xs text-gray-500 mt-0.5">
-              {MODEL_DESCRIPTIONS[result.model]}
+              {modelDescription}
             </p>
           </div>
           {isSelected && (
@@ -88,14 +121,14 @@ export function DepthMapCard({
       <div className="relative bg-gray-900 overflow-hidden">
         <div
           className="relative overflow-auto"
-          style={{ height: '200px' }}
+          style={{ height: `${COMPARISON.IMAGE_CONTAINER_HEIGHT}px` }}
         >
           {!imageLoaded && !imageError && (
             <div className="absolute inset-0 flex items-center justify-center">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
             </div>
           )}
-          
+
           {imageError ? (
             <div className="absolute inset-0 flex flex-col items-center justify-center text-gray-400">
               <Image className="h-12 w-12 mb-2" />
@@ -112,8 +145,8 @@ export function DepthMapCard({
                 transform: `scale(${zoom})`,
                 transformOrigin: 'center',
               }}
-              onLoad={() => setImageLoaded(true)}
-              onError={() => setImageError(true)}
+              onLoad={handleImageLoad}
+              onError={handleImageError}
             />
           )}
         </div>
@@ -121,35 +154,31 @@ export function DepthMapCard({
         {/* Zoom Controls */}
         <div className="absolute bottom-2 right-2 flex items-center gap-1 bg-black/50 rounded-lg p-1">
           <button
-            onClick={(e) => {
-              e.stopPropagation();
-              handleZoomOut();
-            }}
-            disabled={zoom <= 0.5}
+            onClick={handleZoomOutClick}
+            disabled={zoom <= COMPARISON.ZOOM_MIN}
             className="p-1 text-white hover:bg-white/20 rounded disabled:opacity-50"
             title="Zoom out"
+            aria-label="Zoom out"
           >
             <ZoomOut className="h-4 w-4" />
           </button>
-          <span className="text-xs text-white px-1">{Math.round(zoom * 100)}%</span>
+          <span className="text-xs text-white px-1" aria-label={`Zoom level ${Math.round(zoom * 100)}%`}>
+            {Math.round(zoom * 100)}%
+          </span>
           <button
-            onClick={(e) => {
-              e.stopPropagation();
-              handleZoomIn();
-            }}
-            disabled={zoom >= 4}
+            onClick={handleZoomInClick}
+            disabled={zoom >= COMPARISON.ZOOM_MAX}
             className="p-1 text-white hover:bg-white/20 rounded disabled:opacity-50"
             title="Zoom in"
+            aria-label="Zoom in"
           >
             <ZoomIn className="h-4 w-4" />
           </button>
           <button
-            onClick={(e) => {
-              e.stopPropagation();
-              handleResetZoom();
-            }}
+            onClick={handleResetZoomClick}
             className="p-1 text-white hover:bg-white/20 rounded"
             title="Reset zoom"
+            aria-label="Reset zoom"
           >
             <RotateCcw className="h-4 w-4" />
           </button>
@@ -205,4 +234,11 @@ export function DepthMapCard({
   );
 }
 
+/**
+ * DepthMapCard component for displaying model comparison results
+ * Memoized to prevent unnecessary re-renders when parent updates
+ */
+const DepthMapCard = memo(DepthMapCardInternal);
+
+export { DepthMapCard };
 export default DepthMapCard;

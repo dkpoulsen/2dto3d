@@ -1,4 +1,5 @@
-import { TrendingUp, TrendingDown, Minus, Clock, Cpu, MemoryStick, BarChart3 } from 'lucide-react';
+import { memo, useMemo } from 'react';
+import { TrendingDown, Clock, Cpu, MemoryStick, BarChart3 } from 'lucide-react';
 import type { ModelResult, ComparisonModel } from '../api';
 
 interface MetricsPanelProps {
@@ -19,7 +20,8 @@ interface MetricRow {
   icon: React.ReactNode;
 }
 
-const metricRows: MetricRow[] = [
+/** Core metrics always displayed */
+const METRIC_ROWS: MetricRow[] = [
   {
     label: 'Processing Time',
     key: 'processing_time_seconds',
@@ -45,13 +47,14 @@ const metricRows: MetricRow[] = [
   },
 ];
 
-const optionalMetrics: MetricRow[] = [
+/** Optional metrics that display only if available */
+const OPTIONAL_METRICS: MetricRow[] = [
   {
     label: 'Quality Score',
     key: 'quality_score',
     unit: '%',
     format: (v) => (v * 100).toFixed(0),
-    icon: <TrendingUp className="h-4 w-4" />,
+    icon: <TrendingDown className="h-4 w-4" />,
   },
   {
     label: 'Edge Preservation',
@@ -65,30 +68,57 @@ const optionalMetrics: MetricRow[] = [
     key: 'temporal_consistency',
     unit: '%',
     format: (v) => (v * 100).toFixed(0),
-    icon: <Minus className="h-4 w-4" />,
+    icon: <Clock className="h-4 w-4" />,
   },
 ];
 
-export function MetricsPanel({
+/** Helper to extract numeric values from metrics */
+function getNumericValues(
+  results: ModelResult[],
+  key: keyof ModelResult['metrics']
+): number[] {
+  return results
+    .map((r) => r.metrics[key])
+    .filter((v): v is number => typeof v === 'number');
+}
+
+function MetricsPanelInternal({
   results,
   selectedModel,
   className = '',
 }: MetricsPanelProps) {
-  // Get best value for each metric
-  const getBestValue = (key: keyof ModelResult['metrics'], lowerIsBetter?: boolean) => {
-    const values = results
-      .map((r) => r.metrics[key])
-      .filter((v): v is number => v !== undefined);
+  // Pre-compute best values for each metric to avoid repeated calculations
+  const bestValues = useMemo(() => {
+    const best: Record<string, number | null> = {};
     
-    if (values.length === 0) return null;
+    [...METRIC_ROWS, ...OPTIONAL_METRICS].forEach((metric) => {
+      const values = getNumericValues(results, metric.key);
+      if (values.length > 0) {
+        best[metric.key] = metric.lowerIsBetter 
+          ? Math.min(...values) 
+          : Math.max(...values);
+      } else {
+        best[metric.key] = null;
+      }
+    });
     
-    return lowerIsBetter ? Math.min(...values) : Math.max(...values);
-  };
+    return best;
+  }, [results]);
 
-  // Check if any optional metrics are available
-  // Check if any optional metrics are available
-  const hasOptionalMetrics = results.some((r) =>
-    optionalMetrics.some((m) => r.metrics[m.key] !== undefined)
+  // Check if any optional metrics have data
+  const hasOptionalMetrics = useMemo(
+    () => OPTIONAL_METRICS.some((metric) =>
+      results.some((r) => typeof r.metrics[metric.key] === 'number')
+    ),
+    [results]
+  );
+
+  // Filter optional metrics to only show those with data
+  const visibleOptionalMetrics = useMemo(
+    () => OPTIONAL_METRICS.filter((metric) =>
+      results.some((r) => typeof r.metrics[metric.key] === 'number')
+    ),
+    [results]
   );
 
   return (
@@ -122,8 +152,8 @@ export function MetricsPanel({
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200">
-            {metricRows.map((metric) => {
-              const bestValue = getBestValue(metric.key, metric.lowerIsBetter);
+            {METRIC_ROWS.map((metric) => {
+              const bestValue = bestValues[metric.key];
               
               return (
                 <tr key={metric.key} className="hover:bg-gray-50">
@@ -135,7 +165,7 @@ export function MetricsPanel({
                   </td>
                   {results.map((result) => {
                     const value = result.metrics[metric.key];
-                    const isBest = value === bestValue;
+                    const isBest = typeof value === 'number' && value === bestValue;
                     
                     return (
                       <td
@@ -150,11 +180,11 @@ export function MetricsPanel({
                               isBest ? 'text-green-600' : 'text-gray-900'
                             }`}
                           >
-                            {value !== undefined ? metric.format(value as number) : '-'}
-                            {value !== undefined ? metric.unit : ''}
+                            {typeof value === 'number' ? metric.format(value) : '-'}
+                            {typeof value === 'number' ? metric.unit : ''}
                           </span>
-                          {value !== undefined && isBest && (
-                            <span className="text-green-500">★</span>
+                          {isBest && (
+                            <span className="text-green-500" aria-label="Best value">★</span>
                           )}
                         </div>
                       </td>
@@ -173,11 +203,8 @@ export function MetricsPanel({
                     </span>
                   </td>
                 </tr>
-                {optionalMetrics.map((metric) => {
-                  const hasData = results.some((r) => r.metrics[metric.key] !== undefined);
-                  if (!hasData) return null;
-                  
-                  const bestValue = getBestValue(metric.key as keyof ModelResult['metrics']);
+                {visibleOptionalMetrics.map((metric) => {
+                  const bestValue = bestValues[metric.key];
                   
                   return (
                     <tr key={metric.key} className="hover:bg-gray-50">
@@ -188,8 +215,8 @@ export function MetricsPanel({
                         </div>
                       </td>
                       {results.map((result) => {
-                        const value = result.metrics[metric.key as keyof ModelResult['metrics']];
-                        const isBest = value === bestValue && bestValue !== null;
+                        const value = result.metrics[metric.key];
+                        const isBest = typeof value === 'number' && value === bestValue;
                         
                         return (
                           <td
@@ -204,11 +231,11 @@ export function MetricsPanel({
                                   isBest ? 'text-green-600' : 'text-gray-900'
                                 }`}
                               >
-                                {value !== undefined ? metric.format(value as number) : '-'}
-                                {value !== undefined ? metric.unit : ''}
+                                {typeof value === 'number' ? metric.format(value) : '-'}
+                                {typeof value === 'number' ? metric.unit : ''}
                               </span>
-                              {value !== undefined && isBest && (
-                                <span className="text-green-500">★</span>
+                              {isBest && (
+                                <span className="text-green-500" aria-label="Best value">★</span>
                               )}
                             </div>
                           </td>
@@ -240,4 +267,11 @@ export function MetricsPanel({
   );
 }
 
+/**
+ * MetricsPanel component for displaying side-by-side model metrics comparison
+ * Memoized to prevent unnecessary re-renders
+ */
+const MetricsPanel = memo(MetricsPanelInternal);
+
+export { MetricsPanel };
 export default MetricsPanel;
