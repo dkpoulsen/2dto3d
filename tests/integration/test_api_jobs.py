@@ -678,3 +678,79 @@ class TestSubmitJobWithDepthCurve:
         )
 
         assert response.status_code == status.HTTP_201_CREATED
+
+    def test_submit_job_depth_focus_passed_to_job_config(
+        self, client: TestClient, mock_queue: MagicMock
+    ) -> None:
+        """Test that depth_focus config is properly passed to add_job."""
+        mock_job = MagicMock(spec=BatchJob)
+        mock_job.job_id = "test-job-id"
+        mock_job.status = JobStatus.PENDING
+        mock_queue.add_job.return_value = mock_job
+
+        response = client.post(
+            "/api/v1/jobs/",
+            json={
+                "input_file_id": "test-file-id",
+                "config": {
+                    "depth_focus": {
+                        "enabled": True,
+                        "focus_depth": 0.7,
+                        "focus_range": 0.4,
+                    },
+                },
+            },
+        )
+
+        assert response.status_code == status.HTTP_201_CREATED
+
+        # Verify depth_focus was passed to add_job in job_config
+        call_args = mock_queue.add_job.call_args
+        assert call_args is not None
+        job_config = call_args.kwargs.get("job_config", call_args.args[2] if len(call_args.args) > 2 else {})
+        assert "depth_focus" in job_config
+        assert job_config["depth_focus"]["enabled"] is True
+        assert job_config["depth_focus"]["focus_depth"] == 0.7
+        assert job_config["depth_focus"]["focus_range"] == 0.4
+
+    def test_submit_job_both_depth_configs_preserved(
+        self, client: TestClient, mock_queue: MagicMock
+    ) -> None:
+        """Test that both depth_focus and depth_curve are preserved in job_config."""
+        mock_job = MagicMock(spec=BatchJob)
+        mock_job.job_id = "test-job-id"
+        mock_job.status = JobStatus.PENDING
+        mock_queue.add_job.return_value = mock_job
+
+        response = client.post(
+            "/api/v1/jobs/",
+            json={
+                "input_file_id": "test-file-id",
+                "config": {
+                    "depth_focus": {
+                        "enabled": True,
+                        "focus_depth": 0.6,
+                        "focus_range": 0.2,
+                    },
+                    "depth_curve": {
+                        "enabled": True,
+                        "preset": "linear",
+                    },
+                },
+            },
+        )
+
+        assert response.status_code == status.HTTP_201_CREATED
+
+        # Verify both depth configs were passed to add_job
+        call_args = mock_queue.add_job.call_args
+        assert call_args is not None
+        job_config = call_args.kwargs.get("job_config", call_args.args[2] if len(call_args.args) > 2 else {})
+        
+        # Both depth_focus and depth_curve should be present
+        assert "depth_focus" in job_config, "depth_focus was lost from job_config"
+        assert "depth_curve" in job_config, "depth_curve was lost from job_config"
+        assert job_config["depth_focus"]["enabled"] is True
+        assert job_config["depth_focus"]["focus_depth"] == 0.6
+        assert job_config["depth_curve"]["enabled"] is True
+        assert job_config["depth_curve"]["preset"] == "linear"
