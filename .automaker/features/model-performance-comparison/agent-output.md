@@ -152,3 +152,9 @@ Input: {
   "command": "cd /home/dkp/Documents/Automaker/2dto3d/frontend/src && ls -la components/test pages/test test 2>/dev/null && echo \"---\" && rm -rf components/test pages/test test && echo \"Test directories removed\"",
   "description": "Remove test directories again"
 }
+
+🔧 Tool: bash
+Input: {
+  "command": "cd /home/dkp/Documents/Automaker/2dto3d/frontend/src && rm -rf components/test pages/test test .broken 2>/dev/null; mkdir -p .broken && echo \"Cleaned up test directories\"",
+  "description": "Clean up test directories"
+}
