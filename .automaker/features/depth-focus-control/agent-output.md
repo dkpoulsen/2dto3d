@@ -843,3 +843,9 @@ Input: {
 Input: {
   "pattern": "frontend/**/__tests__/*.tsx"
 }
+
+🔧 Tool: bash
+Input: {
+  "command": "mkdir -p /home/dkp/Documents/Automaker/2dto3d/frontend/src/components/test && cp /home/dkp/Documents/Automaker/2dto3d/frontend/src/.broken/test/DepthFocusControl.test.tsx /home/dkp/Documents/Automaker/2dto3d/frontend/src/components/test/DepthFocusControl.test.tsx",
+  "description": "Restore test file to proper location"
+}

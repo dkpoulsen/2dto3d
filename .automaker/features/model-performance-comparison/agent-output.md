@@ -122,3 +122,15 @@ Input: {
   "command": "cd /home/dkp/Documents/Automaker/2dto3d && find src -name \"*.py\" -path \"*/api/*\" | head -20",
   "description": "Find API files"
 }
+
+🔧 Tool: glob
+Input: {
+  "pattern": "**/*.py",
+  "path": "/home/dkp/Documents/Automaker/2dto3d/src"
+}
+
+🔧 Tool: read
+Input: {
+  "filePath": "/home/dkp/Documents/Automaker/2dto3d/src/video2d3d/web/app.py",
+  "limit": 100
+}
