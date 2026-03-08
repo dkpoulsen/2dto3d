@@ -13,13 +13,14 @@ Example usage:
     ```python
     from video2d3d.upscaling import (
         UpscalerConfig,
+        ModelType,
         RealESRGANUpscaler,
         VideoUpscaler,
     )
 
     # Configure upscaler
     config = UpscalerConfig(
-        model_name="realesrgan-x4plus",
+        model_type=ModelType.REAL_ESRGAN_X4PLUS,
         scale=4,
         use_gpu=True,
         tile_size=512,
@@ -45,7 +46,15 @@ from video2d3d.upscaling.config import (
     UpscalerConfig,
     get_default_model_path,
     get_model_info,
+    get_model_scale,
     list_available_models,
+)
+from video2d3d.upscaling.esrgan import RealESRGANUpscaler, DummyUpscaler, create_upscaler
+from video2d3d.upscaling.processor import (
+    VideoUpscaler,
+    VideoUpscaleStats,
+    upscale_video,
+    upscale_frames,
 )
 from video2d3d.upscaling.esrgan import RealESRGANUpscaler
 from video2d3d.upscaling.processor import VideoUpscaler
@@ -56,10 +65,17 @@ __all__ = [
     "ModelType",
     "get_default_model_path",
     "get_model_info",
+    "get_model_scale",
     "list_available_models",
     # Core classes
     "BaseUpscaler",
     "UpscaleResult",
     "RealESRGANUpscaler",
+    "DummyUpscaler",
     "VideoUpscaler",
+    "VideoUpscaleStats",
+    # Factory functions
+    "create_upscaler",
+    "upscale_video",
+    "upscale_frames",
 ]

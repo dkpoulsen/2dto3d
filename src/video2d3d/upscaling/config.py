@@ -289,3 +289,14 @@ class UpscalerConfig:
             max_memory_mb=data.get("max_memory_mb", 2048.0),
             batch_size=data.get("batch_size", 1),
         )
+
+
+__all__ = [
+    "ModelType",
+    "MODEL_INFO",
+    "UpscalerConfig",
+    "get_model_info",
+    "list_available_models",
+    "get_default_model_path",
+    "get_model_scale",
+]

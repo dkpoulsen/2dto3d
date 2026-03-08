@@ -265,7 +265,12 @@ class RealESRGANUpscaler(BaseUpscaler):
             self._logger.error(f"Inference failed: {e}")
             raise InferenceError(str(e)) from e
 
-    def get_model_info(self) -> dict[str, Any]:
+    def get_session_info(self) -> dict[str, Any]:
+        """Get information about the ONNX Runtime session.
+
+        Returns:
+            Dictionary with session information including model details.
+        """
         """Get information about the loaded model.
 
         Returns:
@@ -361,3 +366,10 @@ def create_upscaler(config: UpscalerConfig, use_dummy: bool = False) -> BaseUpsc
     if use_dummy:
         return DummyUpscaler(config)
     return RealESRGANUpscaler(config)
+
+
+__all__ = [
+    "RealESRGANUpscaler",
+    "DummyUpscaler",
+    "create_upscaler",
+]

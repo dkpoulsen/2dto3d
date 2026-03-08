@@ -381,3 +381,11 @@ def upscale_frames(
 
     with VideoUpscaler(config) as upscaler:
         return upscaler.upscale_frames(frames, progress_callback)
+
+
+__all__ = [
+    "VideoUpscaleStats",
+    "VideoUpscaler",
+    "upscale_video",
+    "upscale_frames",
+]

@@ -9,7 +9,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
 
 import numpy as np
 
@@ -346,7 +346,7 @@ class BaseUpscaler(ABC):
     def upscale_batch(
         self,
         images: list[np.ndarray],
-        progress_callback: callable | None = None,
+        progress_callback: Callable[[int, int], None] | None = None,
     ) -> list[UpscaleResult]:
         """Upscale multiple images.
 
@@ -409,3 +409,13 @@ class InferenceError(UpscalerError):
         if reason:
             message += f": {reason}"
         super().__init__(message)
+
+
+__all__ = [
+    "UpscaleResult",
+    "BaseUpscaler",
+    "UpscalerError",
+    "ModelNotFoundError",
+    "ModelLoadError",
+    "InferenceError",
+]
