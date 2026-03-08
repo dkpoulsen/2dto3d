@@ -140,3 +140,9 @@ Input: {
   "command": "ls -la /home/dkp/Documents/Automaker/2dto3d/src/video2d3d/web/routers/ 2>/dev/null || ls -la /home/dkp/Documents/Automaker/2dto3d/src/video2d3d/web/",
   "description": "List web router files"
 }
+
+🔧 Tool: bash
+Input: {
+  "command": "cd /home/dkp/Documents/Automaker/2dto3d/frontend && npm run build 2>&1 && echo \"BUILD SUCCESS\"",
+  "description": "Final build verification"
+}
