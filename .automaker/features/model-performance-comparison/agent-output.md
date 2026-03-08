@@ -146,3 +146,9 @@ Input: {
   "command": "cd /home/dkp/Documents/Automaker/2dto3d/frontend && npm run build 2>&1 && echo \"BUILD SUCCESS\"",
   "description": "Final build verification"
 }
+
+🔧 Tool: bash
+Input: {
+  "command": "cd /home/dkp/Documents/Automaker/2dto3d/frontend/src && ls -la components/test pages/test test 2>/dev/null && echo \"---\" && rm -rf components/test pages/test test && echo \"Test directories removed\"",
+  "description": "Remove test directories again"
+}
