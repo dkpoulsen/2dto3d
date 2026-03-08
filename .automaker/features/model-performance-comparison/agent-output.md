@@ -104,3 +104,9 @@ Input: {
 Input: {
   "filePath": "/home/dkp/Documents/Automaker/2dto3d/frontend/src/pages/index.ts"
 }
+
+🔧 Tool: bash
+Input: {
+  "command": "cd /home/dkp/Documents/Automaker/2dto3d && find . -type f -name \"*.py\" -exec grep -l \"comparison\" {} \\; 2>/dev/null | head -20",
+  "description": "Find backend comparison files"
+}

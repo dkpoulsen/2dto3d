@@ -780,3 +780,39 @@ Input: {
     }
   ]
 }
+
+🔧 Tool: todowrite
+Input: {
+  "todos": [
+    {
+      "content": "Review existing test coverage for depth-focus feature",
+      "priority": "high",
+      "status": "completed"
+    },
+    {
+      "content": "Identify test coverage gaps",
+      "priority": "high",
+      "status": "completed"
+    },
+    {
+      "content": "Write additional integration test for depth_focus config passing through",
+      "priority": "high",
+      "status": "completed"
+    },
+    {
+      "content": "Write additional frontend unit tests for edge cases",
+      "priority": "high",
+      "status": "in_progress"
+    },
+    {
+      "content": "Run all tests to verify coverage",
+      "priority": "high",
+      "status": "pending"
+    }
+  ]
+}
+
+🔧 Tool: read
+Input: {
+  "filePath": "/home/dkp/Documents/Automaker/2dto3d/frontend/src/components/test/DepthFocusControl.test.tsx"
+}
