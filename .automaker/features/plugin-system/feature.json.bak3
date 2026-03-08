@@ -1,0 +1,21 @@
+{
+  "id": "plugin-system",
+  "category": "Extensibility",
+  "title": "Plugin Architecture",
+  "description": "Design and implement a plugin system allowing third-party developers to add custom depth models, encoders, and processors.",
+  "status": "pipeline_step_mmcbz6pm_scmfew",
+  "priority": 4,
+  "complexity": "complex",
+  "dependencies": [
+    "project-initialization"
+  ],
+  "createdAt": "2026-03-06T15:23:01.934Z",
+  "updatedAt": "2026-03-06T22:13:21.721Z",
+  "model": "zai-coding-plan/glm-5",
+  "thinkingLevel": "none",
+  "planningMode": "spec",
+  "requirePlanApproval": true,
+  "skipTests": false,
+  "branchName": "main",
+  "descriptionHistory": []
+}

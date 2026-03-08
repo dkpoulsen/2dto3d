@@ -1,0 +1,15 @@
+{
+  "id": "conditional-processing",
+  "category": "Workflow",
+  "title": "Conditional Processing Rules",
+  "description": "Define conditional rules that trigger different processing paths based on video properties (resolution, frame rate, content type).",
+  "status": "backlog",
+  "priority": 2,
+  "complexity": "moderate",
+  "dependencies": [
+    "workflow-templates",
+    "smart-auto-tuning"
+  ],
+  "createdAt": "2026-03-06T22:35:43.373Z",
+  "updatedAt": "2026-03-06T22:35:43.373Z"
+}

@@ -1,0 +1,14 @@
+{
+  "id": "scene-understanding",
+  "category": "Enhancement",
+  "title": "Scene Understanding Module",
+  "description": "Detect and classify scene elements (humans, objects, backgrounds) for intelligent depth assignment and 3D effect optimization.",
+  "status": "backlog",
+  "priority": 2,
+  "complexity": "complex",
+  "dependencies": [
+    "depth-segmentation"
+  ],
+  "createdAt": "2026-03-06T22:35:43.370Z",
+  "updatedAt": "2026-03-06T22:35:43.370Z"
+}

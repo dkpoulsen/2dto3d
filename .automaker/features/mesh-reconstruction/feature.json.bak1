@@ -1,0 +1,14 @@
+{
+  "id": "mesh-reconstruction",
+  "category": "Core",
+  "title": "3D Mesh Reconstruction",
+  "description": "Reconstruct 3D meshes from point clouds or depth data using Poisson surface reconstruction or marching cubes algorithms.",
+  "status": "backlog",
+  "priority": 3,
+  "complexity": "complex",
+  "dependencies": [
+    "point-cloud-generation"
+  ],
+  "createdAt": "2026-03-06T22:35:43.367Z",
+  "updatedAt": "2026-03-06T22:35:43.367Z"
+}

@@ -1,0 +1,14 @@
+{
+  "id": "multi-view-stereo-reconstruction",
+  "category": "Core",
+  "title": "Multi-View Stereo Reconstruction",
+  "description": "Implement traditional multi-view stereo reconstruction algorithms to generate 3D geometry from multiple viewpoints, complementing single-frame depth estimation for improved accuracy.",
+  "status": "backlog",
+  "priority": 2,
+  "complexity": "complex",
+  "dependencies": [
+    "depth-model-selection"
+  ],
+  "createdAt": "2026-03-06T22:35:43.366Z",
+  "updatedAt": "2026-03-06T22:35:43.366Z"
+}

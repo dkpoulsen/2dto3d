@@ -1,0 +1,15 @@
+{
+  "id": "social-media-optimization",
+  "category": "Export",
+  "title": "Social Media 3D Export Optimization",
+  "description": "Optimize output specifically for YouTube 3D, Facebook 3D, and other social media platforms with proper metadata and format.",
+  "status": "backlog",
+  "priority": 2,
+  "complexity": "simple",
+  "dependencies": [
+    "side-by-side-encoder",
+    "metadata-preservation"
+  ],
+  "createdAt": "2026-03-06T22:35:43.378Z",
+  "updatedAt": "2026-03-06T22:35:43.378Z"
+}

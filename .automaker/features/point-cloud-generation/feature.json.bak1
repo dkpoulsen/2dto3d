@@ -1,0 +1,14 @@
+{
+  "id": "point-cloud-generation",
+  "category": "Core",
+  "title": "Point Cloud Generation from Depth Maps",
+  "description": "Generate 3D point clouds from depth maps for use in other 3D applications, visualization, or quality assessment.",
+  "status": "backlog",
+  "priority": 3,
+  "complexity": "moderate",
+  "dependencies": [
+    "depth-map-processor"
+  ],
+  "createdAt": "2026-03-06T22:35:43.366Z",
+  "updatedAt": "2026-03-06T22:35:43.366Z"
+}

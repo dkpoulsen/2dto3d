@@ -1,0 +1,22 @@
+{
+  "id": "face-aware-depth-enhancement",
+  "category": "Enhancement",
+  "title": "Face-Aware Depth Enhancement",
+  "description": "Apply specialized depth estimation and enhancement for human faces to prevent 3D distortions in portrait shots.",
+  "status": "backlog",
+  "priority": 2,
+  "complexity": "moderate",
+  "dependencies": [
+    "scene-understanding",
+    "depth-map-processor"
+  ],
+  "createdAt": "2026-03-06T22:35:43.370Z",
+  "updatedAt": "2026-03-06T22:35:43.370Z",
+  "model": "zai-coding-plan/glm-5",
+  "thinkingLevel": "none",
+  "planningMode": "spec",
+  "requirePlanApproval": true,
+  "skipTests": false,
+  "branchName": "main",
+  "descriptionHistory": []
+}

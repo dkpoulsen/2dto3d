@@ -1,0 +1,11 @@
+{
+  "id": "evt-1772836552076-e1a45325",
+  "trigger": "feature_error",
+  "timestamp": "2026-03-06T22:35:52.076Z",
+  "projectPath": "/home/dkp/Documents/Automaker/2dto3d",
+  "projectName": "2dto3d",
+  "featureId": "priority-based-scheduling",
+  "featureName": "Priority-Based Job Scheduling",
+  "error": "Claude Code process exited with code 1",
+  "errorType": "execution"
+}

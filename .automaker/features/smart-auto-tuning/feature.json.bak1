@@ -1,0 +1,15 @@
+{
+  "id": "smart-auto-tuning",
+  "category": "Enhancement",
+  "title": "Smart Auto-Tuning Based on Content",
+  "description": "Automatically adjust depth estimation and 3D generation parameters based on detected content type (indoor, outdoor, portrait, landscape).",
+  "status": "backlog",
+  "priority": 2,
+  "complexity": "moderate",
+  "dependencies": [
+    "depth-model-selection",
+    "depth-segmentation"
+  ],
+  "createdAt": "2026-03-06T22:35:43.368Z",
+  "updatedAt": "2026-03-06T22:35:43.368Z"
+}

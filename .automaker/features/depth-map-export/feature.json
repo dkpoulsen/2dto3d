@@ -1,0 +1,21 @@
+{
+  "id": "depth-map-export",
+  "category": "Export",
+  "title": "Depth Map Export Functionality",
+  "description": "Export generated depth maps as standalone image sequences or video for use in other applications or archival.",
+  "status": "backlog",
+  "priority": 2,
+  "complexity": "simple",
+  "dependencies": [
+    "depth-map-processor"
+  ],
+  "createdAt": "2026-03-06T22:35:43.371Z",
+  "updatedAt": "2026-03-06T22:35:43.371Z",
+  "model": "zai-coding-plan/glm-5",
+  "thinkingLevel": "none",
+  "planningMode": "spec",
+  "requirePlanApproval": true,
+  "skipTests": false,
+  "branchName": "main",
+  "descriptionHistory": []
+}

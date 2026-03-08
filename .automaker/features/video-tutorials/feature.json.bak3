@@ -1,0 +1,21 @@
+{
+  "id": "video-tutorials",
+  "category": "Documentation",
+  "title": "Video Tutorial Generation",
+  "description": "Create scriptable system for generating video tutorials demonstrating features and workflows with automatic narration.",
+  "status": "pipeline_step_mmcbz6pm_scmfew",
+  "priority": 5,
+  "complexity": "complex",
+  "dependencies": [
+    "video-output-writer"
+  ],
+  "createdAt": "2026-03-06T15:23:01.939Z",
+  "updatedAt": "2026-03-06T22:15:28.183Z",
+  "model": "zai-coding-plan/glm-5",
+  "thinkingLevel": "none",
+  "planningMode": "spec",
+  "requirePlanApproval": true,
+  "skipTests": false,
+  "branchName": "main",
+  "descriptionHistory": []
+}

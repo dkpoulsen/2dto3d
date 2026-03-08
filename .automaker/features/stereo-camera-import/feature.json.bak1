@@ -1,0 +1,14 @@
+{
+  "id": "stereo-camera-import",
+  "category": "Input",
+  "title": "Stereo Camera Import Support",
+  "description": "Import and process footage from stereo camera rigs with proper synchronization and calibration.",
+  "status": "backlog",
+  "priority": 2,
+  "complexity": "complex",
+  "dependencies": [
+    "video-input-handler"
+  ],
+  "createdAt": "2026-03-06T22:35:43.378Z",
+  "updatedAt": "2026-03-06T22:35:43.378Z"
+}

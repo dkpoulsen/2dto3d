@@ -1,0 +1,15 @@
+{
+  "id": "bottleneck-detection",
+  "category": "Analytics",
+  "title": "Processing Bottleneck Detection",
+  "description": "Automatically identify and report performance bottlenecks in the processing pipeline.",
+  "status": "backlog",
+  "priority": 2,
+  "complexity": "moderate",
+  "dependencies": [
+    "profiling-tools",
+    "progress-tracking"
+  ],
+  "createdAt": "2026-03-06T22:35:43.376Z",
+  "updatedAt": "2026-03-06T22:35:43.376Z"
+}

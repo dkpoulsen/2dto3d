@@ -1,0 +1,22 @@
+{
+  "id": "view-dependent-rendering",
+  "category": "Core",
+  "title": "View-Dependent Rendering",
+  "description": "Implement view-dependent rendering techniques to generate novel viewpoints beyond just left/right stereo pairs.",
+  "status": "backlog",
+  "priority": 2,
+  "complexity": "complex",
+  "dependencies": [
+    "dibr-engine",
+    "multi-view-stereo-reconstruction"
+  ],
+  "createdAt": "2026-03-06T22:35:43.367Z",
+  "updatedAt": "2026-03-06T22:35:43.367Z",
+  "model": "zai-coding-plan/glm-5",
+  "thinkingLevel": "none",
+  "planningMode": "spec",
+  "requirePlanApproval": true,
+  "skipTests": false,
+  "branchName": "main",
+  "descriptionHistory": []
+}

@@ -1,0 +1,15 @@
+{
+  "id": "cloud-storage-integration",
+  "category": "Integration",
+  "title": "Cloud Storage Integration",
+  "description": "Direct integration with cloud storage providers (AWS S3, Google Cloud Storage, Azure Blob) for input/output.",
+  "status": "backlog",
+  "priority": 2,
+  "complexity": "moderate",
+  "dependencies": [
+    "video-input-handler",
+    "video-output-writer"
+  ],
+  "createdAt": "2026-03-06T22:35:43.378Z",
+  "updatedAt": "2026-03-06T22:35:43.378Z"
+}

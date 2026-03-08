@@ -1,0 +1,14 @@
+{
+  "id": "version-control",
+  "category": "Workflow",
+  "title": "Processing Settings Version Control",
+  "description": "Track changes to processing settings with version history and rollback capabilities.",
+  "status": "backlog",
+  "priority": 3,
+  "complexity": "moderate",
+  "dependencies": [
+    "project-file-management"
+  ],
+  "createdAt": "2026-03-06T22:35:43.380Z",
+  "updatedAt": "2026-03-06T22:35:43.380Z"
+}

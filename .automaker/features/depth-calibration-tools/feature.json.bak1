@@ -1,0 +1,14 @@
+{
+  "id": "depth-calibration-tools",
+  "category": "Enhancement",
+  "title": "Depth Calibration Tools",
+  "description": "Provide tools for calibrating depth perception based on display characteristics and viewer distance for optimal 3D effect.",
+  "status": "backlog",
+  "priority": 3,
+  "complexity": "moderate",
+  "dependencies": [
+    "depth-focus-control"
+  ],
+  "createdAt": "2026-03-06T22:35:43.370Z",
+  "updatedAt": "2026-03-06T22:35:43.370Z"
+}

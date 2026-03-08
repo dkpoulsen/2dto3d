@@ -1,0 +1,21 @@
+{
+  "id": "lidar-depth-fusion",
+  "category": "Enhancement",
+  "title": "LiDAR/ToF Depth Data Fusion",
+  "description": "Fuse external depth data from LiDAR or Time-of-Flight sensors with estimated depth for improved accuracy.",
+  "status": "backlog",
+  "priority": 3,
+  "complexity": "complex",
+  "dependencies": [
+    "depth-map-processor"
+  ],
+  "createdAt": "2026-03-06T22:35:43.379Z",
+  "updatedAt": "2026-03-06T22:35:43.379Z",
+  "model": "zai-coding-plan/glm-5",
+  "thinkingLevel": "none",
+  "planningMode": "spec",
+  "requirePlanApproval": true,
+  "skipTests": false,
+  "branchName": "main",
+  "descriptionHistory": []
+}

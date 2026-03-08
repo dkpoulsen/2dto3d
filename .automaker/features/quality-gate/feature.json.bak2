@@ -1,0 +1,15 @@
+{
+  "id": "quality-gate",
+  "category": "Quality",
+  "title": "Automated Quality Gate",
+  "description": "Pre-processing quality check that validates video meets requirements before starting conversion.",
+  "status": "in_progress",
+  "priority": 1,
+  "complexity": "moderate",
+  "dependencies": [
+    "video-input-handler",
+    "quality-metrics"
+  ],
+  "createdAt": "2026-03-06T22:35:43.380Z",
+  "updatedAt": "2026-03-06T22:35:51.078Z"
+}

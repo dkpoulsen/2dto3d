@@ -1,0 +1,15 @@
+{
+  "id": "predictive-estimation",
+  "category": "Analytics",
+  "title": "Predictive Processing Time Estimation",
+  "description": "Use machine learning to predict processing time before starting based on video characteristics and system load.",
+  "status": "backlog",
+  "priority": 2,
+  "complexity": "complex",
+  "dependencies": [
+    "benchmark-suite",
+    "profiling-tools"
+  ],
+  "createdAt": "2026-03-06T22:35:43.375Z",
+  "updatedAt": "2026-03-06T22:35:43.375Z"
+}

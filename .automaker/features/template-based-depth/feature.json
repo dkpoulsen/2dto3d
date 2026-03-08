@@ -1,0 +1,21 @@
+{
+  "id": "template-based-depth",
+  "category": "Enhancement",
+  "title": "Template-Based Depth Estimation",
+  "description": "Use predefined depth templates for specific content types (concerts, sports, news broadcasts) with automatic scene matching.",
+  "status": "backlog",
+  "priority": 3,
+  "complexity": "moderate",
+  "dependencies": [
+    "scene-understanding"
+  ],
+  "createdAt": "2026-03-06T22:35:43.371Z",
+  "updatedAt": "2026-03-06T22:35:43.371Z",
+  "model": "zai-coding-plan/glm-5",
+  "thinkingLevel": "none",
+  "planningMode": "spec",
+  "requirePlanApproval": true,
+  "skipTests": false,
+  "branchName": "main",
+  "descriptionHistory": []
+}

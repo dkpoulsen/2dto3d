@@ -1,0 +1,21 @@
+{
+  "id": "nle-plugin",
+  "category": "Integration",
+  "title": "NLE Plugin Integration",
+  "description": "Create plugins for non-linear editors (DaVinci Resolve, Adobe Premiere) to invoke 3D conversion directly from editor.",
+  "status": "backlog",
+  "priority": 2,
+  "complexity": "complex",
+  "dependencies": [
+    "web-api-server"
+  ],
+  "createdAt": "2026-03-06T22:35:43.378Z",
+  "updatedAt": "2026-03-06T22:35:43.378Z",
+  "model": "zai-coding-plan/glm-5",
+  "thinkingLevel": "none",
+  "planningMode": "spec",
+  "requirePlanApproval": true,
+  "skipTests": false,
+  "branchName": "main",
+  "descriptionHistory": []
+}

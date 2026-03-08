@@ -1,0 +1,14 @@
+{
+  "id": "asset-library",
+  "category": "Workflow",
+  "title": "Reusable Asset Library",
+  "description": "Library system for storing reusable depth maps, models, and processing assets across projects.",
+  "status": "backlog",
+  "priority": 3,
+  "complexity": "moderate",
+  "dependencies": [
+    "project-file-management"
+  ],
+  "createdAt": "2026-03-06T22:35:43.379Z",
+  "updatedAt": "2026-03-06T22:35:43.379Z"
+}

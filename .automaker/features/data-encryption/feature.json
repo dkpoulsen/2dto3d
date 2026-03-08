@@ -1,0 +1,22 @@
+{
+  "id": "data-encryption",
+  "category": "Security",
+  "title": "Data Encryption for Sensitive Content",
+  "description": "Encrypt input and output video data for sensitive content processing with support for customer-provided keys.",
+  "status": "backlog",
+  "priority": 2,
+  "complexity": "moderate",
+  "dependencies": [
+    "video-input-handler",
+    "video-output-writer"
+  ],
+  "createdAt": "2026-03-06T22:35:43.376Z",
+  "updatedAt": "2026-03-06T22:35:43.376Z",
+  "model": "zai-coding-plan/glm-5",
+  "thinkingLevel": "none",
+  "planningMode": "spec",
+  "requirePlanApproval": true,
+  "skipTests": false,
+  "branchName": "main",
+  "descriptionHistory": []
+}

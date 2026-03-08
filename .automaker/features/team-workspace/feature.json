@@ -1,0 +1,22 @@
+{
+  "id": "team-workspace",
+  "category": "Workflow",
+  "title": "Collaborative Team Workspace",
+  "description": "Shared workspace for team collaboration on 3D conversion projects with commenting and review.",
+  "status": "backlog",
+  "priority": 2,
+  "complexity": "complex",
+  "dependencies": [
+    "web-ui-dashboard",
+    "project-access-control"
+  ],
+  "createdAt": "2026-03-06T22:35:43.380Z",
+  "updatedAt": "2026-03-06T22:35:43.380Z",
+  "model": "zai-coding-plan/glm-5",
+  "thinkingLevel": "none",
+  "planningMode": "spec",
+  "requirePlanApproval": true,
+  "skipTests": false,
+  "branchName": "main",
+  "descriptionHistory": []
+}

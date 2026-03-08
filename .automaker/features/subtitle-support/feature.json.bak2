@@ -1,0 +1,21 @@
+{
+  "id": "subtitle-support",
+  "category": "Processing",
+  "title": "Subtitle Extraction and Embedding",
+  "description": "Add support for extracting subtitles from input videos and embedding them in 3D output with proper positioning and depth cues.",
+  "status": "pipeline_step_mmcc38tb_z6cxyk",
+  "priority": 4,
+  "complexity": "simple",
+  "dependencies": [
+    "video-input-handler"
+  ],
+  "createdAt": "2026-03-06T15:23:01.934Z",
+  "updatedAt": "2026-03-06T22:15:37.022Z",
+  "model": "zai-coding-plan/glm-5",
+  "thinkingLevel": "none",
+  "planningMode": "spec",
+  "requirePlanApproval": true,
+  "skipTests": false,
+  "branchName": "main",
+  "descriptionHistory": []
+}

@@ -1,0 +1,14 @@
+{
+  "id": "real-time-depth-brushes",
+  "category": "UI",
+  "title": "Real-Time Depth Painting Brushes",
+  "description": "Add interactive brush tools in preview mode for manually adjusting depth values on specific regions in real-time.",
+  "status": "backlog",
+  "priority": 3,
+  "complexity": "moderate",
+  "dependencies": [
+    "video-preview"
+  ],
+  "createdAt": "2026-03-06T22:35:43.371Z",
+  "updatedAt": "2026-03-06T22:35:43.371Z"
+}

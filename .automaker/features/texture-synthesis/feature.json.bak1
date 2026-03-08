@@ -1,0 +1,14 @@
+{
+  "id": "texture-synthesis",
+  "category": "Core",
+  "title": "Texture Synthesis for Occluded Areas",
+  "description": "Generate plausible textures for disoccluded areas revealed during viewpoint shifts using inpainting or GAN-based synthesis.",
+  "status": "backlog",
+  "priority": 3,
+  "complexity": "complex",
+  "dependencies": [
+    "occlusion-handling"
+  ],
+  "createdAt": "2026-03-06T22:35:43.367Z",
+  "updatedAt": "2026-03-06T22:35:43.367Z"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "hardware-encoder-integration",
+  "category": "Performance",
+  "title": "Hardware Encoder Integration",
+  "description": "Utilize hardware encoders (NVENC, QuickSync, VCN) for faster video encoding with maintained quality.",
+  "status": "backlog",
+  "priority": 2,
+  "complexity": "moderate",
+  "dependencies": [
+    "video-output-writer",
+    "gpu-acceleration"
+  ],
+  "createdAt": "2026-03-06T22:35:43.378Z",
+  "updatedAt": "2026-03-06T22:35:43.378Z",
+  "model": "zai-coding-plan/glm-5",
+  "thinkingLevel": "none",
+  "planningMode": "spec",
+  "requirePlanApproval": true,
+  "skipTests": false,
+  "branchName": "main",
+  "descriptionHistory": []
+}

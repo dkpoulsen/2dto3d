@@ -1,0 +1,14 @@
+{
+  "id": "volumetric-video-processing",
+  "category": "Core",
+  "title": "Volumetric Video Processing",
+  "description": "Process volumetric video data for AR/VR applications with depth-aware volumetric rendering.",
+  "status": "backlog",
+  "priority": 3,
+  "complexity": "complex",
+  "dependencies": [
+    "nerf-integration"
+  ],
+  "createdAt": "2026-03-06T22:35:43.368Z",
+  "updatedAt": "2026-03-06T22:35:43.368Z"
+}

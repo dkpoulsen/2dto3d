@@ -1,0 +1,22 @@
+{
+  "id": "nerf-integration",
+  "category": "Core",
+  "title": "Neural Radiance Fields Integration",
+  "description": "Integrate NeRF-based neural rendering for photorealistic novel view synthesis and improved depth estimation.",
+  "status": "backlog",
+  "priority": 2,
+  "complexity": "complex",
+  "dependencies": [
+    "gpu-acceleration",
+    "depth-model-selection"
+  ],
+  "createdAt": "2026-03-06T22:35:43.368Z",
+  "updatedAt": "2026-03-06T22:35:43.368Z",
+  "model": "zai-coding-plan/glm-5",
+  "thinkingLevel": "none",
+  "planningMode": "spec",
+  "requirePlanApproval": true,
+  "skipTests": false,
+  "branchName": "main",
+  "descriptionHistory": []
+}

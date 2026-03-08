@@ -1,0 +1,11 @@
+{
+  "id": "evt-1772836554055-9144cf98",
+  "trigger": "feature_error",
+  "timestamp": "2026-03-06T22:35:54.055Z",
+  "projectPath": "/home/dkp/Documents/Automaker/2dto3d",
+  "projectName": "2dto3d",
+  "featureId": "quality-gate",
+  "featureName": "Automated Quality Gate",
+  "error": "Claude Code process exited with code 1",
+  "errorType": "execution"
+}

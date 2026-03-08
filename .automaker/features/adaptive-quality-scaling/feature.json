@@ -1,0 +1,22 @@
+{
+  "id": "adaptive-quality-scaling",
+  "category": "Performance",
+  "title": "Adaptive Quality Scaling",
+  "description": "Automatically adjust processing quality based on real-time performance metrics to meet deadlines or resource constraints.",
+  "status": "backlog",
+  "priority": 2,
+  "complexity": "moderate",
+  "dependencies": [
+    "progress-tracking",
+    "quality-metrics"
+  ],
+  "createdAt": "2026-03-06T22:35:43.373Z",
+  "updatedAt": "2026-03-06T22:35:43.373Z",
+  "model": "zai-coding-plan/glm-5",
+  "thinkingLevel": "none",
+  "planningMode": "spec",
+  "requirePlanApproval": true,
+  "skipTests": false,
+  "branchName": "main",
+  "descriptionHistory": []
+}

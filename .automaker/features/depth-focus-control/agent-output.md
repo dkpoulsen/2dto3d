@@ -663,3 +663,87 @@ Let me collect the background task results and then identify test coverage gaps:
 Input: {
   "task_id": "bg_e298153c"
 }
+
+
+---
+
+## Follow-up Session
+
+I'll complete the Testing pipeline step by reviewing existing coverage and writing additional tests where needed. Let me first assess what's already covered and identify gaps.
+
+🔧 Tool: read
+Input: {
+  "filePath": "/home/dkp/Documents/Automaker/2dto3d/tests/unit/test_web_schemas.py"
+}
+
+🔧 Tool: read
+Input: {
+  "filePath": "/home/dkp/Documents/Automaker/2dto3d/tests/integration/test_api_jobs.py"
+}
+
+🔧 Tool: read
+Input: {
+  "filePath": "/home/dkp/Documents/Automaker/2dto3d/frontend/src/components/test/DepthFocusControl.test.tsx"
+}
+
+🔧 Tool: todowrite
+Input: {
+  "todos": [
+    {
+      "content": "Review existing test coverage for depth-focus feature",
+      "status": "completed",
+      "priority": "high"
+    },
+    {
+      "content": "Identify test coverage gaps",
+      "status": "completed",
+      "priority": "high"
+    },
+    {
+      "content": "Write additional integration test for depth_focus config passing through",
+      "status": "in_progress",
+      "priority": "high"
+    },
+    {
+      "content": "Write additional frontend unit tests for edge cases",
+      "status": "pending",
+      "priority": "high"
+    },
+    {
+      "content": "Run all tests to verify coverage",
+      "status": "pending",
+      "priority": "high"
+    }
+  ]
+}
+Based on my review, I identified the following **test coverage gaps**:
+
+**Backend gaps:**
+1. No test verifying depth_focus config is correctly passed to `add_job()` (this would have caught the bug I fixed earlier)
+2. Missing test for combined depth_focus + depth_curve in job_config
+
+**Frontend gaps:**
+1. Missing tests for focus zone indicator updates when values change
+2. Missing keyboard accessibility tests
+3. Missing edge case tests for slider interactions
+
+Let me add these missing tests:
+
+🔧 Tool: read
+Input: {
+  "filePath": "/home/dkp/Documents/Automaker/2dto3d/tests/integration/test_api_jobs.py",
+  "offset": 650,
+  "limit": 50
+}
+
+🔧 Tool: edit
+Input: {
+  "filePath": "/home/dkp/Documents/Automaker/2dto3d/tests/integration/test_api_jobs.py",
+  "edits": [
+    {
+      "op": "append",
+      "pos": "680#BK|",
+      "lines": "\n    def test_submit_job_depth_focus_passed_to_job_config(\n        self, client: TestClient, mock_queue: MagicMock\n    ) -> None:\n        \"\"\"Test that depth_focus config is properly passed to add_job.\"\"\"\n        mock_job = MagicMock(spec=BatchJob)\n        mock_job.job_id = \"test-job-id\"\n        mock_job.status = JobStatus.PENDING\n        mock_queue.add_job.return_value = mock_job\n\n        response = client.post(\n            \"/api/v1/jobs/\",\n            json={\n                \"input_file_id\": \"test-file-id\",\n                \"config\": {\n                    \"depth_focus\": {\n                        \"enabled\": True,\n                        \"focus_depth\": 0.7,\n                        \"focus_range\": 0.4,\n                    },\n                },\n            },\n        )\n\n        assert response.status_code == status.HTTP_201_CREATED\n\n        # Verify depth_focus was passed to add_job in job_config\n        call_args = mock_queue.add_job.call_args\n        assert call_args is not None\n        job_config = call_args.kwargs.get(\"job_config\", call_args.args[2] if len(call_args.args) > 2 else {})\n        assert \"depth_focus\" in job_config\n        assert job_config[\"depth_focus\"][\"enabled\"] is True\n        assert job_config[\"depth_focus\"][\"focus_depth\"] == 0.7\n        assert job_config[\"depth_focus\"][\"focus_range\"] == 0.4\n\n    def test_submit_job_both_depth_configs_preserved(\n        self, client: TestClient, mock_queue: MagicMock\n    ) -> None:\n        \"\"\"Test that both depth_focus and depth_curve are preserved in job_config.\"\"\"\n        mock_job = MagicMock(spec=BatchJob)\n        mock_job.job_id = \"test-job-id\"\n        mock_job.status = JobStatus.PENDING\n        mock_queue.add_job.return_value = mock_job\n\n        response = client.post(\n            \"/api/v1/jobs/\",\n            json={\n                \"input_file_id\": \"test-file-id\",\n                \"config\": {\n                    \"depth_focus\": {\n                        \"enabled\": True,\n                        \"focus_depth\": 0.6,\n                        \"focus_range\": 0.2,\n                    },\n                    \"depth_curve\": {\n                        \"enabled\": True,\n                        \"preset\": \"linear\",\n                    },\n                },\n            },\n        )\n\n        assert response.status_code == status.HTTP_201_CREATED\n\n        # Verify both depth configs were passed to add_job\n        call_args = mock_queue.add_job.call_args\n        assert call_args is not None\n        job_config = call_args.kwargs.get(\"job_config\", call_args.args[2] if len(call_args.args) > 2 else {})\n        \n        # Both depth_focus and depth_curve should be present\n        assert \"depth_focus\" in job_config, \"depth_focus was lost from job_config\"\n        assert \"depth_curve\" in job_config, \"depth_curve was lost from job_config\"\n        assert job_config[\"depth_focus\"][\"enabled\"] is True\n        assert job_config[\"depth_focus\"][\"focus_depth\"] == 0.6\n        assert job_config[\"depth_curve\"][\"enabled\"] is True\n        assert job_config[\"depth_curve\"][\"preset\"] == \"linear\"\n"
+    }
+  ]
+}

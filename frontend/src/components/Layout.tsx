@@ -8,7 +8,7 @@ import {
   Video,
   GitCompare,
 } from 'lucide-react';
-import { NotificationBell } from './NotificationBell';
+// import { NotificationBell } from './NotificationBell'; // Temporarily disabled
 const navItems = [
   { to: '/', icon: LayoutDashboard, label: 'Dashboard' },
   { to: '/upload', icon: Upload, label: 'Upload' },
@@ -29,7 +29,7 @@ export function Layout() {
               <h1 className="text-xl font-bold text-gray-900">2Dto3D Converter</h1>
             </div>
             <div className="flex items-center gap-2">
-              <NotificationBell />
+              {/* <NotificationBell /> */}
               <span className="text-sm text-gray-500">Web Dashboard</span>
             </div>
           </div>

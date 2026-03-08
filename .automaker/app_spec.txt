@@ -276,6 +276,10 @@
       <name>Metadata Preservation and Enhancement</name>
       <description>Preserve and enhance video metadata including EXIF, IPTC, and custom fields throughout the conversion process.</description>
     </feature>
+    <feature>
+      <name>Feature: feature-1772987391102-1obz8fr5o51</name>
+      <description>fix github action</description>
+    </feature>
   </implemented_features>
 
   <additional_requirements>

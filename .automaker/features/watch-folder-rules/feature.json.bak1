@@ -1,0 +1,15 @@
+{
+  "id": "watch-folder-rules",
+  "category": "Workflow",
+  "title": "Watch Folder with Custom Rules",
+  "description": "Enhanced watch folder system with user-defined rules for organizing, routing, and applying settings to incoming videos.",
+  "status": "backlog",
+  "priority": 2,
+  "complexity": "moderate",
+  "dependencies": [
+    "batch-video-queue",
+    "conditional-processing"
+  ],
+  "createdAt": "2026-03-06T22:35:43.373Z",
+  "updatedAt": "2026-03-06T22:35:43.373Z"
+}

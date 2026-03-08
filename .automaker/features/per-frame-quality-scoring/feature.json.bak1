@@ -1,0 +1,14 @@
+{
+  "id": "per-frame-quality-scoring",
+  "category": "Analytics",
+  "title": "Per-Frame Quality Scoring",
+  "description": "Generate quality scores for each processed frame to identify problematic areas requiring manual intervention.",
+  "status": "backlog",
+  "priority": 3,
+  "complexity": "moderate",
+  "dependencies": [
+    "quality-metrics"
+  ],
+  "createdAt": "2026-03-06T22:35:43.375Z",
+  "updatedAt": "2026-03-06T22:35:43.375Z"
+}

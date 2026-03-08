@@ -1,0 +1,14 @@
+{
+  "id": "ar-vr-platform-export",
+  "category": "Export",
+  "title": "AR/VR Platform-Specific Exports",
+  "description": "Generate optimized exports for specific AR/VR platforms (Oculus, Vive, ARKit, ARCore) with proper format and metadata.",
+  "status": "backlog",
+  "priority": 2,
+  "complexity": "moderate",
+  "dependencies": [
+    "vr-output-generator"
+  ],
+  "createdAt": "2026-03-06T22:35:43.379Z",
+  "updatedAt": "2026-03-06T22:35:43.379Z"
+}

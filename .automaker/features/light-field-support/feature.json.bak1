@@ -1,0 +1,14 @@
+{
+  "id": "light-field-support",
+  "category": "Core",
+  "title": "Light Field Video Processing",
+  "description": "Support light field video format input/output for advanced holographic and autostereoscopic displays.",
+  "status": "backlog",
+  "priority": 3,
+  "complexity": "complex",
+  "dependencies": [
+    "multi-view-stereo-reconstruction"
+  ],
+  "createdAt": "2026-03-06T22:35:43.367Z",
+  "updatedAt": "2026-03-06T22:35:43.367Z"
+}

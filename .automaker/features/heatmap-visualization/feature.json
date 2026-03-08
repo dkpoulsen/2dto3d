@@ -1,0 +1,22 @@
+{
+  "id": "heatmap-visualization",
+  "category": "Analytics",
+  "title": "Processing Time Heatmap",
+  "description": "Generate visual heatmaps showing processing time distribution across video frames.",
+  "status": "backlog",
+  "priority": 3,
+  "complexity": "simple",
+  "dependencies": [
+    "profiling-tools",
+    "preview-thumbnail-grid"
+  ],
+  "createdAt": "2026-03-06T22:35:43.376Z",
+  "updatedAt": "2026-03-06T22:35:43.376Z",
+  "model": "zai-coding-plan/glm-5",
+  "thinkingLevel": "none",
+  "planningMode": "spec",
+  "requirePlanApproval": true,
+  "skipTests": false,
+  "branchName": "main",
+  "descriptionHistory": []
+}

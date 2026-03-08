@@ -1,0 +1,22 @@
+{
+  "id": "compliance-logging",
+  "category": "Security",
+  "title": "Broadcast Standards Compliance Logging",
+  "description": "Generate detailed logs to verify compliance with broadcast standards for 3D content.",
+  "status": "backlog",
+  "priority": 2,
+  "complexity": "moderate",
+  "dependencies": [
+    "logging-system",
+    "quality-metrics"
+  ],
+  "createdAt": "2026-03-06T22:35:43.377Z",
+  "updatedAt": "2026-03-06T22:35:43.377Z",
+  "model": "zai-coding-plan/glm-5",
+  "thinkingLevel": "none",
+  "planningMode": "spec",
+  "requirePlanApproval": true,
+  "skipTests": false,
+  "branchName": "main",
+  "descriptionHistory": []
+}

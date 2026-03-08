@@ -1,0 +1,15 @@
+{
+  "id": "project-access-control",
+  "category": "Security",
+  "title": "Project-Level Access Control",
+  "description": "Implement fine-grained access control at project level allowing teams to manage permissions on shared work.",
+  "status": "backlog",
+  "priority": 2,
+  "complexity": "moderate",
+  "dependencies": [
+    "project-file-management",
+    "user-authentication"
+  ],
+  "createdAt": "2026-03-06T22:35:43.377Z",
+  "updatedAt": "2026-03-06T22:35:43.377Z"
+}

@@ -1,0 +1,21 @@
+{
+  "id": "workflow-templates",
+  "category": "Workflow",
+  "title": "Workflow Templates",
+  "description": "Create reusable workflow templates for common processing pipelines (e.g., YouTube VR upload, cinema-quality 3D).",
+  "status": "backlog",
+  "priority": 2,
+  "complexity": "moderate",
+  "dependencies": [
+    "preset-manager"
+  ],
+  "createdAt": "2026-03-06T22:35:43.372Z",
+  "updatedAt": "2026-03-06T22:35:43.372Z",
+  "model": "zai-coding-plan/glm-5",
+  "thinkingLevel": "none",
+  "planningMode": "spec",
+  "requirePlanApproval": true,
+  "skipTests": false,
+  "branchName": "main",
+  "descriptionHistory": []
+}

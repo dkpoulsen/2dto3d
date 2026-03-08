@@ -1,0 +1,14 @@
+{
+  "id": "undo-redo-functionality",
+  "category": "UI",
+  "title": "Undo/Redo Functionality",
+  "description": "Implement undo/redo stack for interactive depth editing operations in the GUI and web interface.",
+  "status": "backlog",
+  "priority": 3,
+  "complexity": "moderate",
+  "dependencies": [
+    "interactive-depth-editor"
+  ],
+  "createdAt": "2026-03-06T22:35:43.372Z",
+  "updatedAt": "2026-03-06T22:35:43.372Z"
+}

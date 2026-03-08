@@ -1,0 +1,14 @@
+{
+  "id": "saml-integration",
+  "category": "Security",
+  "title": "SAML/LDAP Authentication Integration",
+  "description": "Support enterprise SSO through SAML and LDAP for corporate deployments.",
+  "status": "backlog",
+  "priority": 3,
+  "complexity": "complex",
+  "dependencies": [
+    "user-authentication"
+  ],
+  "createdAt": "2026-03-06T22:35:43.377Z",
+  "updatedAt": "2026-03-06T22:35:43.377Z"
+}

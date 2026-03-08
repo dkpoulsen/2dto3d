@@ -1,0 +1,15 @@
+{
+  "id": "resource-monitoring-dashboard",
+  "category": "Monitoring",
+  "title": "Real-Time Resource Monitoring Dashboard",
+  "description": "Visual dashboard showing GPU, CPU, memory, and disk usage in real-time for system optimization.",
+  "status": "backlog",
+  "priority": 2,
+  "complexity": "moderate",
+  "dependencies": [
+    "health-monitor",
+    "memory-monitor"
+  ],
+  "createdAt": "2026-03-06T22:35:43.374Z",
+  "updatedAt": "2026-03-06T22:35:43.374Z"
+}

@@ -1,0 +1,15 @@
+{
+  "id": "project-file-management",
+  "category": "Workflow",
+  "title": "Project File Management System",
+  "description": "Create project file format that saves all processing settings, checkpoints, and metadata for complete job reconstruction.",
+  "status": "backlog",
+  "priority": 2,
+  "complexity": "moderate",
+  "dependencies": [
+    "preset-manager",
+    "checkpoint-resume"
+  ],
+  "createdAt": "2026-03-06T22:35:43.371Z",
+  "updatedAt": "2026-03-06T22:35:43.371Z"
+}

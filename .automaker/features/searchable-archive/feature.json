@@ -1,0 +1,22 @@
+{
+  "id": "searchable-archive",
+  "category": "Workflow",
+  "title": "Searchable Processed Video Archive",
+  "description": "Indexed archive of all processed videos with searchable metadata for quick retrieval.",
+  "status": "backlog",
+  "priority": 3,
+  "complexity": "moderate",
+  "dependencies": [
+    "project-file-management",
+    "metadata-preservation"
+  ],
+  "createdAt": "2026-03-06T22:35:43.380Z",
+  "updatedAt": "2026-03-06T22:35:43.380Z",
+  "model": "zai-coding-plan/glm-5",
+  "thinkingLevel": "none",
+  "planningMode": "spec",
+  "requirePlanApproval": true,
+  "skipTests": false,
+  "branchName": "main",
+  "descriptionHistory": []
+}

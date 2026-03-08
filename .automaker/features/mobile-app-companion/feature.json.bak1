@@ -1,0 +1,15 @@
+{
+  "id": "mobile-app-companion",
+  "category": "UI",
+  "title": "Mobile Companion App",
+  "description": "Create mobile app for remote monitoring, job submission, and preview viewing of processing jobs.",
+  "status": "backlog",
+  "priority": 3,
+  "complexity": "complex",
+  "dependencies": [
+    "web-api-server",
+    "notification-system"
+  ],
+  "createdAt": "2026-03-06T22:35:43.379Z",
+  "updatedAt": "2026-03-06T22:35:43.379Z"
+}
