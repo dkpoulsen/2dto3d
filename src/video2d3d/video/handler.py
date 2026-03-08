@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import contextlib
 import json
 import subprocess
 from pathlib import Path
@@ -340,12 +341,9 @@ class VideoInputHandler:
 
         # Extract format-level information
         format_info = ffprobe_data.get("format", {})
-        if format_info:
-            if "bit_rate" in format_info:
-                try:
-                    metadata.bitrate = int(format_info["bit_rate"])
-                except (ValueError, TypeError):
-                    pass
+        if format_info and "bit_rate" in format_info:
+            with contextlib.suppress(ValueError, TypeError):
+                metadata.bitrate = int(format_info["bit_rate"])
 
         # Extract stream information
         streams = ffprobe_data.get("streams", [])
@@ -360,15 +358,11 @@ class VideoInputHandler:
                 metadata.has_audio = True
                 metadata.audio_codec = stream.get("codec_name", "")
                 if "sample_rate" in stream:
-                    try:
+                    with contextlib.suppress(ValueError, TypeError):
                         metadata.audio_sample_rate = int(stream["sample_rate"])
-                    except (ValueError, TypeError):
-                        pass
                 if "channels" in stream:
-                    try:
+                    with contextlib.suppress(ValueError, TypeError):
                         metadata.audio_channels = int(stream["channels"])
-                    except (ValueError, TypeError):
-                        pass
 
         return metadata
 

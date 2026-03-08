@@ -108,7 +108,7 @@ class StereoGenerator:
         convergence: float = 0.5,
         focal_length: float = 1.0,
         hole_filling: str = "nearest",
-        dibr_config: Optional[DIBRConfig] = None,
+        dibr_config: DIBRConfig | None = None,
     ) -> None:
         """Initialize the stereo generator.
 
@@ -151,7 +151,7 @@ class StereoGenerator:
         self,
         frame: np.ndarray,
         depth_map: np.ndarray,
-    ) -> Tuple[np.ndarray, np.ndarray]:
+    ) -> tuple[np.ndarray, np.ndarray]:
         """Generate left and right eye views from a frame and depth map.
 
         This method uses DIBR to shift pixels horizontally based on depth
@@ -404,7 +404,7 @@ class AnaglyphGenerator(StereoGenerator):
         self,
         left: np.ndarray,
         right: np.ndarray,
-        method: Optional[str | AnaglyphType] = None,
+        method: str | AnaglyphType | None = None,
     ) -> np.ndarray:
         """Combine left and right views into an anaglyph 3D image.
 

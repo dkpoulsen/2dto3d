@@ -10,7 +10,7 @@ import json
 from dataclasses import asdict, dataclass, field
 from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, List, Optional
+from typing import Any
 from uuid import uuid4
 
 
@@ -37,12 +37,12 @@ class DepthEstimationSettings:
     temporal_consistency: bool = True
     temporal_smoothing_factor: float = 0.5
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for serialization."""
         return asdict(self)
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> DepthEstimationSettings:
+    def from_dict(cls, data: dict[str, Any]) -> DepthEstimationSettings:
         """Create from dictionary."""
         return cls(
             model=data.get("model", "midas_small"),
@@ -71,12 +71,12 @@ class StereoGenerationSettings:
     sbs_swap_eyes: bool = False
     sbs_half_width: bool = False
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for serialization."""
         return asdict(self)
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> StereoGenerationSettings:
+    def from_dict(cls, data: dict[str, Any]) -> StereoGenerationSettings:
         """Create from dictionary."""
         return cls(
             format=data.get("format", "side_by_side"),
@@ -108,12 +108,12 @@ class VideoOutputSettings:
     crf: int = 23
     pixel_format: str = "yuv420p"
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for serialization."""
         return asdict(self)
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> VideoOutputSettings:
+    def from_dict(cls, data: dict[str, Any]) -> VideoOutputSettings:
         """Create from dictionary."""
         return cls(
             format=data.get("format", "mp4"),
@@ -140,12 +140,12 @@ class ProcessingSettings:
     mixed_precision: bool = True
     max_memory_percent: int = 80
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for serialization."""
         return asdict(self)
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> ProcessingSettings:
+    def from_dict(cls, data: dict[str, Any]) -> ProcessingSettings:
         """Create from dictionary."""
         return cls(
             batch_size=data.get("batch_size", 4),
@@ -174,7 +174,7 @@ class QualitySettings:
     post_processing: bool = True
     calculate_metrics: bool = False
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for serialization."""
         return asdict(self)
 
@@ -184,17 +184,17 @@ class DepthCurveSettings:
     """Depth curve settings for artistic control over 3D effect strength."""
 
     enabled: bool = False
-    preset: Optional[str] = None  # linear, s_curve, contrast_boost, soft_curve, etc.
-    control_points: List[Dict[str, float]] = field(
+    preset: str | None = None  # linear, s_curve, contrast_boost, soft_curve, etc.
+    control_points: list[dict[str, float]] = field(
         default_factory=lambda: [{"x": 0.0, "y": 0.0}, {"x": 1.0, "y": 1.0}]
     )
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for serialization."""
         return asdict(self)
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> DepthCurveSettings:
+    def from_dict(cls, data: dict[str, Any]) -> DepthCurveSettings:
         """Create from dictionary."""
         return cls(
             enabled=data.get("enabled", False),
@@ -214,7 +214,7 @@ class PresetSettings:
     quality: QualitySettings = field(default_factory=QualitySettings)
     depth_curve: DepthCurveSettings = field(default_factory=DepthCurveSettings)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for serialization."""
         return {
             "depth_estimation": self.depth_estimation.to_dict(),
@@ -226,7 +226,7 @@ class PresetSettings:
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> PresetSettings:
+    def from_dict(cls, data: dict[str, Any]) -> PresetSettings:
         """Create from dictionary."""
         return cls(
             depth_estimation=DepthEstimationSettings.from_dict(data.get("depth_estimation", {})),
@@ -253,7 +253,7 @@ class Preset:
 
     # Classification
     category: PresetCategory = PresetCategory.GENERAL
-    tags: List[str] = field(default_factory=list)
+    tags: list[str] = field(default_factory=list)
 
     # Settings
     settings: PresetSettings = field(default_factory=PresetSettings)
@@ -265,7 +265,7 @@ class Preset:
     version: str = "1.0.0"
     author: str = ""
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for serialization."""
         return {
             "id": self.id,
@@ -282,7 +282,7 @@ class Preset:
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> Preset:
+    def from_dict(cls, data: dict[str, Any]) -> Preset:
         """Create from dictionary."""
         category_str = data.get("category", "general")
         try:

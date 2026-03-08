@@ -42,7 +42,7 @@ from dataclasses import dataclass, field
 from functools import wraps
 from statistics import median, stdev
 from threading import Lock
-from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, TypeVar
+from typing import TYPE_CHECKING, Any, Callable, TypeVar
 
 from video2d3d.utils.logger import get_logger, log_performance
 
@@ -76,7 +76,7 @@ class ComponentStats:
     call_count: int = 0
     min_time_ms: float = float("inf")
     max_time_ms: float = 0.0
-    times: List[float] = field(default_factory=list)
+    times: list[float] = field(default_factory=list)
     _max_times: int = field(default=MAX_STORED_TIMES, repr=False)
 
     @property
@@ -127,7 +127,7 @@ class ComponentStats:
             idx = random.randint(0, self._max_times - 1)
             self.times[idx] = time_ms
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for serialization."""
         return {
             "name": self.name,
@@ -154,7 +154,7 @@ class ProfilerResult:
     """
 
     session_name: str
-    components: Dict[str, ComponentStats] = field(default_factory=dict)
+    components: dict[str, ComponentStats] = field(default_factory=dict)
     total_time_ms: float = 0.0
     start_time: float = 0.0
     end_time: float = 0.0
@@ -164,7 +164,7 @@ class ProfilerResult:
         """Total time in seconds."""
         return self.total_time_ms / 1000
 
-    def get_sorted_components(self) -> List[ComponentStats]:
+    def get_sorted_components(self) -> list[ComponentStats]:
         """Get components sorted by total time (descending)."""
         return sorted(
             self.components.values(),
@@ -174,7 +174,7 @@ class ProfilerResult:
 
     def get_bottlenecks(
         self, threshold_percent: float = DEFAULT_BOTTLENECK_THRESHOLD
-    ) -> List[ComponentStats]:
+    ) -> list[ComponentStats]:
         """Get components that exceed the threshold percentage of total time.
 
         Args:
@@ -222,7 +222,7 @@ class Profiler:
         self,
         session_name: str,
         auto_log: bool = True,
-        parent: Optional[Profiler] = None,
+        parent: Profiler | None = None,
     ) -> None:
         """Initialize the profiler.
 
@@ -235,14 +235,14 @@ class Profiler:
         self.auto_log = auto_log
         self.parent = parent
 
-        self._components: Dict[str, ComponentStats] = {}
+        self._components: dict[str, ComponentStats] = {}
         self._lock = Lock()
-        self._start_time: Optional[float] = None
-        self._end_time: Optional[float] = None
+        self._start_time: float | None = None
+        self._end_time: float | None = None
         self._logger = get_logger("profiler")
 
         # Stack for nested measurements
-        self._measurement_stack: List[str] = []
+        self._measurement_stack: list[str] = []
 
     def start(self) -> Profiler:
         """Start the profiling session.
@@ -324,7 +324,7 @@ class Profiler:
                 self._components[component_name] = ComponentStats(name=component_name)
             self._components[component_name].add_measurement(time_ms)
 
-    def get_stats(self, component_name: str) -> Optional[ComponentStats]:
+    def get_stats(self, component_name: str) -> ComponentStats | None:
         """Get statistics for a specific component.
 
         Args:
@@ -342,7 +342,7 @@ class Profiler:
             ProfilerResult with all collected statistics.
         """
         with self._lock:
-            components_copy = {k: v for k, v in self._components.items()}
+            components_copy = dict(self._components.items())
 
         total_ms = sum(c.total_time_ms for c in components_copy.values())
 
@@ -424,11 +424,11 @@ class Profiler:
 
 
 # Global profiler registry for multi-threaded access
-_profilers: Dict[str, Profiler] = {}
+_profilers: dict[str, Profiler] = {}
 _profilers_lock = Lock()
 
 
-def get_profiler(session_name: str, create: bool = True) -> Optional[Profiler]:
+def get_profiler(session_name: str, create: bool = True) -> Profiler | None:
     """Get or create a profiler by session name.
 
     Args:
@@ -463,7 +463,7 @@ def clear_profiler(session_name: str) -> bool:
         return False
 
 
-def get_all_profilers() -> Dict[str, Profiler]:
+def get_all_profilers() -> dict[str, Profiler]:
     """Get all registered profilers.
 
     Returns:
@@ -475,8 +475,8 @@ def get_all_profilers() -> Dict[str, Profiler]:
 
 # Decorator for profiling functions
 def profile_component(
-    component_name: Optional[str] = None,
-    profiler_name: Optional[str] = None,
+    component_name: str | None = None,
+    profiler_name: str | None = None,
 ) -> Callable[[F], F]:
     """Decorator to profile a function.
 
@@ -527,7 +527,7 @@ def profile_component(
 @contextmanager
 def profile_block(
     component_name: str,
-    profiler_name: Optional[str] = None,
+    profiler_name: str | None = None,
 ) -> Generator[Profiler, None, None]:
     """Context manager to profile a code block.
 
@@ -590,7 +590,7 @@ class PipelineProfiler:
         """
         self.name = name
         self._profiler = Profiler(name, auto_log=auto_log)
-        self._stage_times: List[float] = []
+        self._stage_times: list[float] = []
         self._logger = get_logger("pipeline_profiler")
 
     def start(self) -> PipelineProfiler:

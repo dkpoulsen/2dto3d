@@ -654,7 +654,6 @@ class VideoOutputWriter:
         Args:
             cmd: The FFmpeg command list to append options to.
         """
-        codec = self.config.codec
         actual_codec = self._get_actual_codec()
 
         # H.264 / x264

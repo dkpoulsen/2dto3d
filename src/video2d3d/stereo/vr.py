@@ -25,7 +25,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from enum import Enum
-from typing import TYPE_CHECKING, Final, Optional, Tuple
+from typing import TYPE_CHECKING, Final
 
 import cv2
 import numpy as np
@@ -201,8 +201,8 @@ class VREncoderError(Exception):
         self,
         message: str,
         *,
-        operation: Optional[str] = None,
-        original_exception: Optional[Exception] = None,
+        operation: str | None = None,
+        original_exception: Exception | None = None,
     ) -> None:
         """Initialize the error.
 
@@ -259,7 +259,7 @@ class VREncoder:
 
     def __init__(
         self,
-        config: Optional[VREncoderConfig] = None,
+        config: VREncoderConfig | None = None,
         *,
         output_format: VROutputFormat = VROutputFormat.EQUIRECTANGULAR_SBS,
         target_width: int = VR_RESOLUTION_4K,
@@ -314,7 +314,7 @@ class VREncoder:
         self,
         left: np.ndarray,
         right: np.ndarray,
-        output_format: Optional[VROutputFormat] = None,
+        output_format: VROutputFormat | None = None,
     ) -> np.ndarray:
         """Encode stereo pair into VR-compatible format.
 
@@ -478,7 +478,7 @@ class VREncoder:
             ipd=self.config.ipd,
         )
 
-    def get_output_dimensions(self) -> Tuple[int, int]:
+    def get_output_dimensions(self) -> tuple[int, int]:
         """Get the output frame dimensions.
 
         Returns:
@@ -564,7 +564,7 @@ class VRStereoGenerator:
 
     def __init__(
         self,
-        vr_config: Optional[VREncoderConfig] = None,
+        vr_config: VREncoderConfig | None = None,
         baseline: float = 0.05,
         convergence: float = 0.5,
     ) -> None:
@@ -590,7 +590,7 @@ class VRStereoGenerator:
         self,
         frame: np.ndarray,
         depth_map: np.ndarray,
-    ) -> Tuple[np.ndarray, np.ndarray]:
+    ) -> tuple[np.ndarray, np.ndarray]:
         """Generate left and right eye views using DIBR.
 
         Args:

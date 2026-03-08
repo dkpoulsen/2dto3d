@@ -28,7 +28,7 @@ where alternate rows have different polarizations.
 from __future__ import annotations
 
 from enum import Enum
-from typing import TYPE_CHECKING, Final, Optional
+from typing import TYPE_CHECKING, Final
 
 import numpy as np
 
@@ -132,8 +132,8 @@ class InterlacedEncoder:
         self,
         left: np.ndarray,
         right: np.ndarray,
-        pattern: Optional[InterlacedPattern] = None,
-        swap_eyes: Optional[bool] = None,
+        pattern: InterlacedPattern | None = None,
+        swap_eyes: bool | None = None,
     ) -> np.ndarray:
         """Combine left and right views into an interlaced 3D image.
 
@@ -198,7 +198,7 @@ class InterlacedEncoder:
         self,
         left: np.ndarray,
         right: np.ndarray,
-        swap_eyes: Optional[bool] = None,
+        swap_eyes: bool | None = None,
     ) -> np.ndarray:
         """Encode using row-interleaved pattern (even rows = left eye).
 
@@ -220,7 +220,7 @@ class InterlacedEncoder:
         self,
         left: np.ndarray,
         right: np.ndarray,
-        swap_eyes: Optional[bool] = None,
+        swap_eyes: bool | None = None,
     ) -> np.ndarray:
         """Encode using column-interleaved pattern (even columns = left eye).
 
@@ -242,7 +242,7 @@ class InterlacedEncoder:
         self,
         left: np.ndarray,
         right: np.ndarray,
-        pattern: Optional[InterlacedPattern] = None,
+        pattern: InterlacedPattern | None = None,
     ) -> np.ndarray:
         """Encode with eyes swapped.
 

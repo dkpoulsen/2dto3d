@@ -15,7 +15,7 @@ from __future__ import annotations
 
 import time
 from pathlib import Path
-from typing import TYPE_CHECKING, List, Optional
+from typing import TYPE_CHECKING
 
 import numpy as np
 import torch
@@ -128,10 +128,10 @@ class FastDVDNetDenoiser(VideoDenoiserBase):
 
     def __init__(
         self,
-        config: Optional[FastDVDNetConfig] = None,
+        config: FastDVDNetConfig | None = None,
         *,
         device: str = "auto",
-        cache_dir: Optional[Path] = None,
+        cache_dir: Path | None = None,
     ) -> None:
         """Initialize FastDVDNet denoiser.
 
@@ -142,7 +142,7 @@ class FastDVDNetDenoiser(VideoDenoiserBase):
         """
         self._fastdvdnet_config = config or FastDVDNetConfig()
         self._cache_dir = cache_dir
-        self._model: Optional[nn.Module] = None
+        self._model: nn.Module | None = None
 
         super().__init__(
             model_name="fastdvdnet",
@@ -155,7 +155,7 @@ class FastDVDNetDenoiser(VideoDenoiserBase):
         return self._fastdvdnet_config.num_input_frames
 
     @property
-    def model(self) -> Optional[nn.Module]:
+    def model(self) -> nn.Module | None:
         """Get the loaded model (loads if not already loaded)."""
         if not self._is_loaded:
             self.load_model()
@@ -256,7 +256,7 @@ class FastDVDNetDenoiser(VideoDenoiserBase):
                 original_exception=e,
             ) from e
 
-    def _preprocess_frames(self, frames: List[np.ndarray]) -> torch.Tensor:
+    def _preprocess_frames(self, frames: list[np.ndarray]) -> torch.Tensor:
         """Preprocess frames for the model.
 
         Converts frames from numpy arrays to normalized tensor.
@@ -307,9 +307,9 @@ class FastDVDNetDenoiser(VideoDenoiserBase):
 
     def _denoise_frames_impl(
         self,
-        frames: List[np.ndarray],
+        frames: list[np.ndarray],
         **kwargs,
-    ) -> List[np.ndarray]:
+    ) -> list[np.ndarray]:
         """Implement FastDVDNet denoising logic.
 
         Args:

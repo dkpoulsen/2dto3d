@@ -15,7 +15,7 @@ from __future__ import annotations
 import time
 from dataclasses import dataclass
 from enum import Enum
-from typing import TYPE_CHECKING, Any, Dict, Optional, Union
+from typing import TYPE_CHECKING, Any
 
 import cv2
 import numpy as np
@@ -119,7 +119,7 @@ class DepthProcessorConfig:
     percentile_high: float = _DEFAULT_PERCENTILE_HIGH
     colormap: str = "turbo"
     # Depth curve adjustment for non-linear depth mapping
-    depth_curve: Optional[Dict[str, Any]] = None  # DepthCurveConfig as dict
+    depth_curve: dict[str, Any] | None = None  # DepthCurveConfig as dict
 
     def __post_init__(self) -> None:
         """Validate and normalize configuration."""
@@ -193,8 +193,8 @@ class DepthProcessingError(Exception):
         self,
         message: str,
         *,
-        operation: Optional[str] = None,
-        original_exception: Optional[Exception] = None,
+        operation: str | None = None,
+        original_exception: Exception | None = None,
     ) -> None:
         """Initialize the error.
 
@@ -246,7 +246,7 @@ class DepthMapProcessor:
 
     def __init__(
         self,
-        config: Optional[DepthProcessorConfig] = None,
+        config: DepthProcessorConfig | None = None,
         *,
         edge_aware_smoothing: bool = True,
         bilateral_filter: bool = True,
@@ -281,7 +281,7 @@ class DepthMapProcessor:
     def normalize(
         self,
         depth_map: np.ndarray,
-        method: Optional[str] = None,
+        method: str | None = None,
     ) -> np.ndarray:
         """Normalize depth map to [0, 1] range.
 
@@ -391,8 +391,8 @@ class DepthMapProcessor:
     def apply_bilateral_filter(
         self,
         depth_map: np.ndarray,
-        sigma_color: Optional[float] = None,
-        sigma_space: Optional[int] = None,
+        sigma_color: float | None = None,
+        sigma_space: int | None = None,
     ) -> np.ndarray:
         """Apply edge-preserving bilateral filter to depth map.
 
@@ -440,9 +440,9 @@ class DepthMapProcessor:
     def apply_guided_filter(
         self,
         depth_map: np.ndarray,
-        guidance: Optional[np.ndarray] = None,
-        radius: Optional[int] = None,
-        eps: Optional[float] = None,
+        guidance: np.ndarray | None = None,
+        radius: int | None = None,
+        eps: float | None = None,
     ) -> np.ndarray:
         """Apply edge-preserving guided filter to depth map.
 
@@ -478,10 +478,7 @@ class DepthMapProcessor:
             )
 
         # Use depth map as guidance if not provided
-        if guidance is None:
-            I = depth_map.astype(np.float64)
-        else:
-            I = guidance.astype(np.float64)
+        I = depth_map.astype(np.float64) if guidance is None else guidance.astype(np.float64)
 
         p = depth_map.astype(np.float64)
 
@@ -526,7 +523,7 @@ class DepthMapProcessor:
     def fill_holes(
         self,
         depth_map: np.ndarray,
-        method: Optional[str] = None,
+        method: str | None = None,
     ) -> np.ndarray:
         """Fill holes (invalid/zero regions) in the depth map.
 
@@ -655,7 +652,7 @@ class DepthMapProcessor:
     def sharpen(
         self,
         depth_map: np.ndarray,
-        amount: Optional[float] = None,
+        amount: float | None = None,
     ) -> np.ndarray:
         """Apply unsharp mask sharpening to the depth map.
 
@@ -701,7 +698,7 @@ class DepthMapProcessor:
     def apply_colormap(
         self,
         depth_map: np.ndarray,
-        colormap: Optional[str] = None,
+        colormap: str | None = None,
     ) -> np.ndarray:
         """Apply color mapping to depth map for visualization.
 
@@ -860,7 +857,7 @@ def create_processor(
     bilateral_filter: bool = True,
     hole_filling: bool = True,
     colormap: str = "turbo",
-    **kwargs: Union[bool, int, float, str],
+    **kwargs: bool | int | float | str,
 ) -> DepthMapProcessor:
     """Create a depth map processor with the specified configuration.
 
@@ -893,7 +890,7 @@ def process_depth_map(
     fill_holes: bool = True,
     bilateral_filter: bool = True,
     guided_filter: bool = False,
-    colormap: Optional[str] = None,
+    colormap: str | None = None,
 ) -> np.ndarray:
     """Process a depth map with default settings (convenience function).
 

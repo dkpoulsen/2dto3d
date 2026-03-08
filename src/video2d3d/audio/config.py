@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 
 class AudioChannelLayout(Enum):
@@ -153,7 +153,7 @@ class AudioFormatConfig:
         if self.channels <= 0:
             raise ValueError(f"Channels must be positive, got {self.channels}")
 
-    def to_ffmpeg_args(self) -> List[str]:
+    def to_ffmpeg_args(self) -> list[str]:
         """Convert to FFmpeg command-line arguments.
 
         Returns:
@@ -202,7 +202,7 @@ class AudioFormatConfig:
 
         return args
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return {
             "codec": self.codec,
@@ -238,7 +238,7 @@ class SpatialAudioConfig:
     room_damping: float = 0.5
     listener_position: tuple[float, float, float] = (0.0, 0.0, 0.0)
     source_position: tuple[float, float, float] = (0.0, 0.0, 1.0)
-    hrtf_file: Optional[str] = None
+    hrtf_file: str | None = None
     enable_reflections: bool = True
     reflection_delay: float = 20.0
     reverb_amount: float = 0.3
@@ -284,7 +284,7 @@ class SpatialAudioConfig:
                 import math
 
                 azimuth = math.degrees(math.atan2(x, z))
-                elevation = math.degrees(math.atan2(y, math.sqrt(x * x + z * z)))
+                math.degrees(math.atan2(y, math.sqrt(x * x + z * z)))
 
                 # Use atrim and adelay for simple spatialization
                 # Left ear delay for sounds from the right, right ear delay for sounds from the left
@@ -297,7 +297,7 @@ class SpatialAudioConfig:
                 # Add room simulation
                 if self.enable_reflections:
                     room_sizes = {"small": 5, "medium": 15, "large": 30, "cathedral": 100}
-                    size = room_sizes.get(self.room_size, 15)
+                    room_sizes.get(self.room_size, 15)
                     filters.append(f"aecho=1.0:0.7:{self.reflection_delay}:{self.reverb_amount}")
 
         elif self.spatial_format.is_ambisonics:
@@ -308,14 +308,14 @@ class SpatialAudioConfig:
                 SpatialAudioFormat.AMBISONICS_2ND: "2",
                 SpatialAudioFormat.AMBISONICS_3RD: "3",
             }
-            order = order_map[self.spatial_format]
+            order_map[self.spatial_format]
             # Note: Full Ambisonics requires external tools like SPARTA or IEM plugins
             # Here we provide a basic stereo-to-B-format conversion
             filters.append(f"aformat=channel_layouts={self.spatial_format.value}")
 
         return ",".join(filters) if filters else ""
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return {
             "enable_spatial": self.enable_spatial,
@@ -353,7 +353,7 @@ class AudioConfig:
     spatial_config: SpatialAudioConfig = field(default_factory=SpatialAudioConfig)
     normalize: bool = True
     normalization_target: float = -14.0
-    tracks_to_preserve: Optional[List[int]] = None
+    tracks_to_preserve: list[int] | None = None
     default_track: int = 0
     enable_downmix: bool = False
     downmix_coefficient: float = 0.707  # -3dB
@@ -370,7 +370,7 @@ class AudioConfig:
                 f"downmix_coefficient must be between 0.0 and 1.0, got {self.downmix_coefficient}"
             )
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return {
             "preserve_tracks": self.preserve_tracks,

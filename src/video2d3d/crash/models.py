@@ -15,7 +15,7 @@ from dataclasses import asdict, dataclass, field
 from datetime import datetime, timezone
 from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 from uuid import uuid4
 
 # Sanitization pattern for filenames - keep only safe characters
@@ -57,21 +57,21 @@ class ActiveJobInfo:
 
     job_id: str
     status: str
-    input_file: Optional[str] = None
-    output_file: Optional[str] = None
+    input_file: str | None = None
+    output_file: str | None = None
     progress_percent: float = 0.0
-    current_stage: Optional[str] = None
-    started_at: Optional[str] = None
+    current_stage: str | None = None
+    started_at: str | None = None
     frames_processed: int = 0
     total_frames: int = 0
-    error_message: Optional[str] = None
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    error_message: str | None = None
+    metadata: dict[str, Any] = field(default_factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return asdict(self)
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> ActiveJobInfo:
+    def from_dict(cls, data: dict[str, Any]) -> ActiveJobInfo:
         return cls(**data)
 
 
@@ -80,17 +80,17 @@ class GPUInfo:
     """GPU state at crash time."""
 
     available: bool = False
-    device_name: Optional[str] = None
+    device_name: str | None = None
     device_count: int = 0
     memory_used_mb: float = 0.0
     memory_free_mb: float = 0.0
     memory_total_mb: float = 0.0
     memory_utilization_percent: float = 0.0
-    compute_capability: Optional[str] = None
-    temperature_celsius: Optional[float] = None
-    power_usage_watts: Optional[float] = None
+    compute_capability: str | None = None
+    temperature_celsius: float | None = None
+    power_usage_watts: float | None = None
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return asdict(self)
 
 
@@ -106,7 +106,7 @@ class MemoryInfo:
     swap_used_mb: float = 0.0
     swap_utilization_percent: float = 0.0
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return asdict(self)
 
 
@@ -115,17 +115,17 @@ class ProcessInfo:
     """Process state at crash time."""
 
     pid: int = 0
-    parent_pid: Optional[int] = None
+    parent_pid: int | None = None
     command_line: str = ""
     working_directory: str = ""
     cpu_percent: float = 0.0
     memory_rss_mb: float = 0.0
     memory_vms_mb: float = 0.0
     num_threads: int = 1
-    num_file_descriptors: Optional[int] = None
+    num_file_descriptors: int | None = None
     uptime_seconds: float = 0.0
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return asdict(self)
 
 
@@ -151,12 +151,12 @@ class SystemState:
     process: ProcessInfo = field(default_factory=ProcessInfo)
 
     # Application state
-    active_jobs: List[ActiveJobInfo] = field(default_factory=list)
-    queue_stats: Dict[str, Any] = field(default_factory=dict)
+    active_jobs: list[ActiveJobInfo] = field(default_factory=list)
+    queue_stats: dict[str, Any] = field(default_factory=dict)
     app_version: str = ""
-    app_config: Dict[str, Any] = field(default_factory=dict)
+    app_config: dict[str, Any] = field(default_factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "timestamp": self.timestamp,
             "uptime_seconds": self.uptime_seconds,
@@ -176,7 +176,7 @@ class SystemState:
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> SystemState:
+    def from_dict(cls, data: dict[str, Any]) -> SystemState:
         gpu_data = data.get("gpu", {})
         memory_data = data.get("memory", {})
         process_data = data.get("process", {})
@@ -220,23 +220,23 @@ class CrashReport:
     exception_module: str = ""
 
     # Signal info (for signal-based crashes)
-    signal_number: Optional[int] = None
-    signal_name: Optional[str] = None
+    signal_number: int | None = None
+    signal_name: str | None = None
 
     # Context
-    context: Dict[str, Any] = field(default_factory=dict)
-    tags: List[str] = field(default_factory=list)
-    user_message: Optional[str] = None
+    context: dict[str, Any] = field(default_factory=dict)
+    tags: list[str] = field(default_factory=list)
+    user_message: str | None = None
 
     # System state
-    system_state: Optional[SystemState] = None
+    system_state: SystemState | None = None
 
     # Log excerpts (last N log lines before crash)
-    log_excerpts: List[str] = field(default_factory=list)
+    log_excerpts: list[str] = field(default_factory=list)
 
     # Recovery info
     recovered: bool = False
-    recovery_action: Optional[str] = None
+    recovery_action: str | None = None
 
     def __post_init__(self):
         if not self.report_id:
@@ -244,7 +244,7 @@ class CrashReport:
         if not self.created_at:
             self.created_at = datetime.now(timezone.utc).isoformat()
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "report_id": self.report_id,
             "created_at": self.created_at,
@@ -269,7 +269,7 @@ class CrashReport:
         return json.dumps(self.to_dict(), indent=indent)
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> CrashReport:
+    def from_dict(cls, data: dict[str, Any]) -> CrashReport:
         system_state = None
         if data.get("system_state"):
             system_state = SystemState.from_dict(data["system_state"])
@@ -352,7 +352,7 @@ class CrashReportSummary:
     exception_message: str
     recovered: bool = False
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "report_id": self.report_id,
             "created_at": self.created_at,
@@ -368,12 +368,12 @@ class CrashReportSummary:
 class CrashReportList:
     """List of crash report summaries with metadata."""
 
-    reports: List[CrashReportSummary]
+    reports: list[CrashReportSummary]
     total_count: int
     page: int = 1
     page_size: int = 20
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "reports": [r.to_dict() for r in self.reports],
             "total_count": self.total_count,

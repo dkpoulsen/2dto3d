@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import time
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, List, Optional
+from typing import TYPE_CHECKING
 
 import numpy as np
 
@@ -50,7 +50,7 @@ class VideoDenoiserBase(ABC):
 
     def __init__(
         self,
-        config: Optional[VideoDenoiserConfig] = None,
+        config: VideoDenoiserConfig | None = None,
         *,
         model_name: str = "unknown",
         device: str = "auto",
@@ -66,10 +66,10 @@ class VideoDenoiserBase(ABC):
         self._model_name = model_name
         self._device = device
         self._is_loaded: bool = False
-        self._logger: Optional[Logger] = None
+        self._logger: Logger | None = None
 
     @property
-    def config(self) -> Optional[VideoDenoiserConfig]:
+    def config(self) -> VideoDenoiserConfig | None:
         """Get the configuration."""
         return self._config
 
@@ -123,9 +123,9 @@ class VideoDenoiserBase(ABC):
     @abstractmethod
     def _denoise_frames_impl(
         self,
-        frames: List[np.ndarray],
+        frames: list[np.ndarray],
         **kwargs,
-    ) -> List[np.ndarray]:
+    ) -> list[np.ndarray]:
         """Implement the actual denoising logic.
 
         Args:
@@ -140,7 +140,7 @@ class VideoDenoiserBase(ABC):
         """
         pass
 
-    def _validate_input(self, frames: List[np.ndarray]) -> None:
+    def _validate_input(self, frames: list[np.ndarray]) -> None:
         """Validate input frames.
 
         Args:
@@ -195,9 +195,9 @@ class VideoDenoiserBase(ABC):
 
     def denoise_frames(
         self,
-        frames: List[np.ndarray],
+        frames: list[np.ndarray],
         **kwargs,
-    ) -> List[np.ndarray]:
+    ) -> list[np.ndarray]:
         """Denoise a sequence of frames.
 
         This is the main entry point for denoising. It handles:
@@ -255,7 +255,7 @@ class VideoDenoiserBase(ABC):
     def denoise_frame(
         self,
         frame: np.ndarray,
-        context_frames: Optional[List[np.ndarray]] = None,
+        context_frames: list[np.ndarray] | None = None,
         **kwargs,
     ) -> np.ndarray:
         """Denoise a single frame using optional temporal context.

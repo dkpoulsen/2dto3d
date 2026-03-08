@@ -10,7 +10,7 @@ import gc
 from collections.abc import Generator
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, Tuple, Union
+from typing import Any, Callable
 
 import numpy as np
 
@@ -39,12 +39,12 @@ class VideoUpscaleStats:
     total_frames: int = 0
     total_time_ms: float = 0.0
     average_time_ms: float = 0.0
-    original_resolution: Tuple[int, int] = (0, 0)
-    output_resolution: Tuple[int, int] = (0, 0)
+    original_resolution: tuple[int, int] = (0, 0)
+    output_resolution: tuple[int, int] = (0, 0)
     total_tiles: int = 0
     memory_peak_mb: float = 0.0
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return {
             "frames_processed": self.frames_processed,
@@ -100,7 +100,7 @@ class VideoUpscaler:
         self.config = config
         self._logger = get_logger("video_upscaler")
         self._use_dummy = use_dummy
-        self._upscaler: Optional[BaseUpscaler] = None
+        self._upscaler: BaseUpscaler | None = None
         self._is_initialized = False
 
     def initialize(self) -> None:
@@ -150,9 +150,9 @@ class VideoUpscaler:
 
     def upscale_frames(
         self,
-        frames: List[np.ndarray],
-        progress_callback: Optional[Callable[[int, int], None]] = None,
-    ) -> List[np.ndarray]:
+        frames: list[np.ndarray],
+        progress_callback: Callable[[int, int], None] | None = None,
+    ) -> list[np.ndarray]:
         """Upscale a list of frames.
 
         Args:
@@ -185,10 +185,10 @@ class VideoUpscaler:
 
     def upscale_frame_generator(
         self,
-        frame_generator: Generator[Tuple[int, np.ndarray], None, None],
-        progress_callback: Optional[Callable[[int, int, int], None]] = None,
-        total_frames: Optional[int] = None,
-    ) -> Generator[Tuple[int, np.ndarray, UpscaleResult], None, None]:
+        frame_generator: Generator[tuple[int, np.ndarray], None, None],
+        progress_callback: Callable[[int, int, int], None] | None = None,
+        total_frames: int | None = None,
+    ) -> Generator[tuple[int, np.ndarray, UpscaleResult], None, None]:
         """Upscale frames from a generator.
 
         This is the most memory-efficient way to process large videos.
@@ -224,9 +224,9 @@ class VideoUpscaler:
 
     def upscale_video(
         self,
-        input_path: Union[str, Path],
-        output_path: Union[str, Path],
-        progress_callback: Optional[Callable[[str, int, int], None]] = None,
+        input_path: str | Path,
+        output_path: str | Path,
+        progress_callback: Callable[[str, int, int], None] | None = None,
     ) -> VideoUpscaleStats:
         """Upscale an entire video file.
 
@@ -284,7 +284,7 @@ class VideoUpscaler:
             writer.open()
 
             # Process frames
-            for frame_number, upscaled_frame, result in self.upscale_frame_generator(
+            for _frame_number, upscaled_frame, result in self.upscale_frame_generator(
                 extractor.extract_frames(),
                 progress_callback=lambda fn, c, t: (
                     progress_callback("upscaling", c, t) if progress_callback else None
@@ -338,10 +338,10 @@ class VideoUpscaler:
 
 
 def upscale_video(
-    input_path: Union[str, Path],
-    output_path: Union[str, Path],
-    config: Optional[UpscalerConfig] = None,
-    progress_callback: Optional[Callable[[str, int, int], None]] = None,
+    input_path: str | Path,
+    output_path: str | Path,
+    config: UpscalerConfig | None = None,
+    progress_callback: Callable[[str, int, int], None] | None = None,
 ) -> VideoUpscaleStats:
     """Convenience function to upscale a video.
 
@@ -362,10 +362,10 @@ def upscale_video(
 
 
 def upscale_frames(
-    frames: List[np.ndarray],
-    config: Optional[UpscalerConfig] = None,
-    progress_callback: Optional[Callable[[int, int], None]] = None,
-) -> List[np.ndarray]:
+    frames: list[np.ndarray],
+    config: UpscalerConfig | None = None,
+    progress_callback: Callable[[int, int], None] | None = None,
+) -> list[np.ndarray]:
     """Convenience function to upscale a list of frames.
 
     Args:

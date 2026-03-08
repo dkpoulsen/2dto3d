@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import time
 from pathlib import Path
-from typing import TYPE_CHECKING, List, Optional, Union
+from typing import TYPE_CHECKING
 
 import numpy as np
 
@@ -48,11 +48,11 @@ class VideoDenoiserSelector:
 
     def __init__(
         self,
-        config: Optional[VideoDenoiserConfig] = None,
+        config: VideoDenoiserConfig | None = None,
         *,
         model_type: str = "fastdvdnet",
         device: str = "auto",
-        cache_dir: Optional[Path] = None,
+        cache_dir: Path | None = None,
     ) -> None:
         """Initialize the video denoiser selector.
 
@@ -75,7 +75,7 @@ class VideoDenoiserSelector:
 
         # Loaded denoisers cache
         self._denoisers: dict[DenoiserModelType, VideoDenoiserBase] = {}
-        self._active_model: Optional[DenoiserModelType] = None
+        self._active_model: DenoiserModelType | None = None
 
         self._logger = get_logger("denoising.selector")
         self._logger.info(
@@ -84,7 +84,7 @@ class VideoDenoiserSelector:
         )
 
     @property
-    def active_model(self) -> Optional[DenoiserModelType]:
+    def active_model(self) -> DenoiserModelType | None:
         """Get the currently active model type."""
         return self._active_model
 
@@ -146,7 +146,7 @@ class VideoDenoiserSelector:
                 model_name=model_type.value,
             )
 
-    def _build_attempt_order(self) -> List[DenoiserModelType]:
+    def _build_attempt_order(self) -> list[DenoiserModelType]:
         """Build the order of models to try.
 
         Returns:
@@ -167,8 +167,8 @@ class VideoDenoiserSelector:
 
     def denoise_frames(
         self,
-        frames: List[np.ndarray],
-    ) -> List[np.ndarray]:
+        frames: list[np.ndarray],
+    ) -> list[np.ndarray]:
         """Denoise a sequence of frames with automatic model selection and fallback.
 
         Args:
@@ -193,7 +193,7 @@ class VideoDenoiserSelector:
         attempt_order = self._build_attempt_order()
 
         # Try each model
-        errors: List[tuple[DenoiserModelType, Exception]] = []
+        errors: list[tuple[DenoiserModelType, Exception]] = []
 
         for model_type in attempt_order:
             try:
@@ -232,7 +232,7 @@ class VideoDenoiserSelector:
     def denoise_frame(
         self,
         frame: np.ndarray,
-        context_frames: Optional[List[np.ndarray]] = None,
+        context_frames: list[np.ndarray] | None = None,
     ) -> np.ndarray:
         """Denoise a single frame using optional temporal context.
 
@@ -258,7 +258,7 @@ class VideoDenoiserSelector:
         center_idx = len(denoised) // 2
         return denoised[center_idx]
 
-    def get_available_models(self) -> List[DenoiserModelType]:
+    def get_available_models(self) -> list[DenoiserModelType]:
         """Get list of available model types.
 
         Returns:
@@ -268,7 +268,7 @@ class VideoDenoiserSelector:
 
     def preload_models(
         self,
-        models: Optional[List[Union[str, DenoiserModelType]]] = None,
+        models: list[str | DenoiserModelType] | None = None,
     ) -> dict[str, bool]:
         """Preload specified models or all models in fallback chain.
 
@@ -299,7 +299,7 @@ class VideoDenoiserSelector:
 
         return results
 
-    def switch_model(self, model_type: Union[str, DenoiserModelType]) -> bool:
+    def switch_model(self, model_type: str | DenoiserModelType) -> bool:
         """Switch to a different model.
 
         Args:
@@ -368,10 +368,10 @@ def create_video_denoiser(
 
 
 def denoise_frames_auto(
-    frames: List[np.ndarray],
+    frames: list[np.ndarray],
     model_type: str = "fastdvdnet",
     device: str = "auto",
-) -> List[np.ndarray]:
+) -> list[np.ndarray]:
     """Denoise frames with automatic model selection (convenience function).
 
     Args:

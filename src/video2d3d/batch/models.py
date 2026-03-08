@@ -14,7 +14,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 
 class JobStatus(Enum):
@@ -101,9 +101,9 @@ class BatchJobResult:
     """
 
     success: bool = False
-    output_path: Optional[Path] = None
-    error_message: Optional[str] = None
-    error_type: Optional[str] = None
+    output_path: Path | None = None
+    error_message: str | None = None
+    error_type: str | None = None
     frames_processed: int = 0
     processing_time_seconds: float = 0.0
     metadata: dict[str, Any] = field(default_factory=dict)
@@ -165,18 +165,18 @@ class BatchJob:
 
     job_id: str = field(default_factory=lambda: str(uuid.uuid4()))
     input_path: Path = field(default_factory=lambda: Path("."))
-    output_path: Optional[Path] = None
+    output_path: Path | None = None
     status: JobStatus = JobStatus.PENDING
     priority: JobPriority = JobPriority.NORMAL
     created_at: datetime = field(default_factory=datetime.now)
-    started_at: Optional[datetime] = None
-    completed_at: Optional[datetime] = None
-    scheduled_at: Optional[datetime] = None  # When the job should start (None = immediate)
+    started_at: datetime | None = None
+    completed_at: datetime | None = None
+    scheduled_at: datetime | None = None  # When the job should start (None = immediate)
     progress: float = 0.0
     current_stage: str = ""
     retry_count: int = 0
     max_retries: int = 3
-    result: Optional[BatchJobResult] = None
+    result: BatchJobResult | None = None
     config: dict[str, Any] = field(default_factory=dict)
     metadata: dict[str, Any] = field(default_factory=dict)
     source: str = "manual"  # manual, folder_watcher, pattern, api
@@ -191,7 +191,7 @@ class BatchJob:
             self.output_path = Path(self.output_path)
 
     @property
-    def elapsed_time(self) -> Optional[float]:
+    def elapsed_time(self) -> float | None:
         """Get elapsed time in seconds since job started."""
         if self.started_at is None:
             return None
@@ -204,7 +204,7 @@ class BatchJob:
         return self.status == JobStatus.FAILED and self.retry_count < self.max_retries
 
     @property
-    def estimated_remaining_time(self) -> Optional[float]:
+    def estimated_remaining_time(self) -> float | None:
         """Estimate remaining time based on progress."""
         if self.progress <= 0 or self.started_at is None:
             return None

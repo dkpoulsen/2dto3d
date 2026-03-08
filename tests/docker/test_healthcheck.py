@@ -71,7 +71,7 @@ class TestHealthcheckSettings:
         # Health checks should not use set -e because they need to continue
         # even when individual checks fail
         # Either no set -e or it should be handled carefully
-        lines = healthcheck_content.split("\n")
+        healthcheck_content.split("\n")
         # Look for set -e at the start (before any checks)
         has_set_e = "set -e" in healthcheck_content
         # This is a soft requirement - healthcheck should handle failures

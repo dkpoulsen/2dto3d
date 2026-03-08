@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Optional
 
 
 class AudioProcessingError(Exception):
@@ -12,8 +11,8 @@ class AudioProcessingError(Exception):
     def __init__(
         self,
         message: str,
-        file_path: Optional[Path] = None,
-        reason: Optional[str] = None,
+        file_path: Path | None = None,
+        reason: str | None = None,
     ) -> None:
         """Initialize AudioProcessingError.
 
@@ -37,9 +36,9 @@ class AudioExtractionError(AudioProcessingError):
 
     def __init__(
         self,
-        file_path: Optional[Path] = None,
-        track_index: Optional[int] = None,
-        reason: Optional[str] = None,
+        file_path: Path | None = None,
+        track_index: int | None = None,
+        reason: str | None = None,
     ) -> None:
         """Initialize AudioExtractionError.
 
@@ -61,8 +60,8 @@ class AudioCodecNotSupportedError(AudioProcessingError):
     def __init__(
         self,
         codec: str,
-        file_path: Optional[Path] = None,
-        supported_codecs: Optional[list[str]] = None,
+        file_path: Path | None = None,
+        supported_codecs: list[str] | None = None,
     ) -> None:
         """Initialize AudioCodecNotSupportedError.
 
@@ -85,8 +84,8 @@ class AudioTrackNotFoundError(AudioProcessingError):
     def __init__(
         self,
         track_index: int,
-        file_path: Optional[Path] = None,
-        available_tracks: Optional[int] = None,
+        file_path: Path | None = None,
+        available_tracks: int | None = None,
     ) -> None:
         """Initialize AudioTrackNotFoundError.
 
@@ -109,8 +108,8 @@ class AudioChannelLayoutError(AudioProcessingError):
     def __init__(
         self,
         layout: str,
-        file_path: Optional[Path] = None,
-        reason: Optional[str] = None,
+        file_path: Path | None = None,
+        reason: str | None = None,
     ) -> None:
         """Initialize AudioChannelLayoutError.
 
@@ -129,8 +128,8 @@ class AudioMixError(AudioProcessingError):
 
     def __init__(
         self,
-        reason: Optional[str] = None,
-        file_path: Optional[Path] = None,
+        reason: str | None = None,
+        file_path: Path | None = None,
     ) -> None:
         """Initialize AudioMixError.
 
@@ -148,8 +147,8 @@ class SpatialAudioError(AudioProcessingError):
     def __init__(
         self,
         operation: str,
-        reason: Optional[str] = None,
-        file_path: Optional[Path] = None,
+        reason: str | None = None,
+        file_path: Path | None = None,
     ) -> None:
         """Initialize SpatialAudioError.
 

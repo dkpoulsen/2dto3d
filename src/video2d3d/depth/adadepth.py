@@ -33,7 +33,7 @@ import time
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Optional, Union
+from typing import TYPE_CHECKING, Any
 
 import numpy as np
 import torch
@@ -137,14 +137,14 @@ class AdaBinsConfig:
 
     model_type: AdaBinsModelType = AdaBinsModelType.ADADEPTH_NYU
     device: str = "auto"
-    cache_dir: Optional[Path] = None
+    cache_dir: Path | None = None
     auto_download: bool = True
-    output_resolution: Optional[int] = None
+    output_resolution: int | None = None
     use_fp16: bool = False
     optimize: bool = True
 
     # GPU acceleration settings
-    gpu_config: Optional[GPUConfig] = None
+    gpu_config: GPUConfig | None = None
     auto_batch_size: bool = True
     min_batch_size: int = 1
     max_batch_size: int = 32
@@ -195,9 +195,9 @@ class AdaBinsLoadError(Exception):
         self,
         message: str,
         *,
-        model_type: Optional[str] = None,
-        device: Optional[str] = None,
-        original_exception: Optional[Exception] = None,
+        model_type: str | None = None,
+        device: str | None = None,
+        original_exception: Exception | None = None,
     ) -> None:
         """Initialize the error.
 
@@ -220,9 +220,9 @@ class AdaBinsInferenceError(Exception):
         self,
         message: str,
         *,
-        model_type: Optional[str] = None,
-        device: Optional[str] = None,
-        original_exception: Optional[Exception] = None,
+        model_type: str | None = None,
+        device: str | None = None,
+        original_exception: Exception | None = None,
     ) -> None:
         """Initialize the error.
 
@@ -279,9 +279,9 @@ class AdaBinsEstimator:
 
     def __init__(
         self,
-        config: Optional[AdaBinsConfig] = None,
+        config: AdaBinsConfig | None = None,
         *,
-        model_type: Union[str, AdaBinsModelType] = "adadepth_nyu",
+        model_type: str | AdaBinsModelType = "adadepth_nyu",
         device: str = "auto",
     ) -> None:
         """Initialize the AdaBins depth estimator.
@@ -300,7 +300,7 @@ class AdaBinsEstimator:
             self.config = AdaBinsConfig(model_type=model_type, device=device)
 
         # Model components (lazy loaded)
-        self._model: Optional[nn.Module] = None
+        self._model: nn.Module | None = None
         self._is_loaded: bool = False
 
         logger = _get_adabins_logger()
@@ -310,7 +310,7 @@ class AdaBinsEstimator:
         )
 
     @property
-    def model(self) -> Optional[nn.Module]:
+    def model(self) -> nn.Module | None:
         """Get the loaded model (loads if not already loaded)."""
         if not self._is_loaded:
             self.load_model()
@@ -742,7 +742,7 @@ class AdaBinsEstimator:
                         predictions = self._model(batch_tensor)
 
                     # Postprocess each frame
-                    for idx, (pred, shape) in enumerate(zip(predictions, original_shapes)):
+                    for _idx, (pred, shape) in enumerate(zip(predictions, original_shapes)):
                         depth_map = self._postprocess_depth(pred.unsqueeze(0), shape)
                         depth_maps.append(depth_map)
 

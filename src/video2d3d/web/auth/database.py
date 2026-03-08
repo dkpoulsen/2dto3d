@@ -11,7 +11,6 @@ from collections.abc import Generator
 from contextlib import contextmanager
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Optional
 
 from sqlalchemy import Boolean, DateTime, String, create_engine
 from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column, sessionmaker
@@ -68,7 +67,7 @@ class UserModel(Base):
         default=datetime.now(timezone.utc),
         nullable=False,
     )
-    last_login: Mapped[Optional[datetime]] = mapped_column(
+    last_login: Mapped[datetime | None] = mapped_column(
         DateTime,
         nullable=True,
     )
@@ -92,7 +91,7 @@ def get_database_path() -> Path:
     return data_dir / "auth.db"
 
 
-def init_database(db_path: Optional[Path] = None) -> None:
+def init_database(db_path: Path | None = None) -> None:
     """Initialize the database engine and create tables.
 
     Args:

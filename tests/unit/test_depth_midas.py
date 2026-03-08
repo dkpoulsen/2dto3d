@@ -443,7 +443,7 @@ class TestDepthEstimatorCallable:
         estimator = DepthEstimator()
         estimator.estimate_depth = MagicMock(return_value=np.zeros((100, 100)))  # type: ignore[method-assign]
 
-        result = estimator(sample_rgb_image)
+        estimator(sample_rgb_image)
         estimator.estimate_depth.assert_called_once_with(sample_rgb_image)
 
 
@@ -555,7 +555,7 @@ class TestModelCaching:
         estimator._temporal_smoother = None
         estimator._temporal_config = None
 
-        hub_dir = estimator._get_torch_hub_dir()
+        estimator._get_torch_hub_dir()
 
         mock_torch.hub.set_dir.assert_called()
 

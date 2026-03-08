@@ -254,7 +254,7 @@ class TestVideoDenoiserSelector:
         result = selector.denoise_frames(sample_frames)
         assert len(result) == len(sample_frames)
         # Frames should be unchanged
-        for i, (original, denoised) in enumerate(zip(sample_frames, result)):
+        for _i, (original, denoised) in enumerate(zip(sample_frames, result)):
             np.testing.assert_array_equal(original, denoised)
 
     def test_denoise_frames_empty_input(self) -> None:

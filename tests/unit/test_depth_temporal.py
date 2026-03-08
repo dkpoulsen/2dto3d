@@ -70,7 +70,7 @@ def frame_sequence() -> list[np.ndarray]:
     base = np.random.randint(0, 255, (100, 100, 3), dtype=np.uint8)
     # Add slight variations
     frames = []
-    for i in range(5):
+    for _i in range(5):
         frame = base.copy()
         # Shift some pixels to simulate motion
         frame[:, 10:, :] = frame[:, :-10, :]
@@ -520,9 +520,7 @@ class TestBatchProcessing:
     ) -> None:
         """Test that mismatched lengths raise ValueError."""
         smoother = TemporalSmoother(method="optical_flow")
-        wrong_frames = frame_sequence = [
-            np.zeros((100, 100, 3), dtype=np.uint8) for _ in range(3)
-        ]  # Wrong count
+        wrong_frames = [np.zeros((100, 100, 3), dtype=np.uint8) for _ in range(3)]  # Wrong count
 
         with pytest.raises(ValueError, match="Length mismatch"):
             smoother.process_batch(depth_sequence, frames=wrong_frames)
@@ -543,7 +541,6 @@ class TestBatchProcessing:
 
         # Process first batch
         smoother.process_batch(depth_sequence[:3])
-        first_count = smoother.state.frame_count
 
         # Process second batch - should reset
         smoother.process_batch(depth_sequence[3:])

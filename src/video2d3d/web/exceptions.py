@@ -6,7 +6,7 @@ and FastAPI exception handlers to convert them to proper HTTP responses.
 
 from __future__ import annotations
 
-from typing import Any, Optional
+from typing import Any
 
 from fastapi import HTTPException, Request, status
 from fastapi.responses import JSONResponse
@@ -21,7 +21,7 @@ class APIError(Exception):
         message: str,
         status_code: int = status.HTTP_500_INTERNAL_SERVER_ERROR,
         error_type: str = "api_error",
-        detail: Optional[dict[str, Any]] = None,
+        detail: dict[str, Any] | None = None,
     ) -> None:
         self.message = message
         self.status_code = status_code
@@ -70,8 +70,8 @@ class ValidationError(APIError):
     def __init__(
         self,
         message: str,
-        field: Optional[str] = None,
-        value: Optional[Any] = None,
+        field: str | None = None,
+        value: Any | None = None,
     ) -> None:
         detail = {}
         if field:
@@ -92,8 +92,8 @@ class FileUploadError(APIError):
     def __init__(
         self,
         message: str,
-        filename: Optional[str] = None,
-        reason: Optional[str] = None,
+        filename: str | None = None,
+        reason: str | None = None,
     ) -> None:
         detail = {}
         if filename:
@@ -200,8 +200,8 @@ class ProcessingError(APIError):
     def __init__(
         self,
         message: str,
-        job_id: Optional[str] = None,
-        stage: Optional[str] = None,
+        job_id: str | None = None,
+        stage: str | None = None,
     ) -> None:
         detail = {}
         if job_id:
@@ -222,7 +222,7 @@ class RateLimitExceededError(APIError):
     def __init__(
         self,
         limit: str,
-        retry_after: Optional[int] = None,
+        retry_after: int | None = None,
         message: str = "Rate limit exceeded",
     ) -> None:
         detail = {"limit": limit}

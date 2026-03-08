@@ -10,7 +10,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 from video2d3d.batch.models import JobPriority
 from video2d3d.checkpoint.models import CheckpointConfig
@@ -156,18 +156,18 @@ class BatchQueueConfig:
     max_retries: int = 3
     retry_delay_seconds: float = 5.0
     job_timeout_seconds: float = 3600.0  # 1 hour
-    output_directory: Optional[Path] = None
+    output_directory: Path | None = None
     output_naming_pattern: str = "{name}_3d{ext}"
     preserve_directory_structure: bool = False
     skip_existing: bool = True
     save_state: bool = True
-    state_file: Optional[Path] = None
+    state_file: Path | None = None
     state_save_interval: float = 30.0
     file_discovery: FileDiscoveryConfig = field(default_factory=FileDiscoveryConfig)
     folder_watcher: FolderWatcherConfig = field(default_factory=FolderWatcherConfig)
     progress_update_interval: float = 1.0
-    error_callback_url: Optional[str] = None
-    completion_callback_url: Optional[str] = None
+    error_callback_url: str | None = None
+    completion_callback_url: str | None = None
     checkpoint: CheckpointConfig = field(default_factory=CheckpointConfig)
 
     def __post_init__(self) -> None:
@@ -185,10 +185,11 @@ class BatchQueueConfig:
 
             warnings.warn(
                 f"max_concurrent_jobs ({self.max_concurrent_jobs}) is high. "
-                "Consider using a lower value to avoid resource issues."
+                "Consider using a lower value to avoid resource issues.",
+                stacklevel=2,
             )
 
-    def get_output_path(self, input_path: Path, base_output_dir: Optional[Path] = None) -> Path:
+    def get_output_path(self, input_path: Path, base_output_dir: Path | None = None) -> Path:
         """Generate output path for an input file.
 
         Args:

@@ -14,7 +14,7 @@ Key features:
 from __future__ import annotations
 
 import time
-from typing import TYPE_CHECKING, Any, Optional
+from typing import TYPE_CHECKING, Any
 
 import cv2
 import numpy as np
@@ -54,8 +54,8 @@ class SkyProcessingError(Exception):
         self,
         message: str,
         *,
-        operation: Optional[str] = None,
-        original_exception: Optional[Exception] = None,
+        operation: str | None = None,
+        original_exception: Exception | None = None,
     ) -> None:
         """Initialize the error."""
         super().__init__(message)
@@ -104,7 +104,7 @@ class SkyProcessor:
 
     def __init__(
         self,
-        config: Optional[SkyboxConfig] = None,
+        config: SkyboxConfig | None = None,
     ) -> None:
         """Initialize the sky processor.
 
@@ -121,7 +121,7 @@ class SkyProcessor:
         self,
         depth_map: np.ndarray,
         sky_result: SkyDetectionResult,
-        image: Optional[np.ndarray] = None,
+        image: np.ndarray | None = None,
     ) -> np.ndarray:
         """Process depth map to handle sky regions properly.
 
@@ -295,16 +295,14 @@ class SkyProcessor:
         dilated_mask = cv2.dilate(sky_mask.astype(np.uint8), kernel)
 
         # Boundary region (dilated - original)
-        boundary = dilated_mask.astype(bool) & ~sky_mask
+        dilated_mask.astype(bool) & ~sky_mask
 
         # Create distance-based blend weights
         # Distance transform from sky boundary
         dist_in_sky = cv2.distanceTransform(
             sky_mask.astype(np.uint8), cv2.DIST_L2, cv2.DIST_MASK_PRECISE
         )
-        dist_out_sky = cv2.distanceTransform(
-            (~sky_mask).astype(np.uint8), cv2.DIST_L2, cv2.DIST_MASK_PRECISE
-        )
+        cv2.distanceTransform((~sky_mask).astype(np.uint8), cv2.DIST_L2, cv2.DIST_MASK_PRECISE)
 
         # Normalize distances
         blend_distance = config.boundary_blend_pixels
@@ -351,7 +349,7 @@ class SkyProcessor:
 def integrate_sky_depth(
     depth_map: np.ndarray,
     image: np.ndarray,
-    config: Optional[SkyboxConfig] = None,
+    config: SkyboxConfig | None = None,
 ) -> tuple[np.ndarray, SkyDetectionResult]:
     """Integrate sky detection with depth processing.
 
@@ -380,7 +378,7 @@ def integrate_sky_depth(
 
 def create_sky_depth_mask(
     sky_mask: np.ndarray,
-    horizon_y: Optional[int] = None,
+    horizon_y: int | None = None,
     max_depth: float = 1.0,
     gradient_strength: float = 0.2,
 ) -> np.ndarray:

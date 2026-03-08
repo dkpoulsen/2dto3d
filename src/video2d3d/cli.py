@@ -441,9 +441,9 @@ def batch_convert(
 
     from video2d3d.batch import BatchJobResult, BatchQueueConfig, BatchVideoQueue
 
-    logger = get_logger("batch_convert")
-    output_format = validate_output_format(format)
-    validated_model = validate_model(model)
+    get_logger("batch_convert")
+    validate_output_format(format)
+    validate_model(model)
 
     console.print("[bold blue]Batch Video Conversion[/bold blue]")
     console.print(f"[bold]Format:[/bold] {format}, [bold]Model:[/bold] {model}")
@@ -471,7 +471,7 @@ def batch_convert(
 
         if list_file:
             jobs = queue.add_jobs_from_list(
-                list(Path(line.strip()) for line in open(list_file) if line.strip())
+                [Path(line.strip()) for line in open(list_file) if line.strip()]
             )
         elif pattern:
             jobs = queue.add_jobs_from_pattern(
@@ -542,8 +542,8 @@ def queue_status(
 
     from video2d3d.batch import BatchQueueConfig
 
-    logger = get_logger("queue_status")
-    config = BatchQueueConfig()
+    get_logger("queue_status")
+    BatchQueueConfig()
     state_path = Path(state_file) if state_file else Path("logs/batch_queue_state.json")
 
     if not state_path.exists():
@@ -664,7 +664,7 @@ def serve(
         console.print("[yellow]Install with: pip install uvicorn[standard][/yellow]")
         raise typer.Exit(code=1)
 
-    config = get_config()
+    get_config()
 
     console.print("[bold blue]Starting 2Dto3D API Server[/bold blue]")
     console.print(f"[bold]Host:[/bold] {host}")

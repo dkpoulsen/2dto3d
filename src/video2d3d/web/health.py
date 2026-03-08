@@ -10,7 +10,7 @@ This module provides functions for collecting system health metrics including:
 from __future__ import annotations
 
 from datetime import datetime
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 from video2d3d.utils.gpu import get_all_gpu_info, get_device_count, is_cuda_available
 from video2d3d.utils.logger import get_logger
@@ -127,7 +127,7 @@ def get_gpu_status() -> GPUStatusResponse:
         )
 
 
-def get_queue_health(queue: Optional[BatchVideoQueue]) -> QueueHealthResponse:
+def get_queue_health(queue: BatchVideoQueue | None) -> QueueHealthResponse:
     """Get queue health and statistics.
 
     Args:
@@ -231,7 +231,7 @@ def determine_health_status(
 
 
 def get_comprehensive_health(
-    queue: Optional[BatchVideoQueue],
+    queue: BatchVideoQueue | None,
     version: str,
     uptime_seconds: float,
 ) -> ComprehensiveHealthResponse:

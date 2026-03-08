@@ -39,11 +39,7 @@ from typing import (
     Any,
     Callable,
     Generic,
-    List,
-    Optional,
-    Tuple,
     TypeVar,
-    Union,
 )
 
 import numpy as np
@@ -80,8 +76,8 @@ class BatchProcessorError(Exception):
         self,
         message: str,
         *,
-        batch_index: Optional[int] = None,
-        original_exception: Optional[Exception] = None,
+        batch_index: int | None = None,
+        original_exception: Exception | None = None,
     ) -> None:
         super().__init__(message)
         self.batch_index = batch_index
@@ -131,8 +127,8 @@ class BatchProcessorConfig:
     max_retries: int = 2
     preserve_order: bool = True
     enable_progress: bool = True
-    progress_callback: Optional[Callable[[int, int], None]] = None
-    error_callback: Optional[Callable[[Exception, int], None]] = None
+    progress_callback: Callable[[int, int], None] | None = None
+    error_callback: Callable[[Exception, int], None] | None = None
     use_shared_memory: bool = False
     gc_threshold: int = 100
 
@@ -179,8 +175,8 @@ class ProcessingResult(Generic[OutputT]):
         items_per_second: Processing throughput.
     """
 
-    outputs: List[Optional[OutputT]]
-    errors: List[Tuple[int, Exception]]
+    outputs: list[OutputT | None]
+    errors: list[tuple[int, Exception]]
     total_processed: int = 0
     total_failed: int = 0
     elapsed_seconds: float = 0.0
@@ -192,7 +188,7 @@ class ProcessingResult(Generic[OutputT]):
             return 0.0
         return ((self.total_processed - self.total_failed) / self.total_processed) * 100
 
-    def get_successful_outputs(self) -> List[OutputT]:
+    def get_successful_outputs(self) -> list[OutputT]:
         return [o for o in self.outputs if o is not None]
 
 
@@ -202,7 +198,7 @@ class ProgressTracker:
     def __init__(
         self,
         total_items: int,
-        callback: Optional[Callable[[int, int], None]] = None,
+        callback: Callable[[int, int], None] | None = None,
     ) -> None:
         self.total_items = total_items
         self.callback = callback
@@ -254,8 +250,8 @@ def _worker_process_item(
     process_fn: Callable[[InputT], OutputT],
     item: InputT,
     max_retries: int,
-) -> Tuple[int, Optional[OutputT], Optional[Exception]]:
-    last_error: Optional[Exception] = None
+) -> tuple[int, OutputT | None, Exception | None]:
+    last_error: Exception | None = None
 
     for attempt in range(max_retries + 1):
         try:
@@ -294,7 +290,7 @@ class FrameBatchProcessor(Generic[InputT, OutputT]):
 
     def __init__(
         self,
-        config: Optional[BatchProcessorConfig] = None,
+        config: BatchProcessorConfig | None = None,
         *,
         batch_size: int = DEFAULT_BATCH_SIZE,
         num_workers: int = DEFAULT_NUM_WORKERS,
@@ -381,12 +377,12 @@ class FrameBatchProcessor(Generic[InputT, OutputT]):
 
     def _process_sequential(
         self,
-        items: List[InputT],
+        items: list[InputT],
         process_fn: Callable[[InputT], OutputT],
         progress: ProgressTracker,
-    ) -> Tuple[List[Optional[OutputT]], List[Tuple[int, Exception]]]:
-        outputs: List[Optional[OutputT]] = [None] * len(items)
-        errors: List[Tuple[int, Exception]] = []
+    ) -> tuple[list[OutputT | None], list[tuple[int, Exception]]]:
+        outputs: list[OutputT | None] = [None] * len(items)
+        errors: list[tuple[int, Exception]] = []
 
         for idx, item in enumerate(items):
             try:
@@ -401,12 +397,12 @@ class FrameBatchProcessor(Generic[InputT, OutputT]):
 
     def _process_threaded(
         self,
-        items: List[InputT],
+        items: list[InputT],
         process_fn: Callable[[InputT], OutputT],
         progress: ProgressTracker,
-    ) -> Tuple[List[Optional[OutputT]], List[Tuple[int, Exception]]]:
-        outputs: List[Optional[OutputT]] = [None] * len(items)
-        errors: List[Tuple[int, Exception]] = []
+    ) -> tuple[list[OutputT | None], list[tuple[int, Exception]]]:
+        outputs: list[OutputT | None] = [None] * len(items)
+        errors: list[tuple[int, Exception]] = []
 
         with ThreadPoolExecutor(max_workers=self.config.num_workers) as executor:
             future_to_idx = {
@@ -428,12 +424,12 @@ class FrameBatchProcessor(Generic[InputT, OutputT]):
 
     def _process_multiprocessing(
         self,
-        items: List[InputT],
+        items: list[InputT],
         process_fn: Callable[[InputT], OutputT],
         progress: ProgressTracker,
-    ) -> Tuple[List[Optional[OutputT]], List[Tuple[int, Exception]]]:
-        outputs: List[Optional[OutputT]] = [None] * len(items)
-        errors: List[Tuple[int, Exception]] = []
+    ) -> tuple[list[OutputT | None], list[tuple[int, Exception]]]:
+        outputs: list[OutputT | None] = [None] * len(items)
+        errors: list[tuple[int, Exception]] = []
 
         mp_context = mp.get_context("spawn")
 
@@ -475,7 +471,7 @@ class FrameBatchProcessor(Generic[InputT, OutputT]):
         item: InputT,
         idx: int,
     ) -> OutputT:
-        last_error: Optional[Exception] = None
+        last_error: Exception | None = None
 
         for attempt in range(self.config.max_retries + 1):
             try:
@@ -502,8 +498,8 @@ class FrameBatchProcessor(Generic[InputT, OutputT]):
     def process_in_batches(
         self,
         items: Iterable[InputT],
-        process_fn: Callable[[List[InputT]], List[OutputT]],
-    ) -> Generator[List[OutputT], None, None]:
+        process_fn: Callable[[list[InputT]], list[OutputT]],
+    ) -> Generator[list[OutputT], None, None]:
         """Process items in batches, yielding results as they complete.
 
         This is a memory-efficient generator-based approach for large datasets.
@@ -515,7 +511,7 @@ class FrameBatchProcessor(Generic[InputT, OutputT]):
         Yields:
             Lists of processed outputs, one per batch.
         """
-        batch: List[InputT] = []
+        batch: list[InputT] = []
 
         for item in items:
             batch.append(item)
@@ -583,9 +579,9 @@ class ChunkedBatchProcessor(FrameBatchProcessor[np.ndarray, np.ndarray]):
     def process_video_chunks(
         self,
         video_path: str,
-        chunk_processor: Callable[[List[np.ndarray]], List[np.ndarray]],
+        chunk_processor: Callable[[list[np.ndarray]], list[np.ndarray]],
         frames_per_chunk: int = 30,
-    ) -> Generator[List[np.ndarray], None, None]:
+    ) -> Generator[list[np.ndarray], None, None]:
         """Process video in chunks for memory-efficient large video handling.
 
         Args:
@@ -601,7 +597,7 @@ class ChunkedBatchProcessor(FrameBatchProcessor[np.ndarray, np.ndarray]):
         extractor = FrameExtractor(video_path)
 
         try:
-            batch: List[np.ndarray] = []
+            batch: list[np.ndarray] = []
             for _, frame in extractor.extract_frames():
                 batch.append(frame)
                 if len(batch) >= frames_per_chunk:
@@ -619,7 +615,7 @@ def create_processor(
     batch_size: int = DEFAULT_BATCH_SIZE,
     num_workers: int = DEFAULT_NUM_WORKERS,
     mode: str = "multiprocessing",
-    **kwargs: Union[int, float, str, bool, Callable],
+    **kwargs: int | float | str | bool | Callable,
 ) -> FrameBatchProcessor:
     """Create a batch processor with the specified configuration.
 

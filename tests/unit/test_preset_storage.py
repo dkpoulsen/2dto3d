@@ -513,7 +513,7 @@ class TestPresetStorageBackup:
         storage.save(preset)
 
         backup_dir = tmp_path / "backups"
-        result = storage.backup_presets(backup_dir)
+        storage.backup_presets(backup_dir)
 
         assert backup_dir.exists()
         assert (backup_dir / "presets").exists()

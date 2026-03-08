@@ -40,7 +40,7 @@ Full-width mode preserves full horizontal resolution for each eye and is used wh
 from __future__ import annotations
 
 from enum import Enum
-from typing import TYPE_CHECKING, Final, Optional
+from typing import TYPE_CHECKING, Final
 
 import cv2
 import numpy as np
@@ -151,8 +151,8 @@ class TopBottomEncoder:
         self,
         left: np.ndarray,
         right: np.ndarray,
-        layout: Optional[TopBottomLayout] = None,
-        half_width: Optional[bool] = None,
+        layout: TopBottomLayout | None = None,
+        half_width: bool | None = None,
     ) -> np.ndarray:
         """Combine left and right views into a top-bottom 3D image.
 
@@ -222,7 +222,7 @@ class TopBottomEncoder:
         self,
         left: np.ndarray,
         right: np.ndarray,
-        half_width: Optional[bool] = None,
+        half_width: bool | None = None,
     ) -> np.ndarray:
         """Encode using standard layout (left on top, right on bottom).
 
@@ -242,7 +242,7 @@ class TopBottomEncoder:
         self,
         left: np.ndarray,
         right: np.ndarray,
-        half_width: Optional[bool] = None,
+        half_width: bool | None = None,
     ) -> np.ndarray:
         """Encode using swapped layout (right on top, left on bottom).
 
@@ -262,7 +262,7 @@ class TopBottomEncoder:
         self,
         left: np.ndarray,
         right: np.ndarray,
-        layout: Optional[TopBottomLayout] = None,
+        layout: TopBottomLayout | None = None,
     ) -> np.ndarray:
         """Encode with half-width mode for bandwidth-constrained applications.
 
@@ -286,7 +286,7 @@ class TopBottomEncoder:
         self,
         left: np.ndarray,
         right: np.ndarray,
-        layout: Optional[TopBottomLayout] = None,
+        layout: TopBottomLayout | None = None,
     ) -> np.ndarray:
         """Encode with full-width mode for maximum quality.
 

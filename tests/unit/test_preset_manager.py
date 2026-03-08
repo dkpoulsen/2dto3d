@@ -220,7 +220,7 @@ class TestPresetManagerUpdate:
     def test_update_duplicate_name_raises_error(self, tmp_path: Path):
         """Test updating to duplicate name raises error."""
         manager = PresetManager(presets_dir=tmp_path / "presets")
-        preset1 = manager.create(name="First")
+        manager.create(name="First")
         preset2 = manager.create(name="Second")
 
         with pytest.raises(PresetManagerError, match="already exists"):

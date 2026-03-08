@@ -9,7 +9,7 @@ from __future__ import annotations
 import uuid
 from datetime import datetime
 from enum import Enum
-from typing import Any, Optional
+from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -139,7 +139,7 @@ class WebhookConfig(BaseModel):
     )
 
     url: str = Field(..., description="Webhook URL to send POST requests to")
-    secret: Optional[str] = Field(None, description="Secret key for HMAC signature")
+    secret: str | None = Field(None, description="Secret key for HMAC signature")
     events: list[NotificationType] = Field(
         default_factory=lambda: [NotificationType.JOB_COMPLETED, NotificationType.JOB_FAILED],
         description="Event types to trigger webhook",
@@ -188,12 +188,12 @@ class NotificationPreferences(BaseModel):
     in_app_enabled: bool = Field(default=True, description="Enable in-app notifications")
     email_enabled: bool = Field(default=False, description="Enable email notifications")
     webhook_enabled: bool = Field(default=False, description="Enable webhook notifications")
-    email_config: Optional[EmailConfig] = Field(None, description="Email configuration")
-    webhook_config: Optional[WebhookConfig] = Field(None, description="Webhook configuration")
-    quiet_hours_start: Optional[str] = Field(
+    email_config: EmailConfig | None = Field(None, description="Email configuration")
+    webhook_config: WebhookConfig | None = Field(None, description="Webhook configuration")
+    quiet_hours_start: str | None = Field(
         None, description="Start of quiet hours (HH:MM format, no notifications)"
     )
-    quiet_hours_end: Optional[str] = Field(None, description="End of quiet hours (HH:MM format)")
+    quiet_hours_end: str | None = Field(None, description="End of quiet hours (HH:MM format)")
 
 
 # ============================================================================
@@ -229,12 +229,12 @@ class NotificationResponse(BaseModel):
     priority: NotificationPriority = Field(
         default=NotificationPriority.NORMAL, description="Priority level"
     )
-    job_id: Optional[str] = Field(None, description="Associated job ID if applicable")
+    job_id: str | None = Field(None, description="Associated job ID if applicable")
     data: dict[str, Any] = Field(default_factory=dict, description="Additional data payload")
     read: bool = Field(default=False, description="Whether notification has been read")
     dismissed: bool = Field(default=False, description="Whether notification has been dismissed")
     created_at: datetime = Field(..., description="When notification was created")
-    expires_at: Optional[datetime] = Field(None, description="When notification expires")
+    expires_at: datetime | None = Field(None, description="When notification expires")
 
 
 class NotificationListResponse(BaseModel):
@@ -303,7 +303,7 @@ class WebhookPayload(BaseModel):
 
     event_type: NotificationType = Field(..., description="Type of event that triggered webhook")
     timestamp: datetime = Field(..., description="When event occurred")
-    job_id: Optional[str] = Field(None, description="Associated job ID")
+    job_id: str | None = Field(None, description="Associated job ID")
     data: dict[str, Any] = Field(default_factory=dict, description="Event-specific data")
 
 

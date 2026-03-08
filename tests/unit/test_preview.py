@@ -475,7 +475,7 @@ class TestPreviewWindowWithMockedCV2:
     @pytest.fixture
     def mock_cv2(self):
         """Mock cv2 module."""
-        with patch("video2d3d.preview.preview_window.cv2", None) as mock:
+        with patch("video2d3d.preview.preview_window.cv2", None):
             # Create a comprehensive mock
             cv2_mock = MagicMock()
             cv2_mock.namedWindow = MagicMock()

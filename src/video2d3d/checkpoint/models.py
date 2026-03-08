@@ -14,7 +14,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 # numpy is imported lazily in manager.py for frame data serialization
 
@@ -48,8 +48,8 @@ class StageCheckpoint:
     completed: bool = False
     frames_processed: int = 0
     frames_total: int = 0
-    started_at: Optional[datetime] = None
-    completed_at: Optional[datetime] = None
+    started_at: datetime | None = None
+    completed_at: datetime | None = None
     metadata: dict[str, Any] = field(default_factory=dict)
 
     @property
@@ -128,10 +128,10 @@ class FrameCheckpoint:
     temporal_smoothed: bool = False
     stereo_generated: bool = False
     written: bool = False
-    depth_map_path: Optional[str] = None
-    left_view_path: Optional[str] = None
-    right_view_path: Optional[str] = None
-    timestamp: Optional[datetime] = None
+    depth_map_path: str | None = None
+    left_view_path: str | None = None
+    right_view_path: str | None = None
+    timestamp: datetime | None = None
     processing_time_ms: float = 0.0
 
     @property
@@ -220,7 +220,7 @@ class ConversionCheckpoint:
     depth_model: str = "midas_small"
     config: dict[str, Any] = field(default_factory=dict)
     metadata: dict[str, Any] = field(default_factory=dict)
-    error: Optional[str] = None
+    error: str | None = None
 
     def __post_init__(self) -> None:
         """Initialize default stages if not present."""
@@ -282,16 +282,16 @@ class ConversionCheckpoint:
         """Get total elapsed time."""
         return (self.updated_at - self.created_at).total_seconds()
 
-    def get_stage(self, name: str) -> Optional[StageCheckpoint]:
+    def get_stage(self, name: str) -> StageCheckpoint | None:
         """Get a stage checkpoint by name."""
         return self.stages.get(name)
 
     def update_stage(
         self,
         name: str,
-        frames_processed: Optional[int] = None,
+        frames_processed: int | None = None,
         completed: bool = False,
-        metadata: Optional[dict[str, Any]] = None,
+        metadata: dict[str, Any] | None = None,
     ) -> None:
         """Update a stage checkpoint."""
         if name not in self.stages:

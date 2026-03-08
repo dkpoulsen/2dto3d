@@ -9,7 +9,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any
 
 import numpy as np
 
@@ -30,17 +30,17 @@ class UpscaleResult:
         error_message: Error message if unsuccessful.
     """
 
-    image: Optional[np.ndarray] = None
-    original_size: Tuple[int, int] = (0, 0)
-    output_size: Tuple[int, int] = (0, 0)
+    image: np.ndarray | None = None
+    original_size: tuple[int, int] = (0, 0)
+    output_size: tuple[int, int] = (0, 0)
     scale: int = 1
     processing_time_ms: float = 0.0
     tiles_processed: int = 1
     model_name: str = ""
     success: bool = True
-    error_message: Optional[str] = None
+    error_message: str | None = None
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert result to dictionary.
 
         Returns:
@@ -142,7 +142,7 @@ class BaseUpscaler(ABC):
         self,
         image: np.ndarray,
         return_info: bool = False,
-    ) -> Union[np.ndarray, Tuple[np.ndarray, UpscaleResult]]:
+    ) -> np.ndarray | tuple[np.ndarray, UpscaleResult]:
         """Upscale an image.
 
         Args:
@@ -345,9 +345,9 @@ class BaseUpscaler(ABC):
 
     def upscale_batch(
         self,
-        images: List[np.ndarray],
-        progress_callback: Optional[callable] = None,
-    ) -> List[UpscaleResult]:
+        images: list[np.ndarray],
+        progress_callback: callable | None = None,
+    ) -> list[UpscaleResult]:
         """Upscale multiple images.
 
         Args:

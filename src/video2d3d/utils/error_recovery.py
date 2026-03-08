@@ -38,7 +38,7 @@ import threading
 import time
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import TYPE_CHECKING, Any, Callable, Generic, List, Optional, TypeVar
+from typing import TYPE_CHECKING, Any, Callable, Generic, TypeVar
 
 import numpy as np
 
@@ -65,7 +65,7 @@ DEFAULT_MAX_RETRIES: int = 3
 DEFAULT_RETRY_DELAY_SECONDS: float = 0.1
 DEFAULT_BACKOFF_FACTOR: float = 2.0
 DEFAULT_MAX_RETRY_DELAY_SECONDS: float = 30.0
-DEFAULT_MODEL_FALLBACK_CHAIN: List[str] = ["midas_small"]
+DEFAULT_MODEL_FALLBACK_CHAIN: list[str] = ["midas_small"]
 DEFAULT_CPU_FALLBACK_ENABLED: bool = True
 DEFAULT_SKIP_ON_MAX_RETRIES: bool = False  # If True, skip frame after max retries
 
@@ -136,8 +136,8 @@ class RecoveryError(Exception):
         message: str,
         *,
         attempts: int = 0,
-        original_exception: Optional[Exception] = None,
-        recovery_strategy: Optional[str] = None,
+        original_exception: Exception | None = None,
+        recovery_strategy: str | None = None,
     ) -> None:
         super().__init__(message)
         self.attempts = attempts
@@ -158,7 +158,7 @@ class AllModelsFailedError(RecoveryError):
         self,
         message: str,
         *,
-        failed_models: Optional[List[str]] = None,
+        failed_models: list[str] | None = None,
         **kwargs: Any,
     ) -> None:
         super().__init__(message, **kwargs)
@@ -172,7 +172,7 @@ class FrameRecoveryFailedError(RecoveryError):
         self,
         message: str,
         *,
-        frame_index: Optional[int] = None,
+        frame_index: int | None = None,
         **kwargs: Any,
     ) -> None:
         super().__init__(message, **kwargs)
@@ -207,14 +207,14 @@ class ErrorRecoveryConfig:
     backoff_factor: float = DEFAULT_BACKOFF_FACTOR
     max_retry_delay_seconds: float = DEFAULT_MAX_RETRY_DELAY_SECONDS
     backoff_strategy: BackoffStrategy = BackoffStrategy.EXPONENTIAL
-    model_fallback_chain: List[str] = field(
+    model_fallback_chain: list[str] = field(
         default_factory=lambda: list(DEFAULT_MODEL_FALLBACK_CHAIN)
     )
     enable_cpu_fallback: bool = DEFAULT_CPU_FALLBACK_ENABLED
     skip_on_max_retries: bool = DEFAULT_SKIP_ON_MAX_RETRIES
     track_failures: bool = True
-    retry_on_exceptions: Optional[List[type[Exception]]] = None
-    fatal_exceptions: Optional[List[type[Exception]]] = None
+    retry_on_exceptions: list[type[Exception]] | None = None
+    fatal_exceptions: list[type[Exception]] | None = None
 
     def __post_init__(self) -> None:
         """Validate configuration."""
@@ -276,10 +276,7 @@ class ErrorRecoveryConfig:
 
         # If specific retry exceptions are defined, check them
         if self.retry_on_exceptions:
-            for retry_type in self.retry_on_exceptions:
-                if isinstance(exception, retry_type):
-                    return True
-            return False
+            return any(isinstance(exception, retry_type) for retry_type in self.retry_on_exceptions)
 
         # Default: retry on common transient errors
         # RuntimeError (often OOM), OSError, ConnectionError, etc.
@@ -376,10 +373,10 @@ class FrameRecoveryManager(Generic[InputT, OutputT]):
 
     def __init__(
         self,
-        config: Optional[ErrorRecoveryConfig] = None,
+        config: ErrorRecoveryConfig | None = None,
         *,
-        on_recovery: Optional[Callable[[int, Exception, RecoveryStrategy], None]] = None,
-        on_failure: Optional[Callable[[int, Exception], None]] = None,
+        on_recovery: Callable[[int, Exception, RecoveryStrategy], None] | None = None,
+        on_failure: Callable[[int, Exception], None] | None = None,
     ) -> None:
         """Initialize the frame recovery manager.
 
@@ -428,7 +425,7 @@ class FrameRecoveryManager(Generic[InputT, OutputT]):
         item: InputT,
         process_fn: Callable[[InputT], OutputT],
         *,
-        item_index: Optional[int] = None,
+        item_index: int | None = None,
     ) -> OutputT:
         """Process an item with automatic error recovery.
 
@@ -443,8 +440,8 @@ class FrameRecoveryManager(Generic[InputT, OutputT]):
         Raises:
             FrameRecoveryFailedError: If all recovery attempts fail.
         """
-        last_exception: Optional[Exception] = None
-        start_time = time.time()
+        last_exception: Exception | None = None
+        time.time()
 
         for attempt in range(self.config.max_retries + 1):
             with self._stats_lock:
@@ -524,9 +521,9 @@ class FrameRecoveryManager(Generic[InputT, OutputT]):
 
     def process_batch_with_recovery(
         self,
-        items: List[InputT],
+        items: list[InputT],
         process_fn: Callable[[InputT], OutputT],
-    ) -> tuple[List[Optional[OutputT]], List[tuple[int, Exception]]]:
+    ) -> tuple[list[OutputT | None], list[tuple[int, Exception]]]:
         """Process a batch of items with recovery.
 
         Args:
@@ -536,8 +533,8 @@ class FrameRecoveryManager(Generic[InputT, OutputT]):
         Returns:
             Tuple of (outputs list, errors list with indices).
         """
-        outputs: List[Optional[OutputT]] = [None] * len(items)
-        errors: List[tuple[int, Exception]] = []
+        outputs: list[OutputT | None] = [None] * len(items)
+        errors: list[tuple[int, Exception]] = []
 
         for idx, item in enumerate(items):
             try:
@@ -590,13 +587,13 @@ class ModelFallbackChain:
 
     def __init__(
         self,
-        models: Optional[List[str]] = None,
+        models: list[str] | None = None,
         *,
         retry_with_same_model: int = 1,
         switch_on_oom: bool = True,
         switch_on_timeout: bool = True,
         enable_cpu_fallback: bool = True,
-        cpu_fallback_factory: Optional[Callable[[str], Any]] = None,
+        cpu_fallback_factory: Callable[[str], Any] | None = None,
     ) -> None:
         """Initialize the model fallback chain.
 
@@ -633,7 +630,7 @@ class ModelFallbackChain:
             return self.models[self._current_model_idx]
 
     @property
-    def available_models(self) -> List[str]:
+    def available_models(self) -> list[str]:
         """Get list of models that haven't failed."""
         with self._model_lock:
             return [m for m in self.models if m not in self._failed_models]
@@ -641,7 +638,7 @@ class ModelFallbackChain:
     def initialize_estimators(
         self,
         estimator_factory: Callable[[str], Any],
-        cpu_estimator_factory: Optional[Callable[[str], Any]] = None,
+        cpu_estimator_factory: Callable[[str], Any] | None = None,
     ) -> None:
         """Initialize estimators for all models in the chain.
 
@@ -673,7 +670,7 @@ class ModelFallbackChain:
                     f"Failed to initialize all models in fallback chain: {self.models}"
                 )
 
-    def get_estimator(self, model_name: Optional[str] = None) -> Any:
+    def get_estimator(self, model_name: str | None = None) -> Any:
         """Get an estimator by model name.
 
         Args:
@@ -793,10 +790,7 @@ class ModelFallbackChain:
             return True
 
         # CUDA errors often indicate model-specific or GPU issues
-        if self._is_cuda_error(exception):
-            return True
-
-        return False
+        return bool(self._is_cuda_error(exception))
 
     def estimate_with_fallback(
         self,
@@ -815,7 +809,7 @@ class ModelFallbackChain:
         Raises:
             AllModelsFailedError: If all models fail (including CPU fallback).
         """
-        last_exception: Optional[Exception] = None
+        last_exception: Exception | None = None
 
         with self._model_lock:
             tried_models: set[str] = set()
@@ -893,7 +887,7 @@ class ModelFallbackChain:
 def recovery_with_fallback(
     max_retries: int = DEFAULT_MAX_RETRIES,
     backoff_factor: float = DEFAULT_BACKOFF_FACTOR,
-    fallback_value: Optional[OutputT] = None,
+    fallback_value: OutputT | None = None,
     exceptions: tuple[type[Exception], ...] = (Exception,),
 ) -> Callable[[Callable[[InputT], OutputT]], Callable[[InputT], OutputT]]:
     """Decorator that adds retry and fallback behavior to a function.
@@ -918,7 +912,7 @@ def recovery_with_fallback(
     def decorator(func: Callable[[InputT], OutputT]) -> Callable[[InputT], OutputT]:
         @functools.wraps(func)
         def wrapper(*args: Any, **kwargs: Any) -> OutputT:
-            last_exception: Optional[Exception] = None
+            last_exception: Exception | None = None
 
             for attempt in range(max_retries + 1):
                 try:
@@ -1021,7 +1015,7 @@ class RecoveryContext:
         self,
         item: InputT,
         process_fn: Callable[[InputT], OutputT],
-        item_index: Optional[int] = None,
+        item_index: int | None = None,
     ) -> OutputT:
         """Process an item with recovery."""
         return self._manager.process_with_recovery(item, process_fn, item_index=item_index)
@@ -1036,9 +1030,9 @@ class RecoveryContext:
 
     def __exit__(
         self,
-        exc_type: Optional[type[BaseException]],
-        exc_val: Optional[BaseException],
-        exc_tb: Optional[Any],
+        exc_type: type[BaseException] | None,
+        exc_val: BaseException | None,
+        exc_tb: Any | None,
     ) -> bool:
         """Exit the recovery context.
 

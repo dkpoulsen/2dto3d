@@ -236,7 +236,7 @@ class TestCrashReportCreation:
             config = CrashReporterConfig(crash_dir=Path(tmpdir), capture_system_state=False)
             reporter = CrashReporter(config)
 
-            report = reporter.create_crash_report(crash_type=CrashType.UNCAUGHT_EXCEPTION)
+            reporter.create_crash_report(crash_type=CrashType.UNCAUGHT_EXCEPTION)
 
             # System state may be None or have minimal info
             # The key is that it doesn't fail
@@ -505,7 +505,7 @@ class TestCleanup:
             reporter = CrashReporter(config)
 
             # Create more reports than the limit
-            for i in range(5):
+            for _i in range(5):
                 report = reporter.create_crash_report(
                     crash_type=CrashType.MANUAL_REPORT,
                 )

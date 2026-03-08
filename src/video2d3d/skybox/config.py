@@ -9,7 +9,6 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from enum import Enum
-from typing import Optional
 
 
 class SkyDetectionMethod(Enum):
@@ -212,10 +211,10 @@ class SkyboxConfig:
     enabled: bool = True
     detection_method: str = "combined"
     min_confidence: float = _DEFAULT_MIN_CONFIDENCE
-    color_config: Optional[ColorDetectionConfig] = None
-    position_config: Optional[PositionDetectionConfig] = None
-    edge_config: Optional[EdgeDetectionConfig] = None
-    depth_config: Optional[SkyDepthConfig] = None
+    color_config: ColorDetectionConfig | None = None
+    position_config: PositionDetectionConfig | None = None
+    edge_config: EdgeDetectionConfig | None = None
+    depth_config: SkyDepthConfig | None = None
     temporal_consistency: bool = True
     smoothing_frames: int = 5
 

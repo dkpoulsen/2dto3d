@@ -56,7 +56,7 @@ def test_batch_job_lifecycle():
     )
 
     assert job.status == JobStatus.PENDING
-    assert job.is_retryable == False
+    assert not job.is_retryable
 
     job.mark_started()
     assert job.status == JobStatus.RUNNING
@@ -69,7 +69,7 @@ def test_batch_job_lifecycle():
     result = BatchJobResult(success=True, frames_processed=100)
     job.mark_completed(result)
     assert job.status == JobStatus.COMPLETED
-    assert job.result.success == True
+    assert job.result.success
     print("  [PASS] BatchJob lifecycle")
 
 
@@ -82,21 +82,21 @@ def test_batch_job_retry():
 
     job.mark_failed(Exception("Test error"))
     assert job.status == JobStatus.FAILED
-    assert job.is_retryable == True
+    assert job.is_retryable
 
     can_retry = job.increment_retry()
-    assert can_retry == True
+    assert can_retry
     assert job.retry_count == 1
     assert job.status == JobStatus.RETRYING
 
     job.mark_failed(Exception("Test error 2"))
     can_retry = job.increment_retry()
-    assert can_retry == True
+    assert can_retry
     assert job.retry_count == 2
 
     job.mark_failed(Exception("Test error 3"))
     can_retry = job.increment_retry()
-    assert can_retry == False
+    assert not can_retry
     print("  [PASS] BatchJob retry")
 
 
@@ -180,7 +180,7 @@ def test_batch_video_queue():
         input_dir.mkdir()
         output_dir.mkdir()
 
-        test_files = create_test_files(input_dir, 3)
+        create_test_files(input_dir, 3)
 
         processed_files = []
 

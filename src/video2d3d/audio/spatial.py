@@ -6,7 +6,6 @@ import shutil
 import subprocess
 from dataclasses import dataclass
 from pathlib import Path
-from typing import List, Optional
 
 from video2d3d.audio.config import AudioFormatConfig, SpatialAudioConfig, SpatialAudioFormat
 from video2d3d.audio.exceptions import SpatialAudioError
@@ -32,11 +31,11 @@ class SpatialProcessingResult:
     """
 
     success: bool = True
-    output_path: Optional[Path] = None
+    output_path: Path | None = None
     spatial_format: SpatialAudioFormat = SpatialAudioFormat.NONE
     channels: int = 2
     duration: float = 0.0
-    error_message: Optional[str] = None
+    error_message: str | None = None
 
 
 class SpatialAudioProcessor:
@@ -69,8 +68,8 @@ class SpatialAudioProcessor:
 
     def __init__(
         self,
-        config: Optional[SpatialAudioConfig] = None,
-        format_config: Optional[AudioFormatConfig] = None,
+        config: SpatialAudioConfig | None = None,
+        format_config: AudioFormatConfig | None = None,
     ) -> None:
         """Initialize the spatial audio processor.
 
@@ -93,7 +92,7 @@ class SpatialAudioProcessor:
                 "FFmpeg not found. Please install FFmpeg and ensure it's in your PATH.",
             )
 
-    def _build_binaural_filter(self) -> List[str]:
+    def _build_binaural_filter(self) -> list[str]:
         """Build FFmpeg filter chain for binaural rendering.
 
         Returns:
@@ -102,7 +101,7 @@ class SpatialAudioProcessor:
         filters = []
 
         # Get room preset
-        room = self.ROOM_PRESETS.get(self.config.room_size, self.ROOM_PRESETS["medium"])
+        self.ROOM_PRESETS.get(self.config.room_size, self.ROOM_PRESETS["medium"])
 
         # Calculate interaural time difference (ITD) based on source position
         x, y, z = self.config.source_position
@@ -133,12 +132,12 @@ class SpatialAudioProcessor:
         # This simulates the head blocking high frequencies
         if self.config.room_size != "small":
             # Add slight room reverb for larger spaces
-            reverb_amount = int(self.config.reverb_amount * 100)
+            int(self.config.reverb_amount * 100)
             filters.append("aecho=1.0:0.6:20:0.3")
 
         return filters
 
-    def _build_ambisonics_filter(self) -> List[str]:
+    def _build_ambisonics_filter(self) -> list[str]:
         """Build FFmpeg filter chain for Ambisonics encoding.
 
         Returns:
@@ -188,7 +187,7 @@ class SpatialAudioProcessor:
         self,
         input_path: Path | str,
         output_path: Path | str,
-        additional_filters: Optional[List[str]] = None,
+        additional_filters: list[str] | None = None,
     ) -> SpatialProcessingResult:
         """Process audio with spatial audio effects.
 

@@ -471,7 +471,6 @@ class TestSceneClassification:
         """Test that last scene type is stored."""
         from video2d3d.depth.model_selector import DepthModelSelector
 
-        config = {"enable_scene_adaptation": True}
         selector = DepthModelSelector(
             primary_model="adabins_nyu",
             fallback_model="midas_small",

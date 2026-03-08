@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from datetime import datetime
 from enum import Enum
-from typing import Any, Optional
+from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
@@ -110,7 +110,7 @@ class DepthCurveRequest(BaseModel):
         default=False,
         description="Whether depth curve adjustment is enabled",
     )
-    preset: Optional[str] = Field(
+    preset: str | None = Field(
         default=None,
         description="Preset curve name: linear, s_curve, contrast_boost, soft_curve, inverse_s, shadow_lift, highlight_compress",
     )
@@ -207,15 +207,15 @@ class JobConfigRequest(BaseModel):
         default_factory=dict,
         description="Additional processing options",
     )
-    depth_curve: Optional[DepthCurveRequest] = Field(
+    depth_curve: DepthCurveRequest | None = Field(
         default=None,
         description="Depth curve adjustment for non-linear depth mapping",
     )
-    depth_focus: Optional[DepthFocusRequest] = Field(
+    depth_focus: DepthFocusRequest | None = Field(
         default=None,
         description="Depth focus adjustment for controlling which depth appears at screen plane",
     )
-    upscaling: Optional[UpscalingConfigRequest] = Field(
+    upscaling: UpscalingConfigRequest | None = Field(
         default=None,
         description="AI upscaling configuration using ESRGAN/Real-ESRGAN models",
     )
@@ -336,7 +336,7 @@ class SubmitJobRequest(BaseModel):
         min_length=1,
         examples=["550e8400-e29b-41d4-a716-446655440000"],
     )
-    output_filename: Optional[str] = Field(
+    output_filename: str | None = Field(
         default=None,
         description="Custom output filename. If not provided, will be auto-generated as '{input_name}_3d.mp4'. "
         "Path separators are automatically removed for security.",
@@ -350,19 +350,19 @@ class SubmitJobRequest(BaseModel):
         default_factory=JobConfigRequest,
         description="Job configuration options for video conversion.",
     )
-    callback_url: Optional[str] = Field(
+    callback_url: str | None = Field(
         default=None,
         description="Optional webhook URL that will receive a POST request when the job completes. "
         "The callback payload includes job status, output file ID, and any error details.",
         examples=["https://example.com/webhook/video-complete"],
     )
-    scheduled_at: Optional[datetime] = Field(
+    scheduled_at: datetime | None = Field(
         default=None,
         description="Optional UTC timestamp when the job should start processing. "
         "If not provided, the job will start immediately (subject to queue availability).",
         examples=["2024-01-15T14:30:00Z"],
     )
-    depends_on: Optional[list[str]] = Field(
+    depends_on: list[str] | None = Field(
         default=None,
         description="Optional list of job IDs that must complete successfully before this job can start. "
         "This creates a dependency chain, useful for sequential processing pipelines.",
@@ -371,7 +371,7 @@ class SubmitJobRequest(BaseModel):
 
     @field_validator("output_filename")
     @classmethod
-    def validate_output_filename(cls, v: Optional[str]) -> Optional[str]:
+    def validate_output_filename(cls, v: str | None) -> str | None:
         """Validate output filename format.
 
         Removes path separators for security to prevent directory traversal attacks.
@@ -439,7 +439,7 @@ class UploadResponse(BaseModel):
         description="File size in bytes.",
         examples=[52428800, 104857600],
     )
-    content_type: Optional[str] = Field(
+    content_type: str | None = Field(
         None,
         description="Detected MIME content type based on file extension.",
         examples=["video/mp4", "video/x-msvideo"],
@@ -458,10 +458,10 @@ class JobResultResponse(BaseModel):
     """Result details for a completed job."""
 
     success: bool = Field(..., description="Whether job succeeded")
-    output_file_id: Optional[str] = Field(None, description="ID of output file")
-    output_filename: Optional[str] = Field(None, description="Output filename")
-    error_message: Optional[str] = Field(None, description="Error message if failed")
-    error_type: Optional[str] = Field(None, description="Error type if failed")
+    output_file_id: str | None = Field(None, description="ID of output file")
+    output_filename: str | None = Field(None, description="Output filename")
+    error_message: str | None = Field(None, description="Error message if failed")
+    error_type: str | None = Field(None, description="Error type if failed")
     frames_processed: int = Field(default=0, description="Number of frames processed")
     processing_time_seconds: float = Field(
         default=0.0,
@@ -528,7 +528,7 @@ class JobResponse(BaseModel):
         description="Original input video filename.",
         examples=["vacation_video.mp4"],
     )
-    output_filename: Optional[str] = Field(
+    output_filename: str | None = Field(
         None,
         description="Output 3D video filename.",
         examples=["vacation_video_3d.mp4"],
@@ -549,20 +549,20 @@ class JobResponse(BaseModel):
         ...,
         description="UTC timestamp when the job was created.",
     )
-    started_at: Optional[datetime] = Field(
+    started_at: datetime | None = Field(
         None,
         description="UTC timestamp when processing started. Null if not yet started.",
     )
-    completed_at: Optional[datetime] = Field(
+    completed_at: datetime | None = Field(
         None,
         description="UTC timestamp when processing completed. Null if still running.",
     )
-    elapsed_time_seconds: Optional[float] = Field(
+    elapsed_time_seconds: float | None = Field(
         None,
         description="Elapsed processing time in seconds. Null if not yet started.",
         examples=[125.5, 925.0],
     )
-    estimated_remaining_seconds: Optional[float] = Field(
+    estimated_remaining_seconds: float | None = Field(
         None,
         description="Estimated remaining time in seconds. Null if unknown or job is complete.",
         examples=[60.0, 120.5],
@@ -572,7 +572,7 @@ class JobResponse(BaseModel):
         description="Number of automatic retry attempts made.",
         ge=0,
     )
-    result: Optional[JobResultResponse] = Field(
+    result: JobResultResponse | None = Field(
         None,
         description="Job result details. Only present when job is completed.",
     )
@@ -580,7 +580,7 @@ class JobResponse(BaseModel):
         default_factory=dict,
         description="Job configuration used for processing.",
     )
-    scheduled_at: Optional[datetime] = Field(
+    scheduled_at: datetime | None = Field(
         default=None,
         description="UTC timestamp when the job is scheduled to start. "
         "Null if the job starts immediately.",
@@ -664,18 +664,18 @@ class ErrorResponse(BaseModel):
 
     error: str = Field(..., description="Error type")
     message: str = Field(..., description="Error message")
-    detail: Optional[dict[str, Any]] = Field(
+    detail: dict[str, Any] | None = Field(
         None,
         description="Additional error details",
     )
-    request_id: Optional[str] = Field(None, description="Request identifier for tracing")
+    request_id: str | None = Field(None, description="Request identifier for tracing")
 
 
 class GPUStatusResponse(BaseModel):
     """GPU status information for health check."""
 
     available: bool = Field(default=False, description="Whether GPU is available")
-    device_name: Optional[str] = Field(None, description="GPU device name")
+    device_name: str | None = Field(None, description="GPU device name")
     device_count: int = Field(default=0, description="Number of available GPUs")
     memory_used_mb: float = Field(default=0.0, description="GPU memory used in MB")
     memory_free_mb: float = Field(default=0.0, description="GPU memory free in MB")
@@ -683,7 +683,7 @@ class GPUStatusResponse(BaseModel):
     memory_utilization_percent: float = Field(
         default=0.0, description="GPU memory utilization percentage"
     )
-    compute_capability: Optional[str] = Field(None, description="GPU compute capability")
+    compute_capability: str | None = Field(None, description="GPU compute capability")
 
 
 class SystemMemoryResponse(BaseModel):
@@ -829,21 +829,21 @@ class ActiveJobInfoResponse(BaseModel):
 
     job_id: str = Field(..., description="Job identifier")
     status: str = Field(..., description="Job status")
-    input_file: Optional[str] = Field(None, description="Input file path")
-    output_file: Optional[str] = Field(None, description="Output file path")
+    input_file: str | None = Field(None, description="Input file path")
+    output_file: str | None = Field(None, description="Output file path")
     progress_percent: float = Field(default=0.0, description="Progress percentage")
-    current_stage: Optional[str] = Field(None, description="Current processing stage")
-    started_at: Optional[str] = Field(None, description="Job start time")
+    current_stage: str | None = Field(None, description="Current processing stage")
+    started_at: str | None = Field(None, description="Job start time")
     frames_processed: int = Field(default=0, description="Frames processed")
     total_frames: int = Field(default=0, description="Total frames")
-    error_message: Optional[str] = Field(None, description="Error message if any")
+    error_message: str | None = Field(None, description="Error message if any")
 
 
 class GPUInfoResponse(BaseModel):
     """GPU state at crash time."""
 
     available: bool = Field(default=False, description="GPU availability")
-    device_name: Optional[str] = Field(None, description="GPU device name")
+    device_name: str | None = Field(None, description="GPU device name")
     memory_used_mb: float = Field(default=0.0, description="Memory used in MB")
     memory_total_mb: float = Field(default=0.0, description="Total memory in MB")
     memory_utilization_percent: float = Field(default=0.0, description="Memory utilization")
@@ -915,15 +915,15 @@ class CrashReportResponse(BaseModel):
     exception_message: str = Field(default="", description="Exception message")
     exception_traceback: str = Field(default="", description="Full traceback")
     exception_module: str = Field(default="", description="Exception module")
-    signal_number: Optional[int] = Field(None, description="Signal number if signal-based")
-    signal_name: Optional[str] = Field(None, description="Signal name if signal-based")
+    signal_number: int | None = Field(None, description="Signal number if signal-based")
+    signal_name: str | None = Field(None, description="Signal name if signal-based")
     context: dict[str, Any] = Field(default_factory=dict, description="Additional context")
     tags: list[str] = Field(default_factory=list, description="Tags for categorization")
-    user_message: Optional[str] = Field(None, description="User-provided message")
-    system_state: Optional[SystemStateResponse] = Field(None, description="System state at crash")
+    user_message: str | None = Field(None, description="User-provided message")
+    system_state: SystemStateResponse | None = Field(None, description="System state at crash")
     log_excerpts: list[str] = Field(default_factory=list, description="Recent log lines")
     recovered: bool = Field(default=False, description="Whether crash was recovered")
-    recovery_action: Optional[str] = Field(None, description="Recovery action taken")
+    recovery_action: str | None = Field(None, description="Recovery action taken")
 
 
 class CrashReportSummaryResponse(BaseModel):
@@ -953,8 +953,8 @@ class ManualCrashReportRequest(BaseModel):
     """Request to create a manual crash report."""
 
     message: str = Field(..., description="Description of the issue", min_length=1)
-    context: Optional[dict[str, Any]] = Field(None, description="Additional context")
-    tags: Optional[list[str]] = Field(None, description="Tags for categorization")
+    context: dict[str, Any] | None = Field(None, description="Additional context")
+    tags: list[str] | None = Field(None, description="Tags for categorization")
     severity: CrashSeverityResponse = Field(
         default=CrashSeverityResponse.MEDIUM,
         description="Severity level",
@@ -986,13 +986,13 @@ class ThumbnailFrameResponse(BaseModel):
     timestamp: float = Field(..., description="Timestamp in seconds", ge=0.0)
     original_url: str = Field(..., description="URL to the original frame image")
     depth_map_url: str = Field(..., description="URL to the depth map image")
-    confidence_score: Optional[float] = Field(
+    confidence_score: float | None = Field(
         None,
         description="Optional confidence score (0-1)",
         ge=0.0,
         le=1.0,
     )
-    validation_status: Optional[str] = Field(
+    validation_status: str | None = Field(
         None,
         description="Validation status: pending, validated, or corrected",
     )
@@ -1011,18 +1011,18 @@ class ThumbnailGridRequest(BaseModel):
         }
     )
 
-    count: Optional[int] = Field(
+    count: int | None = Field(
         default=24,
         description="Number of thumbnails to fetch (evenly distributed across video)",
         ge=1,
         le=100,
     )
-    start_frame: Optional[int] = Field(
+    start_frame: int | None = Field(
         default=None,
         description="Start frame index (optional)",
         ge=0,
     )
-    end_frame: Optional[int] = Field(
+    end_frame: int | None = Field(
         default=None,
         description="End frame index (optional)",
         ge=0,

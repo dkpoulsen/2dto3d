@@ -422,7 +422,7 @@ class TestLimitDecorators:
             mock_limiter = MagicMock()
             mock_limiter.limit.return_value = lambda f: f
 
-            decorator = limit_upload(mock_limiter)
+            limit_upload(mock_limiter)
 
             # Verify limiter.limit was called with correct rate
             mock_limiter.limit.assert_called_once_with("5/minute")
@@ -446,7 +446,7 @@ class TestLimitDecorators:
             mock_limiter = MagicMock()
             mock_limiter.limit.return_value = lambda f: f
 
-            decorator = limit_api(mock_limiter)
+            limit_api(mock_limiter)
 
             # Verify limiter.limit was called with combined limits
             mock_limiter.limit.assert_called_once_with("60/minute;1000/hour")

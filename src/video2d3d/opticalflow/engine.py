@@ -40,7 +40,7 @@ import time
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Optional, Union
+from typing import TYPE_CHECKING, Any
 
 import cv2
 import numpy as np
@@ -152,9 +152,9 @@ class OpticalFlowError(Exception):
         self,
         message: str,
         *,
-        model_type: Optional[str] = None,
-        device: Optional[str] = None,
-        original_exception: Optional[Exception] = None,
+        model_type: str | None = None,
+        device: str | None = None,
+        original_exception: Exception | None = None,
     ) -> None:
         """Initialize the error.
 
@@ -207,9 +207,9 @@ class OpticalFlowConfig:
 
     model_type: OpticalFlowModelType = OpticalFlowModelType.RAFT_SMALL
     device: str = "auto"
-    cache_dir: Optional[Path] = None
+    cache_dir: Path | None = None
     auto_download: bool = True
-    input_resolution: Optional[int] = None
+    input_resolution: int | None = None
     use_fp16: bool = False
 
     # Farneback parameters
@@ -219,7 +219,7 @@ class OpticalFlowConfig:
     farneback_iterations: int = _DEFAULT_FARNEBACK_ITERATIONS
 
     # GPU settings
-    gpu_config: Optional[GPUConfig] = None
+    gpu_config: GPUConfig | None = None
 
     def __post_init__(self) -> None:
         """Validate and normalize configuration."""
@@ -299,9 +299,9 @@ class OpticalFlowEngine:
 
     def __init__(
         self,
-        config: Optional[OpticalFlowConfig] = None,
+        config: OpticalFlowConfig | None = None,
         *,
-        model_type: Union[str, OpticalFlowModelType] = "raft_small",
+        model_type: str | OpticalFlowModelType = "raft_small",
         device: str = "auto",
     ) -> None:
         """Initialize the optical flow engine.
@@ -320,7 +320,7 @@ class OpticalFlowEngine:
             self.config = OpticalFlowConfig(model_type=model_type, device=device)
 
         # Model components (lazy loaded)
-        self._model: Optional[nn.Module] = None
+        self._model: nn.Module | None = None
         self._is_loaded: bool = False
 
         logger = _get_opticalflow_logger()
@@ -330,7 +330,7 @@ class OpticalFlowEngine:
         )
 
     @property
-    def model(self) -> Optional[nn.Module]:
+    def model(self) -> nn.Module | None:
         """Get the loaded model (loads if not already loaded)."""
         if not self._is_loaded and self.config.model_type.is_deep_learning:
             self.load_model()
@@ -765,7 +765,7 @@ class OpticalFlowEngine:
     def visualize_flow(
         self,
         flow: np.ndarray,
-        frame: Optional[np.ndarray] = None,
+        frame: np.ndarray | None = None,
     ) -> np.ndarray:
         """Visualize optical flow as a color-coded image.
 
@@ -784,20 +784,16 @@ class OpticalFlowEngine:
             raise ValueError(f"flow must be a numpy array, got {type(flow).__name__}")
         if flow.ndim != 3 or flow.shape[2] != 2:
             raise ValueError(f"flow must have shape (H, W, 2), got {flow.shape}")
-        if frame is not None:
-            if frame.shape[:2] != flow.shape[:2]:
-                raise ValueError(
-                    f"frame shape {frame.shape[:2]} doesn't match flow shape {flow.shape[:2]}"
-                )
+        if frame is not None and frame.shape[:2] != flow.shape[:2]:
+            raise ValueError(
+                f"frame shape {frame.shape[:2]} doesn't match flow shape {flow.shape[:2]}"
+            )
 
         # Compute magnitude and angle
         magnitude, angle = cv2.cartToPolar(flow[..., 0], flow[..., 1])
 
         # Normalize magnitude for visualization
-        if magnitude.max() > 0:
-            magnitude = magnitude / magnitude.max()
-        else:
-            magnitude = np.zeros_like(magnitude)
+        magnitude = magnitude / magnitude.max() if magnitude.max() > 0 else np.zeros_like(magnitude)
 
         # Create HSV image
         hsv = np.zeros((flow.shape[0], flow.shape[1], 3), dtype=np.uint8)

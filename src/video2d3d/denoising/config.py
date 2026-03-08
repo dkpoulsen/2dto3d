@@ -9,7 +9,6 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from enum import Enum
 from pathlib import Path
-from typing import List, Optional
 
 from video2d3d.utils.gpu import GPUConfig, select_device
 
@@ -103,7 +102,7 @@ class FastDVDNetConfig:
     num_input_frames: int = _DEFAULT_NUM_INPUT_FRAMES
     noise_level: float = _DEFAULT_NOISE_LEVEL
     noise_level_mode: str = "blind"
-    pretrained_model: Optional[Path] = None
+    pretrained_model: Path | None = None
     auto_download: bool = True
 
     def __post_init__(self) -> None:
@@ -116,7 +115,8 @@ class FastDVDNetConfig:
 
             warnings.warn(
                 f"num_input_frames should be odd for FastDVDNet, got {self.num_input_frames}. "
-                f"Consider using {self.num_input_frames + 1}."
+                f"Consider using {self.num_input_frames + 1}.",
+                stacklevel=2,
             )
         if self.noise_level <= 0:
             raise ValueError(f"noise_level must be positive, got {self.noise_level}")
@@ -146,7 +146,7 @@ class BasicVSRPlusPlusConfig:
 
     num_input_frames: int = 15
     scale: int = 1  # 1 for denoising only
-    pretrained_model: Optional[Path] = None
+    pretrained_model: Path | None = None
     auto_download: bool = True
     use_spynet: bool = True
 
@@ -185,10 +185,10 @@ class VideoDenoiserConfig:
     enabled: bool = False
     model_type: DenoiserModelType = DenoiserModelType.FASTDVDNET
     device: str = "auto"
-    cache_dir: Optional[Path] = None
+    cache_dir: Path | None = None
     fastdvdnet: FastDVDNetConfig = field(default_factory=FastDVDNetConfig)
     basicvsr_plusplus: BasicVSRPlusPlusConfig = field(default_factory=BasicVSRPlusPlusConfig)
-    fallback_chain: List[DenoiserModelType] = field(
+    fallback_chain: list[DenoiserModelType] = field(
         default_factory=lambda: [
             DenoiserModelType.FASTDVDNET,
         ]
@@ -197,7 +197,7 @@ class VideoDenoiserConfig:
     preserve_temporal: bool = True
     output_dtype: str = "float32"
     batch_size: int = _DEFAULT_BATCH_SIZE
-    gpu_config: Optional[GPUConfig] = None
+    gpu_config: GPUConfig | None = None
 
     def __post_init__(self) -> None:
         """Validate and normalize configuration."""
@@ -255,7 +255,7 @@ class VideoDenoisingPipelineConfig:
 
     buffer_size: int = 30
     overlap: int = 2
-    progress_callback: Optional[callable] = None
+    progress_callback: callable | None = None
     enable_profiling: bool = False
 
     def __post_init__(self) -> None:

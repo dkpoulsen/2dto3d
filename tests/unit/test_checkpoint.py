@@ -880,7 +880,7 @@ class TestCheckpointManagerGetCheckpoint:
 
     def test_get_checkpoint_in_memory(self, checkpoint_manager: CheckpointManager) -> None:
         """Test get_checkpoint returns in-memory checkpoint."""
-        checkpoint = checkpoint_manager.create_checkpoint(
+        checkpoint_manager.create_checkpoint(
             job_id="memory-test",
             input_path="input.mp4",
             output_path="output.mp4",

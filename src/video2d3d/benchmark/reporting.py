@@ -12,7 +12,6 @@ import json
 from abc import ABC, abstractmethod
 from datetime import datetime
 from pathlib import Path
-from typing import Optional, Union
 
 
 class ReportGenerator(ABC):
@@ -200,7 +199,7 @@ class MarkdownReporter(ReportGenerator):
         ]
 
         # Group by model
-        models = sorted(set(r.model for r in results.successful_results))
+        models = sorted({r.model for r in results.successful_results})
 
         for model in models:
             model_results = results.get_by_model(model)
@@ -421,7 +420,7 @@ class CSVReporter(ReportGenerator):
 def generate_report(
     results: BenchmarkResults,
     format: str = "markdown",
-    output_path: Optional[Union[Path, str]] = None,
+    output_path: Path | str | None = None,
 ) -> str:
     """Generate a report in the specified format.
 

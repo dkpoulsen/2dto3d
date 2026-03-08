@@ -14,7 +14,7 @@ from __future__ import annotations
 
 import time
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Optional
+from typing import TYPE_CHECKING, Any
 
 import cv2
 import numpy as np
@@ -64,8 +64,8 @@ class SkyDetectionError(Exception):
         self,
         message: str,
         *,
-        operation: Optional[str] = None,
-        original_exception: Optional[Exception] = None,
+        operation: str | None = None,
+        original_exception: Exception | None = None,
     ) -> None:
         """Initialize the error."""
         super().__init__(message)
@@ -92,7 +92,7 @@ class SkyDetectionResult:
 
     sky_mask: np.ndarray
     confidence: float
-    horizon_y: Optional[int]
+    horizon_y: int | None
     sky_coverage: float
     method_results: dict[str, float]
 
@@ -140,7 +140,7 @@ class SkyDetector:
 
     def __init__(
         self,
-        config: Optional[SkyboxConfig] = None,
+        config: SkyboxConfig | None = None,
     ) -> None:
         """Initialize the sky detector.
 
@@ -155,7 +155,7 @@ class SkyDetector:
         )
 
         # Cache for temporal consistency
-        self._previous_mask: Optional[np.ndarray] = None
+        self._previous_mask: np.ndarray | None = None
         self._frame_count: int = 0
 
     def detect(self, image: np.ndarray) -> SkyDetectionResult:
@@ -315,7 +315,7 @@ class SkyDetector:
 
         # Apply position weights (higher weight for top pixels)
         y_coords = np.arange(h).reshape(-1, 1)
-        weights = np.exp(-y_coords / (h * 0.3))
+        np.exp(-y_coords / (h * 0.3))
 
         # Calculate weighted coverage
         weighted_coverage = np.sum(sky_mask) / (h * w)
@@ -335,7 +335,7 @@ class SkyDetector:
 
     def _detect_edge(
         self, image: np.ndarray
-    ) -> tuple[np.ndarray, Optional[int], float, dict[str, float]]:
+    ) -> tuple[np.ndarray, int | None, float, dict[str, float]]:
         """Detect sky using edge-based horizon detection.
 
         Args:
@@ -385,7 +385,7 @@ class SkyDetector:
 
     def _detect_combined(
         self, image: np.ndarray
-    ) -> tuple[np.ndarray, float, Optional[int], dict[str, float]]:
+    ) -> tuple[np.ndarray, float, int | None, dict[str, float]]:
         """Detect sky using combined methods.
 
         Combines color, position, and edge detection with weighted voting.
@@ -519,7 +519,7 @@ class SkyDetector:
 
         return float(min(confidence, 1.0))
 
-    def _find_horizon_hough(self, edges: np.ndarray, config: EdgeDetectionConfig) -> Optional[int]:
+    def _find_horizon_hough(self, edges: np.ndarray, config: EdgeDetectionConfig) -> int | None:
         """Find horizon line using Hough transform.
 
         Args:
@@ -572,9 +572,7 @@ class SkyDetector:
 
         return best_y
 
-    def _find_horizon_density(
-        self, edges: np.ndarray, config: EdgeDetectionConfig
-    ) -> Optional[int]:
+    def _find_horizon_density(self, edges: np.ndarray, config: EdgeDetectionConfig) -> int | None:
         """Find horizon line using edge density analysis.
 
         Finds the row with the highest edge density as the horizon.
@@ -615,7 +613,7 @@ class SkyDetector:
 
         return best_y
 
-    def _find_horizon_simple(self, sky_mask: np.ndarray) -> Optional[int]:
+    def _find_horizon_simple(self, sky_mask: np.ndarray) -> int | None:
         """Find horizon by finding the lowest sky pixel per column.
 
         Args:

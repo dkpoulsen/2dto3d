@@ -17,7 +17,7 @@ from __future__ import annotations
 import time
 from dataclasses import dataclass
 from enum import Enum
-from typing import TYPE_CHECKING, Any, Optional, Union
+from typing import TYPE_CHECKING, Any
 
 import cv2
 import numpy as np
@@ -124,8 +124,8 @@ class IntegrationError(Exception):
         self,
         message: str,
         *,
-        operation: Optional[str] = None,
-        original_exception: Optional[Exception] = None,
+        operation: str | None = None,
+        original_exception: Exception | None = None,
     ) -> None:
         """Initialize the error."""
         super().__init__(message)
@@ -169,7 +169,7 @@ class DepthSegmentationIntegrator:
 
     def __init__(
         self,
-        config: Optional[IntegrationConfig] = None,
+        config: IntegrationConfig | None = None,
         *,
         smoothing_strength: float = _DEFAULT_SMOOTHING_STRENGTH,
         boundary_sharpness: float = _DEFAULT_BOUNDARY_SHARPNESS,
@@ -200,7 +200,7 @@ class DepthSegmentationIntegrator:
         self,
         depth_map: np.ndarray,
         masks: list[dict[str, Any]],
-        image: Optional[np.ndarray] = None,
+        image: np.ndarray | None = None,
     ) -> np.ndarray:
         """Refine depth map using segmentation masks.
 
@@ -397,7 +397,7 @@ class DepthSegmentationIntegrator:
         self,
         depth_map: np.ndarray,
         boundary_weights: np.ndarray,
-        image: Optional[np.ndarray],
+        image: np.ndarray | None,
     ) -> np.ndarray:
         """Apply edge-aware filtering using bilateral filter.
 
@@ -445,7 +445,7 @@ class DepthSegmentationIntegrator:
         edge_strength = cv2.dilate(edge_strength, kernel, iterations=_EDGE_DILATION_ITERATIONS)
 
         # Combine with boundary weights
-        combined_weights = np.maximum(
+        np.maximum(
             boundary_weights,
             1.0 + edge_strength * _EDGE_STRENGTH_MULTIPLIER,
         )
@@ -552,7 +552,7 @@ class DepthSegmentationIntegrator:
 def create_integrator(
     smoothing_strength: float = _DEFAULT_SMOOTHING_STRENGTH,
     boundary_sharpness: float = _DEFAULT_BOUNDARY_SHARPNESS,
-    **kwargs: Union[float, int, bool, str],
+    **kwargs: float | int | bool | str,
 ) -> DepthSegmentationIntegrator:
     """Create an integrator with the specified configuration.
 

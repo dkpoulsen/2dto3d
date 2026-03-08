@@ -316,7 +316,7 @@ class TestSkyDetector:
         detector = SkyDetector(config=config)
 
         # Process same image multiple times
-        result1 = detector.detect(blue_sky_image)
+        detector.detect(blue_sky_image)
         result2 = detector.detect(blue_sky_image)
         result3 = detector.detect(blue_sky_image)
 

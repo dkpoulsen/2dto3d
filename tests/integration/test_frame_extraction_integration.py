@@ -205,7 +205,7 @@ class TestFrameExtractorIntegration:
 
         # Process all frames using generator (memory efficient)
         frame_count = 0
-        for frame_num, frame in extractor:
+        for _frame_num, frame in extractor:
             frame_count += 1
             assert frame is not None
 

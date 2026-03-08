@@ -94,7 +94,7 @@ def mock_torch_modules() -> Generator[None, None, None]:
     mock_torch = _create_mock_torch()
     mock_torch_nn = MagicMock()
     mock_torch_nn.functional = _create_mock_torch_nn_functional()
-    mock_torchvision = MagicMock()
+    MagicMock()
     mock_torchview.transforms = MagicMock()
 
     sys.modules["torch"] = mock_torch

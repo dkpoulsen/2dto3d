@@ -9,7 +9,6 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from enum import Enum
 from pathlib import Path
-from typing import Optional
 
 
 class BenchmarkCategory(Enum):
@@ -117,7 +116,7 @@ class BenchmarkConfig:
             BenchmarkCategory.RESOLUTION_SCALING,
         ]
     )
-    custom_test_images: Optional[list[Path]] = None
+    custom_test_images: list[Path] | None = None
     seed: int = 42
 
     def __post_init__(self) -> None:
@@ -195,7 +194,7 @@ class QuickBenchmarkConfig:
     categories: list[BenchmarkCategory] = field(
         default_factory=lambda: [BenchmarkCategory.MODEL_COMPARISON]
     )
-    custom_test_images: Optional[list[Path]] = None
+    custom_test_images: list[Path] | None = None
     seed: int = 42
 
     @property
@@ -242,7 +241,7 @@ class FullBenchmarkConfig:
     include_gpu_metrics: bool = True
     timeout_seconds: float = 600.0
     categories: list[BenchmarkCategory] = field(default_factory=lambda: list(BenchmarkCategory))
-    custom_test_images: Optional[list[Path]] = None
+    custom_test_images: list[Path] | None = None
     seed: int = 42
 
     @property

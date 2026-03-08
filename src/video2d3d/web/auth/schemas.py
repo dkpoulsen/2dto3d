@@ -8,7 +8,6 @@ from __future__ import annotations
 
 from datetime import datetime
 from enum import Enum
-from typing import Optional
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
 
@@ -107,7 +106,7 @@ class UserResponse(UserBase):
     role: UserRole = Field(default=UserRole.USER, description="User role")
     is_active: bool = Field(default=True, description="Whether user account is active")
     created_at: datetime = Field(..., description="Account creation timestamp")
-    last_login: Optional[datetime] = Field(default=None, description="Last login timestamp")
+    last_login: datetime | None = Field(default=None, description="Last login timestamp")
 
 
 class TokenResponse(BaseModel):
@@ -149,8 +148,8 @@ class TokenPayload(BaseModel):
     sub: str = Field(..., description="Subject (user ID)")
     username: str = Field(..., description="Username")
     role: UserRole = Field(..., description="User role")
-    exp: Optional[datetime] = Field(default=None, description="Expiration time")
-    iat: Optional[datetime] = Field(default=None, description="Issued at time")
+    exp: datetime | None = Field(default=None, description="Expiration time")
+    iat: datetime | None = Field(default=None, description="Issued at time")
     type: str = Field(default="access", description="Token type (access/refresh)")
 
 

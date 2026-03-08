@@ -16,7 +16,7 @@ from __future__ import annotations
 import time
 from dataclasses import dataclass
 from enum import Enum
-from typing import TYPE_CHECKING, Any, Optional, Union
+from typing import TYPE_CHECKING, Any
 
 import cv2
 import numpy as np
@@ -112,8 +112,8 @@ class SegmentationProcessorError(Exception):
         self,
         message: str,
         *,
-        operation: Optional[str] = None,
-        original_exception: Optional[Exception] = None,
+        operation: str | None = None,
+        original_exception: Exception | None = None,
     ) -> None:
         """Initialize the error."""
         super().__init__(message)
@@ -153,7 +153,7 @@ class SegmentationProcessor:
 
     def __init__(
         self,
-        config: Optional[SegmentationProcessorConfig] = None,
+        config: SegmentationProcessorConfig | None = None,
         *,
         min_mask_area: int = _DEFAULT_MIN_AREA,
         enable_hole_filling: bool = True,
@@ -473,7 +473,7 @@ def create_segmentation_processor(
     min_mask_area: int = _DEFAULT_MIN_AREA,
     enable_hole_filling: bool = True,
     enable_boundary_extraction: bool = True,
-    **kwargs: Union[int, bool, float, str],
+    **kwargs: int | bool | float | str,
 ) -> SegmentationProcessor:
     """Create a segmentation processor with the specified configuration.
 

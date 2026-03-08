@@ -85,8 +85,11 @@ class TestBatchProcessorConfig:
         assert config.gc_threshold == 100
 
     def test_custom_values(self, mock_logger: MagicMock) -> None:
-        progress_cb = lambda c, t: None
-        error_cb = lambda e, i: None
+        def progress_cb(c, t):
+            return None
+
+        def error_cb(e, i):
+            return None
 
         config = BatchProcessorConfig(
             batch_size=16,

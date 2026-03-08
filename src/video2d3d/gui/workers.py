@@ -64,7 +64,7 @@ class ConversionWorker(QThread):
             from video2d3d.utils.config import get_config
             from video2d3d.utils.logger import get_logger
 
-            logger = get_logger("gui.conversion")
+            get_logger("gui.conversion")
             config = self._config or get_config()
 
             # Validate input file

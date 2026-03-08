@@ -5,8 +5,6 @@ This module provides custom exceptions for the video denoising functionality.
 
 from __future__ import annotations
 
-from typing import Optional
-
 
 class VideoDenoisingError(Exception):
     """Base exception for video denoising errors."""
@@ -15,9 +13,9 @@ class VideoDenoisingError(Exception):
         self,
         message: str,
         *,
-        model_name: Optional[str] = None,
-        device: Optional[str] = None,
-        original_exception: Optional[Exception] = None,
+        model_name: str | None = None,
+        device: str | None = None,
+        original_exception: Exception | None = None,
     ) -> None:
         """Initialize the error.
 
@@ -64,8 +62,8 @@ class FrameBufferError(VideoDenoisingError):
         self,
         message: str,
         *,
-        buffer_size: Optional[int] = None,
-        required_frames: Optional[int] = None,
+        buffer_size: int | None = None,
+        required_frames: int | None = None,
         **kwargs,
     ) -> None:
         """Initialize the error.

@@ -15,8 +15,6 @@ Constants:
 
 from __future__ import annotations
 
-from typing import Optional
-
 from fastapi import FastAPI, Request, Response
 
 # Constants for rate limiting (defined before imports that reference them)
@@ -75,7 +73,7 @@ def get_client_ip(request: Request) -> str:
     return get_remote_address(request)
 
 
-def create_limiter() -> Optional[Limiter]:
+def create_limiter() -> Limiter | None:
     """Create and configure the rate limiter.
 
     Returns:
@@ -149,7 +147,7 @@ def rate_limit_exceeded_handler(request: Request, exc: RateLimitExceeded) -> Res
     limit = str(exc.detail) if exc.detail else UNKNOWN_LIMIT
 
     # Calculate retry-after from the rate limit
-    retry_after: Optional[int] = None
+    retry_after: int | None = None
     if hasattr(exc, "headers") and exc.headers:
         retry_after_str = exc.headers.get("Retry-After")
         if retry_after_str:
@@ -187,7 +185,7 @@ def rate_limit_exceeded_handler(request: Request, exc: RateLimitExceeded) -> Res
     return response
 
 
-def setup_rate_limiting(app: FastAPI) -> Optional[Limiter]:
+def setup_rate_limiting(app: FastAPI) -> Limiter | None:
     """Set up rate limiting middleware for the FastAPI app.
 
     Args:
@@ -215,7 +213,7 @@ def setup_rate_limiting(app: FastAPI) -> Optional[Limiter]:
     return limiter
 
 
-def get_limiter() -> Optional[Limiter]:
+def get_limiter() -> Limiter | None:
     """Get the global limiter instance.
 
     Returns:
@@ -228,7 +226,7 @@ def get_limiter() -> Optional[Limiter]:
 
 
 # Rate limit decorators for different endpoint types
-def limit_upload(limiter: Optional[Limiter] = None):
+def limit_upload(limiter: Limiter | None = None):
     """Decorator for upload endpoints with stricter rate limits.
 
     Args:
@@ -253,7 +251,7 @@ def limit_upload(limiter: Optional[Limiter] = None):
     return limiter.limit(f"{rate_limit_config.upload_requests_per_minute}/minute")
 
 
-def limit_api(limiter: Optional[Limiter] = None):
+def limit_api(limiter: Limiter | None = None):
     """Decorator for general API endpoints with standard rate limits.
 
     Args:
@@ -281,7 +279,7 @@ def limit_api(limiter: Optional[Limiter] = None):
     )
 
 
-def limit_auth(limiter: Optional[Limiter] = None):
+def limit_auth(limiter: Limiter | None = None):
     """Decorator for authentication endpoints with very strict rate limits.
 
     Auth endpoints need stricter limits to prevent brute force attacks.

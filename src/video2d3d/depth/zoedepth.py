@@ -38,7 +38,7 @@ import time
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Optional, Union
+from typing import TYPE_CHECKING, Any
 
 import numpy as np
 import torch
@@ -183,15 +183,15 @@ class ZoeDepthConfig:
     model_variant: ZoeDepthModelVariant = ZoeDepthModelVariant.ZOE_NK
     depth_mode: str = "relative"  # 'relative' or 'metric'
     device: str = "auto"
-    cache_dir: Optional[Path] = None
+    cache_dir: Path | None = None
     auto_download: bool = True
-    output_resolution: Optional[int] = None
+    output_resolution: int | None = None
     use_fp16: bool = False
     optimize: bool = True
     domain: str = "auto"  # 'indoor', 'outdoor', or 'auto'
 
     # GPU acceleration settings
-    gpu_config: Optional[GPUConfig] = None
+    gpu_config: GPUConfig | None = None
     auto_batch_size: bool = True
     min_batch_size: int = 1
     max_batch_size: int = 32
@@ -254,9 +254,9 @@ class ZoeDepthLoadError(Exception):
         self,
         message: str,
         *,
-        model_variant: Optional[str] = None,
-        device: Optional[str] = None,
-        original_exception: Optional[Exception] = None,
+        model_variant: str | None = None,
+        device: str | None = None,
+        original_exception: Exception | None = None,
     ) -> None:
         """Initialize the error.
 
@@ -279,9 +279,9 @@ class ZoeDepthInferenceError(Exception):
         self,
         message: str,
         *,
-        model_variant: Optional[str] = None,
-        device: Optional[str] = None,
-        original_exception: Optional[Exception] = None,
+        model_variant: str | None = None,
+        device: str | None = None,
+        original_exception: Exception | None = None,
     ) -> None:
         """Initialize the error.
 
@@ -341,9 +341,9 @@ class ZoeDepthEstimator:
 
     def __init__(
         self,
-        config: Optional[ZoeDepthConfig] = None,
+        config: ZoeDepthConfig | None = None,
         *,
-        model_variant: Union[str, ZoeDepthModelVariant] = "zoedepth_nk",
+        model_variant: str | ZoeDepthModelVariant = "zoedepth_nk",
         device: str = "auto",
         depth_mode: str = "relative",
     ) -> None:
@@ -369,8 +369,8 @@ class ZoeDepthEstimator:
             )
 
         # Model components (lazy loaded)
-        self._model: Optional[nn.Module] = None
-        self._transform: Optional[Any] = None  # torchvision.transforms.Compose
+        self._model: nn.Module | None = None
+        self._transform: Any | None = None  # torchvision.transforms.Compose
         self._is_loaded: bool = False
 
         logger = _get_zoedepth_logger()
@@ -381,7 +381,7 @@ class ZoeDepthEstimator:
         )
 
     @property
-    def model(self) -> Optional[nn.Module]:
+    def model(self) -> nn.Module | None:
         """Get the loaded model (loads if not already loaded)."""
         if not self._is_loaded:
             self.load_model()
@@ -393,7 +393,7 @@ class ZoeDepthEstimator:
         return self._is_loaded
 
     @property
-    def transform(self) -> Optional[Any]:
+    def transform(self) -> Any | None:
         """Get the preprocessing transform (creates if not already created)."""
         if self._transform is None:
             self._create_transform()
@@ -563,7 +563,7 @@ class ZoeDepthEstimator:
         self,
         output: torch.Tensor,
         original_shape: tuple[int, int],
-        depth_mode: Optional[str] = None,
+        depth_mode: str | None = None,
     ) -> np.ndarray:
         """Post-process model output to depth map.
 
@@ -619,7 +619,7 @@ class ZoeDepthEstimator:
     def estimate_depth(
         self,
         frame: np.ndarray,
-        depth_mode: Optional[str] = None,
+        depth_mode: str | None = None,
     ) -> np.ndarray:
         """Estimate depth from a single frame.
 
@@ -640,7 +640,6 @@ class ZoeDepthEstimator:
         logger = _get_zoedepth_logger()
 
         # Determine effective depth mode
-        effective_mode = depth_mode or self.config.depth_mode
 
         # Input validation
         if not isinstance(frame, np.ndarray):
@@ -731,7 +730,7 @@ class ZoeDepthEstimator:
         self,
         frames: list[np.ndarray],
         batch_size: int = 4,
-        depth_mode: Optional[str] = None,
+        depth_mode: str | None = None,
     ) -> list[np.ndarray]:
         """Estimate depth for a batch of frames with GPU memory management.
 
@@ -821,7 +820,7 @@ class ZoeDepthEstimator:
                             predictions = self._model(batch_tensor)
 
                     # Postprocess each frame
-                    for idx, (pred, shape) in enumerate(zip(predictions, original_shapes)):
+                    for _idx, (pred, shape) in enumerate(zip(predictions, original_shapes)):
                         depth_map = self._postprocess_depth(
                             pred.unsqueeze(0), shape, depth_mode=depth_mode
                         )

@@ -7,7 +7,6 @@ interface for creating, reading, updating, and deleting presets.
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Dict, List, Optional
 
 from video2d3d.presets.models import (
     DepthEstimationSettings,
@@ -51,8 +50,8 @@ class PresetManager:
 
     def __init__(
         self,
-        presets_dir: Optional[Path] = None,
-        storage: Optional[PresetStorage] = None,
+        presets_dir: Path | None = None,
+        storage: PresetStorage | None = None,
     ):
         """Initialize the preset manager.
 
@@ -61,13 +60,13 @@ class PresetManager:
             storage: Custom preset storage instance.
         """
         self.storage = storage or PresetStorage(presets_dir=presets_dir)
-        self._cache: Optional[Dict[str, Preset]] = None
+        self._cache: dict[str, Preset] | None = None
 
     def _invalidate_cache(self) -> None:
         """Invalidate the preset cache."""
         self._cache = None
 
-    def _get_cached_presets(self) -> Dict[str, Preset]:
+    def _get_cached_presets(self) -> dict[str, Preset]:
         """Get cached presets, loading if necessary."""
         if self._cache is None:
             presets = self.storage.list_all(include_builtins=True)
@@ -81,10 +80,10 @@ class PresetManager:
     def create(
         self,
         name: str,
-        settings: Optional[PresetSettings] = None,
+        settings: PresetSettings | None = None,
         category: PresetCategory = PresetCategory.CUSTOM,
         description: str = "",
-        tags: Optional[List[str]] = None,
+        tags: list[str] | None = None,
         author: str = "",
     ) -> Preset:
         """Create a new preset.
@@ -124,7 +123,7 @@ class PresetManager:
         logger.info(f"Created preset '{name}' (id={preset.id})")
         return preset
 
-    def get(self, preset_id: str) -> Optional[Preset]:
+    def get(self, preset_id: str) -> Preset | None:
         """Get a preset by ID.
 
         Args:
@@ -135,7 +134,7 @@ class PresetManager:
         """
         return self.storage.load(preset_id)
 
-    def get_by_name(self, name: str) -> Optional[Preset]:
+    def get_by_name(self, name: str) -> Preset | None:
         """Get a preset by name.
 
         Args:
@@ -156,11 +155,11 @@ class PresetManager:
     def update(
         self,
         preset_id: str,
-        name: Optional[str] = None,
-        description: Optional[str] = None,
-        category: Optional[PresetCategory] = None,
-        tags: Optional[List[str]] = None,
-        settings: Optional[PresetSettings] = None,
+        name: str | None = None,
+        description: str | None = None,
+        category: PresetCategory | None = None,
+        tags: list[str] | None = None,
+        settings: PresetSettings | None = None,
     ) -> Preset:
         """Update an existing preset.
 
@@ -234,7 +233,7 @@ class PresetManager:
 
         return result
 
-    def duplicate(self, preset_id: str, new_name: Optional[str] = None) -> Preset:
+    def duplicate(self, preset_id: str, new_name: str | None = None) -> Preset:
         """Create a copy of an existing preset.
 
         Args:
@@ -269,7 +268,7 @@ class PresetManager:
     # Listing and Searching
     # =========================================================================
 
-    def list_all(self, include_builtins: bool = True) -> List[Preset]:
+    def list_all(self, include_builtins: bool = True) -> list[Preset]:
         """List all presets.
 
         Args:
@@ -282,7 +281,7 @@ class PresetManager:
 
     def list_by_category(
         self, category: PresetCategory, include_builtins: bool = True
-    ) -> List[Preset]:
+    ) -> list[Preset]:
         """List presets by category.
 
         Args:
@@ -297,9 +296,9 @@ class PresetManager:
     def search(
         self,
         query: str,
-        category: Optional[PresetCategory] = None,
-        tags: Optional[List[str]] = None,
-    ) -> List[Preset]:
+        category: PresetCategory | None = None,
+        tags: list[str] | None = None,
+    ) -> list[Preset]:
         """Search presets by query, category, and/or tags.
 
         Args:
@@ -324,12 +323,11 @@ class PresetManager:
                 continue
 
             # Query filter
-            if query:
-                if (
-                    query_lower not in preset.name.lower()
-                    and query_lower not in preset.description.lower()
-                ):
-                    continue
+            if query and (
+                query_lower not in preset.name.lower()
+                and query_lower not in preset.description.lower()
+            ):
+                continue
 
             results.append(preset)
 
@@ -461,7 +459,7 @@ class PresetManager:
         config: Config,
         category: PresetCategory = PresetCategory.CUSTOM,
         description: str = "",
-        tags: Optional[List[str]] = None,
+        tags: list[str] | None = None,
     ) -> Preset:
         """Create a preset from a Config object.
 
@@ -529,7 +527,7 @@ class PresetManager:
 
 
 # Singleton instance for convenience
-_manager: Optional[PresetManager] = None
+_manager: PresetManager | None = None
 
 
 def get_preset_manager(reload: bool = False) -> PresetManager:

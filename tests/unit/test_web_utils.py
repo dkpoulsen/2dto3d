@@ -51,7 +51,7 @@ class TestSupportedContentTypes:
 
     def test_mime_types_are_video(self) -> None:
         """Test that MIME types are video types."""
-        for ext, mime in MIME_TYPES.items():
+        for _ext, mime in MIME_TYPES.items():
             assert mime.startswith("video/") or mime == "application/octet-stream"
 
 

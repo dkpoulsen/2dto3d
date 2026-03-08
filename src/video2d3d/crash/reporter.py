@@ -26,13 +26,14 @@ Example usage:
 
 from __future__ import annotations
 
+import contextlib
 import os
 import sys
 import threading
 import traceback
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Set, Type
+from typing import TYPE_CHECKING, Any, Callable
 
 from video2d3d.crash.models import (
     CrashReport,
@@ -49,14 +50,14 @@ if TYPE_CHECKING:
     from video2d3d.batch import BatchVideoQueue
 
 # Signal name mapping
-SIGNAL_NAMES: Dict[int, str] = {
+SIGNAL_NAMES: dict[int, str] = {
     getattr(signal, name): name
     for name in dir(signal)
     if name.startswith("SIG") and not name.startswith("SIG_")
 }
 
 # Global crash reporter instance
-_crash_reporter: Optional[CrashReporter] = None
+_crash_reporter: CrashReporter | None = None
 
 
 @dataclass
@@ -81,7 +82,7 @@ class CrashReporterConfig:
     capture_system_state: bool = True
     max_log_excerpts: int = 50
     max_crash_files: int = 100
-    signals_to_handle: Set[int] = field(
+    signals_to_handle: set[int] = field(
         default_factory=lambda: {
             signal.SIGTERM,
             signal.SIGINT,
@@ -92,7 +93,7 @@ class CrashReporterConfig:
         }
     )
     enabled: bool = True
-    callback: Optional[Callable[[CrashReport], None]] = None
+    callback: Callable[[CrashReport], None] | None = None
 
     def __post_init__(self):
         # Ensure crash_dir is a Path
@@ -117,10 +118,10 @@ class CrashReporter:
 
     def __init__(
         self,
-        config: Optional[CrashReporterConfig] = None,
+        config: CrashReporterConfig | None = None,
         *,
-        queue: Optional[BatchVideoQueue] = None,
-        app_config: Optional[Dict[str, Any]] = None,
+        queue: BatchVideoQueue | None = None,
+        app_config: dict[str, Any] | None = None,
     ):
         """Initialize the crash reporter.
 
@@ -134,8 +135,8 @@ class CrashReporter:
         self.app_config = app_config
         self._logger = get_logger("crash.reporter")
         self._lock = threading.RLock()
-        self._original_excepthook: Optional[Callable] = None
-        self._original_signal_handlers: Dict[int, Any] = {}
+        self._original_excepthook: Callable | None = None
+        self._original_signal_handlers: dict[int, Any] = {}
         self._handlers_installed = False
         self._crash_count = 0
 
@@ -186,10 +187,8 @@ class CrashReporter:
 
             # Restore signal handlers
             for sig, handler in self._original_signal_handlers.items():
-                try:
+                with contextlib.suppress(ValueError, OSError):
                     signal.signal(sig, handler)
-                except (ValueError, OSError):
-                    pass
             self._original_signal_handlers.clear()
 
             self._handlers_installed = False
@@ -209,9 +208,9 @@ class CrashReporter:
 
     def _excepthook(
         self,
-        exc_type: Type[BaseException],
+        exc_type: type[BaseException],
         exc_value: BaseException,
-        exc_tb: Optional[Any],
+        exc_tb: Any | None,
     ) -> None:
         """Custom exception hook for uncaught exceptions.
 
@@ -251,7 +250,7 @@ class CrashReporter:
                 # Default behavior: print traceback and exit
                 traceback.print_exception(exc_type, exc_value, exc_tb)
 
-    def _signal_handler(self, signum: int, frame: Optional[Any]) -> None:
+    def _signal_handler(self, signum: int, frame: Any | None) -> None:
         """Signal handler for crash detection.
 
         Args:
@@ -355,13 +354,13 @@ class CrashReporter:
         self,
         crash_type: CrashType,
         *,
-        exception: Optional[tuple] = None,
-        signal_number: Optional[int] = None,
-        signal_name: Optional[str] = None,
+        exception: tuple | None = None,
+        signal_number: int | None = None,
+        signal_name: str | None = None,
         severity: CrashSeverity = CrashSeverity.HIGH,
-        context: Optional[Dict[str, Any]] = None,
-        tags: Optional[List[str]] = None,
-        user_message: Optional[str] = None,
+        context: dict[str, Any] | None = None,
+        tags: list[str] | None = None,
+        user_message: str | None = None,
     ) -> CrashReport:
         """Create a crash report.
 
@@ -417,7 +416,7 @@ class CrashReporter:
 
         return report
 
-    def _get_log_excerpts(self) -> List[str]:
+    def _get_log_excerpts(self) -> list[str]:
         """Get recent log entries for crash context.
 
         Returns:
@@ -465,7 +464,7 @@ class CrashReporter:
         self,
         page: int = 1,
         page_size: int = 20,
-        severity: Optional[CrashSeverity] = None,
+        severity: CrashSeverity | None = None,
     ) -> CrashReportList:
         """List crash reports.
 
@@ -477,7 +476,7 @@ class CrashReporter:
         Returns:
             CrashReportList with summaries.
         """
-        reports: List[CrashReportSummary] = []
+        reports: list[CrashReportSummary] = []
 
         try:
             crash_files = sorted(
@@ -515,7 +514,7 @@ class CrashReporter:
             page_size=page_size,
         )
 
-    def get_report(self, report_id: str) -> Optional[CrashReport]:
+    def get_report(self, report_id: str) -> CrashReport | None:
         """Get a specific crash report by ID.
 
         Args:
@@ -588,9 +587,9 @@ class CrashReporter:
         self,
         message: str,
         *,
-        exception: Optional[Exception] = None,
-        context: Optional[Dict[str, Any]] = None,
-        tags: Optional[List[str]] = None,
+        exception: Exception | None = None,
+        context: dict[str, Any] | None = None,
+        tags: list[str] | None = None,
         severity: CrashSeverity = CrashSeverity.MEDIUM,
     ) -> CrashReport:
         """Manually create a crash report.
@@ -623,7 +622,7 @@ class CrashReporter:
 
         return report
 
-    def set_queue(self, queue: Optional[BatchVideoQueue]) -> None:
+    def set_queue(self, queue: BatchVideoQueue | None) -> None:
         """Set the batch queue for job state capture.
 
         Args:
@@ -634,12 +633,12 @@ class CrashReporter:
 
 
 def init_crash_reporting(
-    config: Optional[CrashReporterConfig] = None,
+    config: CrashReporterConfig | None = None,
     *,
-    queue: Optional[BatchVideoQueue] = None,
-    app_config: Optional[Dict[str, Any]] = None,
+    queue: BatchVideoQueue | None = None,
+    app_config: dict[str, Any] | None = None,
     app_version: str = "",
-    app_start_time: Optional[float] = None,
+    app_start_time: float | None = None,
 ) -> CrashReporter:
     """Initialize global crash reporting.
 
@@ -673,7 +672,7 @@ def init_crash_reporting(
     return _crash_reporter
 
 
-def get_crash_reporter() -> Optional[CrashReporter]:
+def get_crash_reporter() -> CrashReporter | None:
     """Get the global crash reporter instance.
 
     Returns:
@@ -682,7 +681,7 @@ def get_crash_reporter() -> Optional[CrashReporter]:
     return _crash_reporter
 
 
-def set_crash_reporter_queue(queue: Optional[BatchVideoQueue]) -> None:
+def set_crash_reporter_queue(queue: BatchVideoQueue | None) -> None:
     """Set the batch queue for the global crash reporter.
 
     This allows the crash reporter to capture active job information

@@ -14,7 +14,7 @@ from __future__ import annotations
 import sys
 import threading
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Optional, Union
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from loguru import Logger
@@ -84,13 +84,13 @@ def get_log_format(
 
 
 def configure_logging(
-    config: Optional[LoggingConfig] = None,
+    config: LoggingConfig | None = None,
     *,
-    log_level: Optional[str] = None,
-    log_file: Optional[Union[str, Path]] = None,
-    rotation: Optional[str] = None,
-    retention: Optional[str] = None,
-    colorize: Optional[bool] = None,
+    log_level: str | None = None,
+    log_file: str | Path | None = None,
+    rotation: str | None = None,
+    retention: str | None = None,
+    colorize: bool | None = None,
     console_output: bool = True,
     json_format: bool = False,
 ) -> None:
@@ -178,7 +178,7 @@ def configure_logging(
     logger.debug(f"Logging configured: level={level}, file={file_path}")
 
 
-def get_logger(name: Optional[str] = None) -> Logger:
+def get_logger(name: str | None = None) -> Logger:
     """Get a logger instance with optional name binding.
 
     Args:
@@ -220,7 +220,7 @@ def log_context(**kwargs: Any) -> Logger:
 
 def log_exception(
     message: str,
-    exception: Optional[Exception] = None,
+    exception: Exception | None = None,
     **kwargs: Any,
 ) -> None:
     """Log an exception with detailed context.
@@ -327,7 +327,7 @@ def log_model_inference(
 def log_memory_usage(
     operation: str,
     memory_mb: float,
-    peak_memory_mb: Optional[float] = None,
+    peak_memory_mb: float | None = None,
     **kwargs: Any,
 ) -> None:
     """Log memory usage for an operation.

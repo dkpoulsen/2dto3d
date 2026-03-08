@@ -250,7 +250,7 @@ class TestEMASmoothing:
         smoother = TemporalSmoother(method="ema", smoothing_factor=0.5)
 
         # First frame
-        result1 = smoother.smooth(sample_depth_map)
+        smoother.smooth(sample_depth_map)
 
         # Second frame (different)
         second_depth = sample_depth_map * 2

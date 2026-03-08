@@ -46,7 +46,7 @@ import time
 from collections import deque
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import TYPE_CHECKING, Optional, Union
+from typing import TYPE_CHECKING
 
 import cv2
 import numpy as np
@@ -97,8 +97,8 @@ class TemporalSmoothingError(Exception):
         self,
         message: str,
         *,
-        operation: Optional[str] = None,
-        original_exception: Optional[Exception] = None,
+        operation: str | None = None,
+        original_exception: Exception | None = None,
     ) -> None:
         """Initialize the error.
 
@@ -189,8 +189,8 @@ class TemporalState:
         frame_count: Number of frames processed.
     """
 
-    previous_depth: Optional[np.ndarray] = None
-    previous_frame: Optional[np.ndarray] = None
+    previous_depth: np.ndarray | None = None
+    previous_frame: np.ndarray | None = None
     depth_history: deque = field(default_factory=lambda: deque(maxlen=5))
     frame_count: int = 0
 
@@ -233,7 +233,7 @@ class TemporalSmoother:
 
     def __init__(
         self,
-        config: Optional[TemporalSmoothingConfig] = None,
+        config: TemporalSmoothingConfig | None = None,
         *,
         method: str = "ema",
         smoothing_factor: float = _DEFAULT_SMOOTHING_FACTOR,
@@ -268,7 +268,7 @@ class TemporalSmoother:
     def smooth(
         self,
         depth_map: np.ndarray,
-        frame: Optional[np.ndarray] = None,
+        frame: np.ndarray | None = None,
     ) -> np.ndarray:
         """Apply temporal smoothing to a depth map.
 
@@ -338,7 +338,7 @@ class TemporalSmoother:
     def _initialize_state(
         self,
         depth_map: np.ndarray,
-        frame: Optional[np.ndarray],
+        frame: np.ndarray | None,
     ) -> None:
         """Initialize temporal state with the first frame."""
         self.state.previous_depth = depth_map.copy()
@@ -370,7 +370,7 @@ class TemporalSmoother:
     def _smooth_optical_flow(
         self,
         depth_map: np.ndarray,
-        frame: Optional[np.ndarray],
+        frame: np.ndarray | None,
     ) -> np.ndarray:
         """Apply optical flow-guided temporal smoothing.
 
@@ -434,7 +434,7 @@ class TemporalSmoother:
             self._logger.warning(f"Optical flow smoothing failed, falling back to EMA: {e}")
             return self._smooth_ema(depth_map)
 
-    def _compute_optical_flow(self, frame: np.ndarray) -> Optional[np.ndarray]:
+    def _compute_optical_flow(self, frame: np.ndarray) -> np.ndarray | None:
         """Compute dense optical flow between previous and current frame.
 
         Uses Farneback's algorithm for dense optical flow estimation.
@@ -581,7 +581,7 @@ class TemporalSmoother:
     def process_batch(
         self,
         depth_maps: list[np.ndarray],
-        frames: Optional[list[np.ndarray]] = None,
+        frames: list[np.ndarray] | None = None,
     ) -> list[np.ndarray]:
         """Process a batch of depth maps with temporal smoothing.
 
@@ -622,7 +622,7 @@ class TemporalSmoother:
     def __call__(
         self,
         depth_map: np.ndarray,
-        frame: Optional[np.ndarray] = None,
+        frame: np.ndarray | None = None,
     ) -> np.ndarray:
         """Apply temporal smoothing (callable interface).
 
@@ -644,7 +644,7 @@ class TemporalSmoother:
 def create_temporal_smoother(
     method: str = "ema",
     smoothing_factor: float = _DEFAULT_SMOOTHING_FACTOR,
-    **kwargs: Union[str, float, int, bool],
+    **kwargs: str | float | int | bool,
 ) -> TemporalSmoother:
     """Create a temporal smoother with the specified configuration.
 
@@ -666,7 +666,7 @@ def create_temporal_smoother(
 
 def smooth_depth_temporal(
     depth_maps: list[np.ndarray],
-    frames: Optional[list[np.ndarray]] = None,
+    frames: list[np.ndarray] | None = None,
     method: str = "ema",
     smoothing_factor: float = _DEFAULT_SMOOTHING_FACTOR,
 ) -> list[np.ndarray]:
@@ -795,7 +795,7 @@ class MotionCompensatedSmoother:
 
     def __init__(
         self,
-        config: Optional[MotionCompensatedConfig] = None,
+        config: MotionCompensatedConfig | None = None,
         *,
         smoothing_factor: float = 0.5,
     ) -> None:
@@ -950,7 +950,7 @@ class MotionCompensatedSmoother:
     def _compute_consistent_optical_flow(
         self,
         frame: np.ndarray,
-    ) -> tuple[Optional[np.ndarray], Optional[np.ndarray], np.ndarray]:
+    ) -> tuple[np.ndarray | None, np.ndarray | None, np.ndarray]:
         """Compute optical flow with forward-backward consistency check.
 
         Computes flow in both directions and checks consistency to detect
@@ -1323,7 +1323,7 @@ class MotionCompensatedSmoother:
 
 def create_motion_compensated_smoother(
     smoothing_factor: float = 0.5,
-    **kwargs: Union[str, float, int, bool],
+    **kwargs: str | float | int | bool,
 ) -> MotionCompensatedSmoother:
     """Create a motion-compensated smoother with the specified configuration.
 

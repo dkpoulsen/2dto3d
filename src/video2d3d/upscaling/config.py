@@ -9,7 +9,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
+from typing import Any
 
 
 class ModelType(str, Enum):
@@ -32,7 +32,7 @@ class ModelType(str, Enum):
 
 
 # Model information dictionary
-MODEL_INFO: Dict[str, Dict[str, Any]] = {
+MODEL_INFO: dict[str, dict[str, Any]] = {
     ModelType.ESRGAN: {
         "name": "ESRGAN",
         "scale": 4,
@@ -81,7 +81,7 @@ MODEL_INFO: Dict[str, Dict[str, Any]] = {
 }
 
 
-def get_model_info(model_type: Union[str, ModelType]) -> Dict[str, Any]:
+def get_model_info(model_type: str | ModelType) -> dict[str, Any]:
     """Get information about a specific model.
 
     Args:
@@ -100,7 +100,7 @@ def get_model_info(model_type: Union[str, ModelType]) -> Dict[str, Any]:
     return MODEL_INFO[model_type].copy()
 
 
-def list_available_models() -> List[str]:
+def list_available_models() -> list[str]:
     """List all available model types.
 
     Returns:
@@ -126,7 +126,7 @@ def get_default_model_path() -> Path:
     return Path(__file__).parent.parent.parent.parent / "models" / "upscaling"
 
 
-def get_model_scale(model_type: Union[str, ModelType]) -> int:
+def get_model_scale(model_type: str | ModelType) -> int:
     """Get the scale factor for a model.
 
     Args:
@@ -163,8 +163,8 @@ class UpscalerConfig:
 
     enabled: bool = False
     model_type: ModelType = ModelType.REAL_ESRGAN_X4PLUS
-    model_path: Optional[Path] = None
-    scale: Optional[int] = None
+    model_path: Path | None = None
+    scale: int | None = None
     use_gpu: bool = True
     gpu_device: int = 0
     tile_size: int = 0  # 0 = auto (no tiling for small images)
@@ -208,7 +208,7 @@ class UpscalerConfig:
             self.model_path = Path(self.model_path)
 
     @property
-    def model_info(self) -> Dict[str, Any]:
+    def model_info(self) -> dict[str, Any]:
         """Get information about the selected model."""
         return get_model_info(self.model_type)
 
@@ -230,7 +230,7 @@ class UpscalerConfig:
         onnx_file = self.model_info["onnx_file"]
         return model_dir / onnx_file
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert config to dictionary.
 
         Returns:
@@ -255,7 +255,7 @@ class UpscalerConfig:
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> UpscalerConfig:
+    def from_dict(cls, data: dict[str, Any]) -> UpscalerConfig:
         """Create config from dictionary.
 
         Args:

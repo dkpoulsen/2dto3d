@@ -11,7 +11,6 @@ This module provides endpoints for:
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Optional
 
 from fastapi import APIRouter, HTTPException, Query, status
 
@@ -340,7 +339,7 @@ async def get_job(job_id: str) -> JobResponse:
     description="List all jobs, optionally filtered by status.",
 )
 async def list_jobs(
-    status: Optional[JobStatusResponse] = None,
+    status: JobStatusResponse | None = None,
     page: int = Query(1, ge=1, description="Page number"),
     page_size: int = Query(50, ge=1, le=100, description="Items per page"),
 ) -> JobListResponse:
@@ -611,9 +610,9 @@ async def get_queue_stats() -> QueueStatsResponse:
 )
 async def get_thumbnail_grid(
     job_id: str,
-    count: Optional[int] = Query(default=24, ge=1, le=100, description="Number of thumbnails"),
-    start_frame: Optional[int] = Query(default=None, ge=0, description="Start frame index"),
-    end_frame: Optional[int] = Query(default=None, ge=0, description="End frame index"),
+    count: int | None = Query(default=24, ge=1, le=100, description="Number of thumbnails"),
+    start_frame: int | None = Query(default=None, ge=0, description="Start frame index"),
+    end_frame: int | None = Query(default=None, ge=0, description="End frame index"),
 ) -> ThumbnailGridResponse:
     """Get thumbnail grid data for a job.
 

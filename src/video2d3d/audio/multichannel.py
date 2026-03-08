@@ -6,7 +6,6 @@ import shutil
 import subprocess
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Optional
 
 from video2d3d.audio.config import AudioChannelLayout, AudioFormatConfig
 from video2d3d.audio.exceptions import AudioProcessingError
@@ -34,12 +33,12 @@ class DownmixResult:
     """
 
     success: bool = True
-    output_path: Optional[Path] = None
+    output_path: Path | None = None
     input_channels: int = 6
     output_channels: int = 2
     input_layout: AudioChannelLayout = AudioChannelLayout.SURROUND_5_1
     output_layout: AudioChannelLayout = AudioChannelLayout.STEREO
-    error_message: Optional[str] = None
+    error_message: str | None = None
 
 
 class MultiChannelAudioProcessor:
@@ -86,7 +85,7 @@ class MultiChannelAudioProcessor:
 
     def __init__(
         self,
-        format_config: Optional[AudioFormatConfig] = None,
+        format_config: AudioFormatConfig | None = None,
     ) -> None:
         """Initialize the multi-channel audio processor.
 

@@ -7,7 +7,6 @@ import subprocess
 import tempfile
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Dict, List, Optional
 
 from video2d3d.audio.config import AudioConfig, AudioFormatConfig
 from video2d3d.audio.exceptions import (
@@ -34,12 +33,12 @@ class TrackExtractionResult:
     """
 
     track_index: int
-    output_path: Optional[Path] = None
+    output_path: Path | None = None
     codec: str = "aac"
     channels: int = 2
     duration: float = 0.0
     success: bool = True
-    error_message: Optional[str] = None
+    error_message: str | None = None
 
 
 @dataclass
@@ -55,12 +54,12 @@ class TrackPreservationResult:
     """
 
     video_path: Path
-    extracted_tracks: List[TrackExtractionResult] = field(default_factory=list)
+    extracted_tracks: list[TrackExtractionResult] = field(default_factory=list)
     preserved_count: int = 0
     failed_count: int = 0
-    temp_files: List[Path] = field(default_factory=list)
+    temp_files: list[Path] = field(default_factory=list)
 
-    def get_successful_tracks(self) -> Dict[int, Path]:
+    def get_successful_tracks(self) -> dict[int, Path]:
         """Get mapping of track indices to their output paths.
 
         Returns:
@@ -92,8 +91,8 @@ class AudioTrackPreserver:
 
     def __init__(
         self,
-        config: Optional[AudioConfig] = None,
-        format_config: Optional[AudioFormatConfig] = None,
+        config: AudioConfig | None = None,
+        format_config: AudioFormatConfig | None = None,
     ) -> None:
         """Initialize the audio track preserver.
 
@@ -236,16 +235,13 @@ class AudioTrackPreserver:
             return True
 
         # Need to re-encode if sample rate differs
-        if self.format_config.sample_rate != track_info.sample_rate:
-            return True
-
-        return False
+        return self.format_config.sample_rate != track_info.sample_rate
 
     def preserve_tracks(
         self,
         video_path: Path | str,
-        output_dir: Optional[Path | str] = None,
-        tracks: Optional[List[int]] = None,
+        output_dir: Path | str | None = None,
+        tracks: list[int] | None = None,
     ) -> TrackPreservationResult:
         """Preserve specified audio tracks from a video file.
 
@@ -272,10 +268,7 @@ class AudioTrackPreserver:
 
         # Determine which tracks to preserve
         if tracks is None:
-            if self.config.tracks_to_preserve:
-                tracks = self.config.tracks_to_preserve
-            else:
-                tracks = metadata.get_track_indices()
+            tracks = self.config.tracks_to_preserve or metadata.get_track_indices()
 
         # Create output directory
         if output_dir is None:
@@ -351,7 +344,7 @@ class AudioTrackPreserver:
         }
         return extension_map.get(codec, "m4a")
 
-    def cleanup_temp_files(self, files: List[Path]) -> None:
+    def cleanup_temp_files(self, files: list[Path]) -> None:
         """Clean up temporary audio files.
 
         Args:

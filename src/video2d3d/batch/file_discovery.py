@@ -164,14 +164,12 @@ class FileDiscovery:
 
         if recursive:
             for match in base.rglob(glob_pattern.replace("**/", "")):
-                if match.is_file():
-                    if self._passes_filters(match):
-                        yield match
+                if match.is_file() and self._passes_filters(match):
+                    yield match
         else:
             for match in base.glob(glob_pattern):
-                if match.is_file():
-                    if self._passes_filters(match):
-                        yield match
+                if match.is_file() and self._passes_filters(match):
+                    yield match
 
     def discover_from_list(
         self,

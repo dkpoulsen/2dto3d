@@ -15,7 +15,7 @@ from __future__ import annotations
 
 import time
 from pathlib import Path
-from typing import TYPE_CHECKING, List, Optional
+from typing import TYPE_CHECKING
 
 import numpy as np
 import torch
@@ -117,7 +117,7 @@ class PropagationBlock(nn.Module):
     def forward(
         self,
         current: torch.Tensor,
-        prev_feat: Optional[torch.Tensor],
+        prev_feat: torch.Tensor | None,
     ) -> torch.Tensor:
         """Forward pass with temporal propagation.
 
@@ -295,10 +295,10 @@ class BasicVSRPlusPlusDenoiser(VideoDenoiserBase):
 
     def __init__(
         self,
-        config: Optional[BasicVSRPlusPlusConfig] = None,
+        config: BasicVSRPlusPlusConfig | None = None,
         *,
         device: str = "auto",
-        cache_dir: Optional[Path] = None,
+        cache_dir: Path | None = None,
     ) -> None:
         """Initialize BasicVSR++ denoiser.
 
@@ -309,7 +309,7 @@ class BasicVSRPlusPlusDenoiser(VideoDenoiserBase):
         """
         self._basicvsr_config = config or BasicVSRPlusPlusConfig()
         self._cache_dir = cache_dir
-        self._model: Optional[nn.Module] = None
+        self._model: nn.Module | None = None
 
         super().__init__(
             model_name="basicvsr_plusplus",
@@ -322,7 +322,7 @@ class BasicVSRPlusPlusDenoiser(VideoDenoiserBase):
         return self._basicvsr_config.num_input_frames
 
     @property
-    def model(self) -> Optional[nn.Module]:
+    def model(self) -> nn.Module | None:
         """Get the loaded model (loads if not already loaded)."""
         if not self._is_loaded:
             self.load_model()
@@ -400,7 +400,7 @@ class BasicVSRPlusPlusDenoiser(VideoDenoiserBase):
             if model_path.exists():
                 state_dict = torch.load(model_path, map_location="cpu")
                 # Handle potential key mismatches
-                if any(k.startswith("module.") for k in state_dict.keys()):
+                if any(k.startswith("module.") for k in state_dict):
                     state_dict = {k[7:]: v for k, v in state_dict.items()}
                 self._model.load_state_dict(state_dict, strict=False)
                 self.logger.debug(f"Loaded weights from {model_path}")
@@ -428,7 +428,7 @@ class BasicVSRPlusPlusDenoiser(VideoDenoiserBase):
                 original_exception=e,
             ) from e
 
-    def _preprocess_frames(self, frames: List[np.ndarray]) -> torch.Tensor:
+    def _preprocess_frames(self, frames: list[np.ndarray]) -> torch.Tensor:
         """Preprocess frames for the model.
 
         Args:
@@ -450,7 +450,7 @@ class BasicVSRPlusPlusDenoiser(VideoDenoiserBase):
         # Add batch dimension: (1, T, C, H, W)
         return stacked.unsqueeze(0)
 
-    def _postprocess_frames(self, tensor: torch.Tensor) -> List[np.ndarray]:
+    def _postprocess_frames(self, tensor: torch.Tensor) -> list[np.ndarray]:
         """Postprocess model output to frames.
 
         Args:
@@ -476,9 +476,9 @@ class BasicVSRPlusPlusDenoiser(VideoDenoiserBase):
 
     def _denoise_frames_impl(
         self,
-        frames: List[np.ndarray],
+        frames: list[np.ndarray],
         **kwargs,
-    ) -> List[np.ndarray]:
+    ) -> list[np.ndarray]:
         """Implement BasicVSR++ denoising logic.
 
         Args:

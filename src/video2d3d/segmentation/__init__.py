@@ -126,7 +126,7 @@ class SAMConfig:
 
     model_type: SAMModelType = SAMModelType.VIT_B
     device: str = "auto"
-    checkpoint_path: Optional[Path] = None
+    checkpoint_path: Path | None = None
     auto_download: bool = True
     input_size: int = _SAM_DEFAULT_INPUT_SIZE
     points_per_side: int = 32
@@ -136,7 +136,7 @@ class SAMConfig:
     use_fp16: bool = False
 
     # GPU acceleration settings
-    gpu_config: Optional[GPUConfig] = None
+    gpu_config: GPUConfig | None = None
 
     def __post_init__(self) -> None:
         """Validate and normalize configuration."""
@@ -169,9 +169,9 @@ class SegmentationError(Exception):
         self,
         message: str,
         *,
-        model_type: Optional[str] = None,
-        device: Optional[str] = None,
-        original_exception: Optional[Exception] = None,
+        model_type: str | None = None,
+        device: str | None = None,
+        original_exception: Exception | None = None,
     ) -> None:
         """Initialize the error."""
         super().__init__(message)
@@ -225,9 +225,9 @@ class SemanticSegmenter:
 
     def __init__(
         self,
-        config: Optional[SAMConfig] = None,
+        config: SAMConfig | None = None,
         *,
-        model_type: Union[str, SAMModelType] = "vit_b",
+        model_type: str | SAMModelType = "vit_b",
         device: str = "auto",
     ) -> None:
         """Initialize the semantic segmenter.
@@ -246,8 +246,8 @@ class SemanticSegmenter:
             self.config = SAMConfig(model_type=model_type, device=device)
 
         # Model components (lazy loaded)
-        self._sam: Optional[Any] = None  # sam.SamPredictor or sam.SamAutomaticMaskGenerator
-        self._mask_generator: Optional[Any] = None
+        self._sam: Any | None = None  # sam.SamPredictor or sam.SamAutomaticMaskGenerator
+        self._mask_generator: Any | None = None
         self._is_loaded: bool = False
 
         logger = _get_segmentation_logger()
@@ -435,10 +435,7 @@ class SemanticSegmenter:
 
         try:
             # Convert RGB to BGR if needed (SAM expects RGB)
-            if image.shape[2] == 3:
-                rgb_image = image
-            else:
-                rgb_image = image[:, :, :3]
+            rgb_image = image if image.shape[2] == 3 else image[:, :, :3]
 
             # Generate masks
             masks = self._mask_generator.generate(rgb_image)

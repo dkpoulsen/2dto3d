@@ -12,7 +12,7 @@ import statistics
 import time
 from datetime import datetime
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Optional
+from typing import TYPE_CHECKING, Any
 
 import numpy as np
 
@@ -66,7 +66,7 @@ class BenchmarkRunner:
 
     def __init__(
         self,
-        config: Optional[BenchmarkConfig] = None,
+        config: BenchmarkConfig | None = None,
     ) -> None:
         """Initialize the benchmark runner.
 
@@ -78,9 +78,9 @@ class BenchmarkRunner:
         self._results = BenchmarkResults(config_name="benchmark")
         self._estimator_cache: dict[str, Any] = {}
         self._seed_initialized = False
-        self._progress_callback: Optional[callable] = None
+        self._progress_callback: callable | None = None
 
-    def set_progress_callback(self, callback: Optional[callable]) -> None:
+    def set_progress_callback(self, callback: callable | None) -> None:
         """Set a callback function for progress updates.
 
         Args:
@@ -533,7 +533,7 @@ class BenchmarkRunner:
 
     def run(
         self,
-        categories: Optional[list[BenchmarkCategory]] = None,
+        categories: list[BenchmarkCategory] | None = None,
     ) -> BenchmarkResults:
         """Run all configured benchmarks.
 

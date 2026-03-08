@@ -9,7 +9,7 @@ This module provides endpoints for:
 
 from __future__ import annotations
 
-from typing import Annotated, Optional
+from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
@@ -50,7 +50,7 @@ security = HTTPBearer(auto_error=False)
 
 
 async def get_current_user(
-    credentials: Annotated[Optional[HTTPAuthorizationCredentials], Depends(security)] = None,
+    credentials: Annotated[HTTPAuthorizationCredentials | None, Depends(security)] = None,
 ) -> UserModel:
     """Dependency to get the current authenticated user from JWT token.
 
@@ -99,8 +99,8 @@ async def get_current_user(
 
 
 async def get_current_user_optional(
-    credentials: Annotated[Optional[HTTPAuthorizationCredentials], Depends(security)] = None,
-) -> Optional[UserModel]:
+    credentials: Annotated[HTTPAuthorizationCredentials | None, Depends(security)] = None,
+) -> UserModel | None:
     """Dependency to optionally get the current authenticated user.
 
     Returns None if not authenticated, instead of raising an exception.

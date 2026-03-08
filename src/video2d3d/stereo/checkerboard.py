@@ -33,7 +33,7 @@ the opposite pattern.
 from __future__ import annotations
 
 from enum import Enum
-from typing import TYPE_CHECKING, Final, Optional
+from typing import TYPE_CHECKING, Final
 
 import numpy as np
 
@@ -133,8 +133,8 @@ class CheckerboardEncoder:
         self,
         left: np.ndarray,
         right: np.ndarray,
-        pattern: Optional[CheckerboardPattern] = None,
-        swap_eyes: Optional[bool] = None,
+        pattern: CheckerboardPattern | None = None,
+        swap_eyes: bool | None = None,
     ) -> np.ndarray:
         """Combine left and right views into a checkerboard 3D image.
 
@@ -202,7 +202,7 @@ class CheckerboardEncoder:
         self,
         left: np.ndarray,
         right: np.ndarray,
-        swap_eyes: Optional[bool] = None,
+        swap_eyes: bool | None = None,
     ) -> np.ndarray:
         """Encode using standard pattern (left at even positions).
 
@@ -222,7 +222,7 @@ class CheckerboardEncoder:
         self,
         left: np.ndarray,
         right: np.ndarray,
-        swap_eyes: Optional[bool] = None,
+        swap_eyes: bool | None = None,
     ) -> np.ndarray:
         """Encode using inverted pattern (right at even positions).
 
@@ -242,7 +242,7 @@ class CheckerboardEncoder:
         self,
         left: np.ndarray,
         right: np.ndarray,
-        pattern: Optional[CheckerboardPattern] = None,
+        pattern: CheckerboardPattern | None = None,
     ) -> np.ndarray:
         """Encode with eyes swapped (right view on even positions in standard mode).
 

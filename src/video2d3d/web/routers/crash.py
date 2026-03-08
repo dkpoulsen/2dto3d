@@ -11,8 +11,6 @@ All endpoints require crash reporting to be initialized.
 
 from __future__ import annotations
 
-from typing import Optional
-
 from fastapi import APIRouter, HTTPException, Query, status
 
 from video2d3d.crash import CrashReport, CrashSeverity, get_crash_reporter
@@ -147,7 +145,7 @@ def _summary_to_response(report: CrashReport) -> CrashReportSummaryResponse:
 async def list_crash_reports(
     page: int = Query(1, ge=1, description="Page number (1-indexed)"),
     page_size: int = Query(20, ge=1, le=100, description="Number of reports per page"),
-    severity: Optional[CrashSeverityResponse] = Query(None, description="Filter by severity"),
+    severity: CrashSeverityResponse | None = Query(None, description="Filter by severity"),
 ):
     """List all crash reports with pagination.
 

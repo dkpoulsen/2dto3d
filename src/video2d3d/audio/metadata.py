@@ -6,7 +6,7 @@ import json
 import subprocess
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from video2d3d.audio.config import AudioChannelLayout
 from video2d3d.audio.exceptions import AudioExtractionError
@@ -51,8 +51,8 @@ class AudioTrackInfo:
     title: str = ""
     is_default: bool = False
     is_forced: bool = False
-    disposition: Dict[str, bool] = field(default_factory=dict)
-    tags: Dict[str, str] = field(default_factory=dict)
+    disposition: dict[str, bool] = field(default_factory=dict)
+    tags: dict[str, str] = field(default_factory=dict)
 
     @property
     def channel_layout_enum(self) -> AudioChannelLayout:
@@ -85,7 +85,7 @@ class AudioTrackInfo:
         """Check if this track has spatial audio channels."""
         return self.channels > 2
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return {
             "index": self.index,
@@ -126,7 +126,7 @@ class AudioMetadata:
     file_path: Path
     has_audio: bool = False
     track_count: int = 0
-    tracks: List[AudioTrackInfo] = field(default_factory=list)
+    tracks: list[AudioTrackInfo] = field(default_factory=list)
     default_track_index: int = 0
     total_duration: float = 0.0
     overall_bitrate: int = 0
@@ -253,7 +253,7 @@ class AudioMetadata:
             logger.error(f"Failed to extract audio metadata: {e}")
             raise AudioExtractionError(file_path, reason=str(e))
 
-    def get_track(self, index: int) -> Optional[AudioTrackInfo]:
+    def get_track(self, index: int) -> AudioTrackInfo | None:
         """Get audio track by index.
 
         Args:
@@ -267,7 +267,7 @@ class AudioMetadata:
                 return track
         return None
 
-    def get_tracks_by_language(self, language: str) -> List[AudioTrackInfo]:
+    def get_tracks_by_language(self, language: str) -> list[AudioTrackInfo]:
         """Get all tracks with a specific language.
 
         Args:
@@ -278,7 +278,7 @@ class AudioMetadata:
         """
         return [t for t in self.tracks if t.language == language]
 
-    def get_default_track(self) -> Optional[AudioTrackInfo]:
+    def get_default_track(self) -> AudioTrackInfo | None:
         """Get the default audio track.
 
         Returns:
@@ -286,7 +286,7 @@ class AudioMetadata:
         """
         return self.get_track(self.default_track_index)
 
-    def get_track_indices(self) -> List[int]:
+    def get_track_indices(self) -> list[int]:
         """Get all track indices.
 
         Returns:
@@ -309,7 +309,7 @@ class AudioMetadata:
         """Check if there are multiple audio tracks."""
         return self.track_count > 1
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return {
             "file_path": str(self.file_path),

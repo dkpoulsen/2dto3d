@@ -6,7 +6,7 @@ import json
 import os
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
+from typing import Any
 
 import yaml
 from dotenv import load_dotenv
@@ -55,7 +55,7 @@ __all__ = [
 load_dotenv()
 
 
-def get_env_var(key: str, default: Optional[str] = None) -> Optional[str]:
+def get_env_var(key: str, default: str | None = None) -> str | None:
     """Get environment variable with optional default."""
     return os.getenv(key, default)
 
@@ -100,7 +100,7 @@ class ProcessingConfig:
     cudnn_benchmark: bool = True
     async_transfer: bool = True
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return asdict(self)
 
@@ -109,7 +109,7 @@ class ProcessingConfig:
 class VideoInputConfig:
     """Video input configuration settings."""
 
-    supported_formats: List[str] = field(
+    supported_formats: list[str] = field(
         default_factory=lambda: ["mp4", "avi", "mov", "mkv", "webm"]
     )
     default_width: int = 0
@@ -118,7 +118,7 @@ class VideoInputConfig:
     max_width: int = 3840
     max_height: int = 2160
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return asdict(self)
 
@@ -133,7 +133,7 @@ class VideoOutputConfig:
     crf: int = 23
     pixel_format: str = "yuv420p"
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return asdict(self)
 
@@ -152,7 +152,7 @@ class DepthEstimationConfig:
     temporal_consistency: bool = True
     temporal_smoothing_factor: float = 0.5
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return asdict(self)
 
@@ -164,7 +164,7 @@ class AnaglyphConfig:
     type: str = "red_cyan"
     color_method: str = "dubois"
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return asdict(self)
 
@@ -177,7 +177,7 @@ class SideBySideConfig:
     swap_eyes: bool = False
     half_width: bool = False
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return asdict(self)
 
@@ -193,7 +193,7 @@ class StereoGenerationConfig:
     anaglyph: AnaglyphConfig = field(default_factory=AnaglyphConfig)
     side_by_side: SideBySideConfig = field(default_factory=SideBySideConfig)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return asdict(self)
 
@@ -206,7 +206,7 @@ class QualityConfig:
     post_processing: bool = True
     calculate_metrics: bool = False
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return asdict(self)
 
@@ -222,7 +222,7 @@ class LoggingConfig:
     retention: str = "7 days"
     colorize: bool = True
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return asdict(self)
 
@@ -245,7 +245,7 @@ class RateLimitConfig:
     requests_per_hour: int = 1000
     upload_requests_per_minute: int = 10
     storage_uri: str = "memory://"
-    whitelist_ips: List[str] = field(default_factory=list)
+    whitelist_ips: list[str] = field(default_factory=list)
 
     def __post_init__(self) -> None:
         """Validate configuration values after initialization."""
@@ -258,7 +258,7 @@ class RateLimitConfig:
         if self.requests_per_hour < self.requests_per_minute:
             raise ValueError("requests_per_hour must be >= requests_per_minute")
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return asdict(self)
 
@@ -271,12 +271,12 @@ class WebApiConfig:
     host: str = "0.0.0.0"
     port: int = 8000
     prefix: str = "/api/v1"
-    cors_origins: List[str] = field(default_factory=lambda: ["http://localhost:3000"])
+    cors_origins: list[str] = field(default_factory=lambda: ["http://localhost:3000"])
     max_upload_size: int = 500
     upload_dir: str = "uploads"
     rate_limit: RateLimitConfig = field(default_factory=RateLimitConfig)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return asdict(self)
 
@@ -296,7 +296,7 @@ class PreviewConfig:
     max_height: int = 1080
     update_interval_ms: int = 33
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return asdict(self)
 
@@ -325,7 +325,7 @@ class ProgressTrackingConfig:
     refresh_rate: float = 0.1
     transient: bool = False
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return asdict(self)
 
@@ -348,7 +348,7 @@ class UpscalerConfig:
     tile_size: int = 0
     denoise_strength: float = 0.5
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return asdict(self)
 
@@ -373,7 +373,7 @@ class VideoDenoisingConfig:
     noise_level: float = 30.0
     fallback_to_cpu: bool = True
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return asdict(self)
 
@@ -397,12 +397,12 @@ class Config:
     upscaler: UpscalerConfig = field(default_factory=UpscalerConfig)
     video_denoising: VideoDenoisingConfig = field(default_factory=VideoDenoisingConfig)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert the entire configuration to a dictionary."""
         return asdict(self)
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> Config:
+    def from_dict(cls, data: dict[str, Any]) -> Config:
         """Create a Config instance from a dictionary.
 
         Args:
@@ -471,7 +471,7 @@ class Config:
         return config
 
     @staticmethod
-    def _parse_simple_section(section_data: Dict[str, Any], config_class: type) -> Any:
+    def _parse_simple_section(section_data: dict[str, Any], config_class: type) -> Any:
         """Parse a simple (non-nested) configuration section.
 
         Args:
@@ -485,7 +485,7 @@ class Config:
         return config_class(**filtered_data)
 
     @staticmethod
-    def _parse_stereo_generation(sg_data: Dict[str, Any]) -> StereoGenerationConfig:
+    def _parse_stereo_generation(sg_data: dict[str, Any]) -> StereoGenerationConfig:
         """Parse stereo_generation section with nested configs."""
         anaglyph = AnaglyphConfig(**sg_data.get("anaglyph", {}))
         side_by_side = SideBySideConfig(**sg_data.get("side_by_side", {}))
@@ -497,7 +497,7 @@ class Config:
         return StereoGenerationConfig(anaglyph=anaglyph, side_by_side=side_by_side, **filtered_data)
 
     @staticmethod
-    def _parse_web_api(web_data: Dict[str, Any]) -> WebApiConfig:
+    def _parse_web_api(web_data: dict[str, Any]) -> WebApiConfig:
         """Parse web_api section with nested rate_limit config."""
         rate_limit = RateLimitConfig(**web_data.get("rate_limit", {}))
         filtered_data = {
@@ -506,7 +506,7 @@ class Config:
         return WebApiConfig(rate_limit=rate_limit, **filtered_data)
 
 
-def deep_update(base_dict: Dict[str, Any], update_dict: Dict[str, Any]) -> Dict[str, Any]:
+def deep_update(base_dict: dict[str, Any], update_dict: dict[str, Any]) -> dict[str, Any]:
     """Recursively update a dictionary with another dictionary."""
     result = base_dict.copy()
     for key, value in update_dict.items():
@@ -517,7 +517,7 @@ def deep_update(base_dict: Dict[str, Any], update_dict: Dict[str, Any]) -> Dict[
     return result
 
 
-def load_yaml_file(file_path: Path) -> Dict[str, Any]:
+def load_yaml_file(file_path: Path) -> dict[str, Any]:
     """Load a YAML file and return its contents."""
     if not file_path.exists():
         return {}
@@ -527,7 +527,7 @@ def load_yaml_file(file_path: Path) -> Dict[str, Any]:
         return data if data else {}
 
 
-def _parse_config_section(config_data: Dict[str, Any], section: str, config_class: type) -> Any:
+def _parse_config_section(config_data: dict[str, Any], section: str, config_class: type) -> Any:
     """Parse a configuration section into a dataclass instance."""
     section_data = config_data.get(section, {})
     if isinstance(section_data, dict):
@@ -537,16 +537,15 @@ def _parse_config_section(config_data: Dict[str, Any], section: str, config_clas
                 section_data["anaglyph"] = AnaglyphConfig(**section_data["anaglyph"])
             if "side_by_side" in section_data:
                 section_data["side_by_side"] = SideBySideConfig(**section_data["side_by_side"])
-        if section == "web_api":
-            if "rate_limit" in section_data:
-                section_data["rate_limit"] = RateLimitConfig(**section_data["rate_limit"])
+        if section == "web_api" and "rate_limit" in section_data:
+            section_data["rate_limit"] = RateLimitConfig(**section_data["rate_limit"])
         return config_class(**{k: v for k, v in section_data.items() if hasattr(config_class, k)})
     return config_class()
 
 
 def load_config(
-    config_path: Optional[Union[str, Path]] = None,
-    environment: Optional[str] = None,
+    config_path: str | Path | None = None,
+    environment: str | None = None,
 ) -> Config:
     """
     Load configuration from YAML files with environment-specific overrides.
@@ -560,10 +559,7 @@ def load_config(
         Config object with loaded settings.
     """
     # Determine config path
-    if config_path is None:
-        config_path = get_config_path()
-    else:
-        config_path = Path(config_path)
+    config_path = get_config_path() if config_path is None else Path(config_path)
 
     # Determine environment
     if environment is None:
@@ -634,7 +630,7 @@ def load_config(
 
 
 # Global configuration instance (lazy-loaded)
-_config: Optional[Config] = None
+_config: Config | None = None
 
 
 def get_config(reload: bool = False) -> Config:
@@ -665,7 +661,7 @@ def reload_config() -> Config:
 
 def export_config(
     config: Config,
-    output_path: Union[str, Path],
+    output_path: str | Path,
     format: str = FORMAT_JSON,
 ) -> Path:
     """Export configuration to a file.
@@ -698,7 +694,7 @@ def export_config(
 
 
 def import_config(
-    input_path: Union[str, Path],
+    input_path: str | Path,
 ) -> Config:
     """Import configuration from a file.
 
@@ -739,7 +735,7 @@ def import_config(
 
 
 def export_current_config(
-    output_path: Union[str, Path],
+    output_path: str | Path,
     format: str = FORMAT_JSON,
 ) -> Path:
     """Export the current (global) configuration to a file.
@@ -756,7 +752,7 @@ def export_current_config(
 
 
 def import_and_apply_config(
-    input_path: Union[str, Path],
+    input_path: str | Path,
 ) -> Config:
     """Import configuration from a file and apply it as the global config.
 

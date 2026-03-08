@@ -26,7 +26,7 @@ Full-width mode preserves full resolution for each eye and is used when:
 from __future__ import annotations
 
 from enum import Enum
-from typing import TYPE_CHECKING, Final, Optional
+from typing import TYPE_CHECKING, Final
 
 import cv2
 import numpy as np
@@ -136,9 +136,9 @@ class SideBySideEncoder:
         self,
         left: np.ndarray,
         right: np.ndarray,
-        layout: Optional[SideBySideLayout] = None,
-        half_width: Optional[bool] = None,
-        swap_eyes: Optional[bool] = None,
+        layout: SideBySideLayout | None = None,
+        half_width: bool | None = None,
+        swap_eyes: bool | None = None,
     ) -> np.ndarray:
         """Combine left and right views into a side-by-side 3D image.
 
@@ -207,7 +207,7 @@ class SideBySideEncoder:
         self,
         left: np.ndarray,
         right: np.ndarray,
-        half_width: Optional[bool] = None,
+        half_width: bool | None = None,
     ) -> np.ndarray:
         """Encode using horizontal layout (left-right).
 
@@ -227,7 +227,7 @@ class SideBySideEncoder:
         self,
         left: np.ndarray,
         right: np.ndarray,
-        half_width: Optional[bool] = None,
+        half_width: bool | None = None,
     ) -> np.ndarray:
         """Encode using vertical layout (top-bottom / over-under).
 
@@ -247,7 +247,7 @@ class SideBySideEncoder:
         self,
         left: np.ndarray,
         right: np.ndarray,
-        layout: Optional[SideBySideLayout] = None,
+        layout: SideBySideLayout | None = None,
     ) -> np.ndarray:
         """Encode with half-width mode for 3D TV compatibility.
 
@@ -271,7 +271,7 @@ class SideBySideEncoder:
         self,
         left: np.ndarray,
         right: np.ndarray,
-        layout: Optional[SideBySideLayout] = None,
+        layout: SideBySideLayout | None = None,
     ) -> np.ndarray:
         """Encode with full-width mode for maximum quality.
 
@@ -296,7 +296,7 @@ class SideBySideEncoder:
         self,
         left: np.ndarray,
         right: np.ndarray,
-        half_width: Optional[bool] = None,
+        half_width: bool | None = None,
     ) -> np.ndarray:
         """Encode for cross-eye free-viewing (swapped eyes).
 
@@ -319,7 +319,7 @@ class SideBySideEncoder:
         self,
         left: np.ndarray,
         right: np.ndarray,
-        half_width: Optional[bool] = None,
+        half_width: bool | None = None,
     ) -> np.ndarray:
         """Encode for parallel free-viewing (normal eye order).
 

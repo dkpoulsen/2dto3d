@@ -270,7 +270,7 @@ class TestGetNextJobScheduler:
         """Test that _get_next_job skips jobs with future scheduled_at."""
         # Add job scheduled for future
         future_time = datetime.now() + timedelta(hours=1)
-        future_job = temp_queue.add_job(
+        temp_queue.add_job(
             input_path=sample_video,
             scheduled_at=future_time,
         )
@@ -307,7 +307,7 @@ class TestGetNextJobScheduler:
         dep_job = temp_queue.add_job(input_path=sample_video)
 
         # Add dependent job
-        dependent = temp_queue.add_job(
+        temp_queue.add_job(
             input_path=sample_video,
             depends_on=[dep_job.job_id],
         )
@@ -341,7 +341,7 @@ class TestGetNextJobScheduler:
     ) -> None:
         """Test that _get_next_job respects priority even with scheduler fields."""
         # Add normal priority job
-        normal_job = temp_queue.add_job(
+        temp_queue.add_job(
             input_path=sample_video,
             priority=JobPriority.NORMAL,
         )

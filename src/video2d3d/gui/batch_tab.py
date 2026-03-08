@@ -270,10 +270,7 @@ class BatchTab(QWidget):
         recursive = self._recursive_checkbox.isChecked()
 
         input_path = Path(input_dir)
-        if recursive:
-            files = list(input_path.rglob(pattern))
-        else:
-            files = list(input_path.glob(pattern))
+        files = list(input_path.rglob(pattern)) if recursive else list(input_path.glob(pattern))
 
         count = 0
         for file_path in files:

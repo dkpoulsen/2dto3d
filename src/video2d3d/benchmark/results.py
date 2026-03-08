@@ -11,7 +11,7 @@ import statistics
 from dataclasses import asdict, dataclass, field
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 
 @dataclass
@@ -101,7 +101,7 @@ class BenchmarkResult:
     memory: MemoryMetrics = field(default_factory=MemoryMetrics)
     gpu: GPUMetrics = field(default_factory=GPUMetrics)
     success: bool = True
-    error_message: Optional[str] = None
+    error_message: str | None = None
     timestamp: datetime = field(default_factory=datetime.now)
     metadata: dict[str, Any] = field(default_factory=dict)
 
@@ -170,7 +170,7 @@ class BenchmarkResults:
     results: list[BenchmarkResult] = field(default_factory=list)
     config_name: str = "default"
     start_time: datetime = field(default_factory=datetime.now)
-    end_time: Optional[datetime] = None
+    end_time: datetime | None = None
     system_info: dict[str, Any] = field(default_factory=dict)
 
     def add_result(self, result: BenchmarkResult) -> None:
@@ -218,7 +218,7 @@ class BenchmarkResults:
         """Get results for a specific resolution."""
         return [r for r in self.results if r.resolution == resolution]
 
-    def get_best_by_fps(self) -> Optional[BenchmarkResult]:
+    def get_best_by_fps(self) -> BenchmarkResult | None:
         """Get the result with the best (highest) FPS."""
         successful = self.successful_results
         if not successful:
@@ -255,9 +255,9 @@ class BenchmarkResults:
                 "min": min(inference_times) if inference_times else 0,
                 "max": max(inference_times) if inference_times else 0,
             },
-            "models_tested": list(set(r.model for r in successful)),
-            "resolutions_tested": list(set(r.resolution_label for r in successful)),
-            "devices_tested": list(set(r.device for r in successful)),
+            "models_tested": list({r.model for r in successful}),
+            "resolutions_tested": list({r.resolution_label for r in successful}),
+            "devices_tested": list({r.device for r in successful}),
         }
 
     def compare_models(self) -> dict[str, dict[str, float]]:

@@ -7,7 +7,7 @@ using Real-ESRGAN models with ONNX Runtime for inference.
 from __future__ import annotations
 
 import time
-from typing import Any, Dict, Optional
+from typing import Any
 
 import numpy as np
 
@@ -138,7 +138,7 @@ class RealESRGANUpscaler(BaseUpscaler):
         # Fallback to CPU
         return ["CPUExecutionProvider"]
 
-    def _get_gpu_provider_name(self, ort: Any) -> Optional[str]:
+    def _get_gpu_provider_name(self, ort: Any) -> str | None:
         """Get the name of the GPU provider being used.
 
         Args:
@@ -265,7 +265,7 @@ class RealESRGANUpscaler(BaseUpscaler):
             self._logger.error(f"Inference failed: {e}")
             raise InferenceError(str(e)) from e
 
-    def get_model_info(self) -> Dict[str, Any]:
+    def get_model_info(self) -> dict[str, Any]:
         """Get information about the loaded model.
 
         Returns:

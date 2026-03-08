@@ -7,10 +7,11 @@ during processing for quality assessment.
 
 from __future__ import annotations
 
+import contextlib
 import threading
 from dataclasses import dataclass
 from enum import Enum
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 import numpy as np
 
@@ -107,7 +108,7 @@ class PreviewWindow:
     LABEL_BG_COLOR = (0, 0, 0)
     LABEL_THICKNESS = 2
 
-    def __init__(self, config: Optional[PreviewConfig] = None) -> None:
+    def __init__(self, config: PreviewConfig | None = None) -> None:
         """Initialize the preview window.
 
         Args:
@@ -560,13 +561,11 @@ class PreviewWindow:
 
     def __del__(self) -> None:
         """Destructor - ensures window is closed."""
-        try:
+        with contextlib.suppress(Exception):
             self.close()
-        except Exception:
-            pass
 
 
-def create_preview_window(config: Optional[PreviewConfig] = None) -> PreviewWindow:
+def create_preview_window(config: PreviewConfig | None = None) -> PreviewWindow:
     """Factory function to create a preview window.
 
     Args:

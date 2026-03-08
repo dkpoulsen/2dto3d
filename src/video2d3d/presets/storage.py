@@ -11,7 +11,6 @@ import os
 import shutil
 import tempfile
 from pathlib import Path
-from typing import Dict, List, Optional
 
 from video2d3d.presets.models import Preset
 from video2d3d.utils.logger import get_logger
@@ -35,8 +34,8 @@ class PresetStorage:
 
     def __init__(
         self,
-        presets_dir: Optional[Path] = None,
-        builtin_presets_dir: Optional[Path] = None,
+        presets_dir: Path | None = None,
+        builtin_presets_dir: Path | None = None,
     ):
         """Initialize preset storage.
 
@@ -141,7 +140,7 @@ class PresetStorage:
         except OSError as e:
             raise PresetStorageError(f"Atomic write failed: {e}") from e
 
-    def load(self, preset_id: str, is_builtin: bool = False) -> Optional[Preset]:
+    def load(self, preset_id: str, is_builtin: bool = False) -> Preset | None:
         """Load a preset by ID.
 
         Args:
@@ -197,7 +196,7 @@ class PresetStorage:
 
         return False
 
-    def list_all(self, include_builtins: bool = True) -> List[Preset]:
+    def list_all(self, include_builtins: bool = True) -> list[Preset]:
         """List all presets.
 
         Args:
@@ -206,7 +205,7 @@ class PresetStorage:
         Returns:
             List of all presets.
         """
-        presets: Dict[str, Preset] = {}
+        presets: dict[str, Preset] = {}
 
         # Load built-in presets first (lower priority)
         if include_builtins and self.builtin_presets_dir.exists():
@@ -234,7 +233,7 @@ class PresetStorage:
 
         return list(presets.values())
 
-    def list_by_category(self, category: str, include_builtins: bool = True) -> List[Preset]:
+    def list_by_category(self, category: str, include_builtins: bool = True) -> list[Preset]:
         """List presets by category.
 
         Args:

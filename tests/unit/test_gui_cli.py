@@ -63,7 +63,7 @@ class TestGUICLI:
         # Mock run_gui to return 0 (success)
         mock_run_gui.return_value = 0
 
-        result = cli_runner.invoke(app, ["gui"])
+        cli_runner.invoke(app, ["gui"])
 
         # run_gui should have been called
         mock_run_gui.assert_called_once()

@@ -8,7 +8,6 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
-from typing import Optional
 
 # Supported video file extensions
 SUPPORTED_VIDEO_EXTENSIONS = frozenset({".mp4", ".avi", ".mov", ".mkv", ".webm", ".flv"})
@@ -118,8 +117,8 @@ def sanitize_filename(filename: str) -> str:
 
 
 def find_file_by_id(
-    directory: Path, file_id: str, extensions: Optional[set[str]] = None
-) -> Optional[Path]:
+    directory: Path, file_id: str, extensions: set[str] | None = None
+) -> Path | None:
     """Find a file by its ID in a directory.
 
     Args:

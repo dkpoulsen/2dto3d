@@ -704,7 +704,7 @@ class TestZoeDepthEstimatorBatchProcessing:
         estimator._model = mock_model
         estimator._is_loaded = True
 
-        frames = [np.random.randint(0, 255, (100, 100, 3), dtype=np.uint8) for _ in range(3)]
+        [np.random.randint(0, 255, (100, 100, 3), dtype=np.uint8) for _ in range(3)]
 
 
 class TestZoeDepthEstimatorGPUFallback:

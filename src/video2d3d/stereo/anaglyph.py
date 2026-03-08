@@ -21,7 +21,7 @@ Each method has different characteristics:
 from __future__ import annotations
 
 from enum import Enum
-from typing import TYPE_CHECKING, Final, Optional
+from typing import TYPE_CHECKING, Final
 
 import numpy as np
 
@@ -173,7 +173,7 @@ class AnaglyphEncoder:
         self,
         left: np.ndarray,
         right: np.ndarray,
-        anaglyph_type: Optional[AnaglyphType] = None,
+        anaglyph_type: AnaglyphType | None = None,
     ) -> np.ndarray:
         """Combine left and right views into an anaglyph 3D image.
 

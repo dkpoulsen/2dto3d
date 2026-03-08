@@ -388,7 +388,7 @@ class TestZoeDepthModelSelectorIntegration:
         config = DepthModelConfig(
             fallback_chain=["zoedepth_nk", "midas_small"],
         )
-        selector = DepthModelSelector(config=config)
+        DepthModelSelector(config=config)
 
         # Verify ZoeDepth is first in the chain
         assert "zoedepth_nk" in config.fallback_chain

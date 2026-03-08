@@ -29,7 +29,7 @@ from __future__ import annotations
 import time
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import TYPE_CHECKING, Any, Optional, Union
+from typing import TYPE_CHECKING, Any
 
 import numpy as np
 
@@ -173,7 +173,7 @@ class DepthModelConfig:
     device: str = "auto"
     model_load_timeout: float = _DEFAULT_MODEL_LOAD_TIMEOUT
     scene_confidence_threshold: float = _DEFAULT_SCENE_CONFIDENCE_THRESHOLD
-    gpu_config: Optional[GPUConfig] = None
+    gpu_config: GPUConfig | None = None
 
     # Fallback chain for model failures
     fallback_chain: list[DepthModelType] = field(
@@ -214,8 +214,8 @@ class ModelLoadError(Exception):
         self,
         message: str,
         *,
-        attempted_models: Optional[list[str]] = None,
-        original_exceptions: Optional[list[Exception]] = None,
+        attempted_models: list[str] | None = None,
+        original_exceptions: list[Exception] | None = None,
     ) -> None:
         """Initialize the error.
 
@@ -236,8 +236,8 @@ class ModelInferenceError(Exception):
         self,
         message: str,
         *,
-        attempted_models: Optional[list[str]] = None,
-        original_exceptions: Optional[list[Exception]] = None,
+        attempted_models: list[str] | None = None,
+        original_exceptions: list[Exception] | None = None,
     ) -> None:
         """Initialize the error.
 
@@ -288,7 +288,7 @@ class DepthModelSelector:
 
     def __init__(
         self,
-        config: Optional[DepthModelConfig] = None,
+        config: DepthModelConfig | None = None,
         *,
         primary_model: str = "adabins_nyu",
         fallback_model: str = "midas_small",
@@ -313,7 +313,7 @@ class DepthModelSelector:
 
         # Loaded estimators cache
         self._estimators: dict[DepthModelType, Any] = {}
-        self._active_model: Optional[DepthModelType] = None
+        self._active_model: DepthModelType | None = None
 
         # Scene classifier state
         self._last_scene_type: SceneType = SceneType.UNKNOWN
@@ -325,7 +325,7 @@ class DepthModelSelector:
         )
 
     @property
-    def active_model(self) -> Optional[DepthModelType]:
+    def active_model(self) -> DepthModelType | None:
         """Get the currently active model type."""
         return self._active_model
 
@@ -447,10 +447,7 @@ class DepthModelSelector:
 
             # Calculate color temperature (simplified)
             # Higher R/B ratio suggests warmer (indoor) lighting
-            if b_mean > 0.01:
-                warmth_ratio = r_mean / b_mean
-            else:
-                warmth_ratio = 1.0
+            warmth_ratio = r_mean / b_mean if b_mean > 0.01 else 1.0
 
             # Calculate brightness
             brightness = (r_mean + g_mean + b_mean) / 3.0
@@ -489,7 +486,7 @@ class DepthModelSelector:
     def estimate_depth(
         self,
         frame: np.ndarray,
-        scene_type: Optional[SceneType] = None,
+        scene_type: SceneType | None = None,
     ) -> np.ndarray:
         """Estimate depth with automatic model selection and fallback.
 
@@ -600,7 +597,7 @@ class DepthModelSelector:
                 depths.append(self.estimate_depth(frame))
             return depths
 
-    def switch_model(self, model_type: Union[str, DepthModelType]) -> bool:
+    def switch_model(self, model_type: str | DepthModelType) -> bool:
         """Switch to a different model.
 
         Args:
@@ -613,7 +610,7 @@ class DepthModelSelector:
             model_type = DepthModelType.from_string(model_type)
 
         try:
-            estimator = self._get_estimator(model_type)
+            self._get_estimator(model_type)
             self._active_model = model_type
             self._logger.info(f"Switched to model: {model_type.value}")
             return True
@@ -629,9 +626,7 @@ class DepthModelSelector:
         """
         return list(self._estimators.keys())
 
-    def preload_models(
-        self, models: Optional[list[Union[str, DepthModelType]]] = None
-    ) -> dict[str, bool]:
+    def preload_models(self, models: list[str | DepthModelType] | None = None) -> dict[str, bool]:
         """Preload specified models or all models in fallback chain.
 
         Args:

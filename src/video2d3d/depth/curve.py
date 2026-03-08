@@ -16,7 +16,6 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import List, Optional, Tuple
 
 import numpy as np
 from scipy.interpolate import CubicSpline
@@ -35,7 +34,7 @@ class CurvePreset(str, Enum):
 
 
 # Default control points for each preset
-PRESET_CURVES: dict[CurvePreset, List[Tuple[float, float]]] = {
+PRESET_CURVES: dict[CurvePreset, list[tuple[float, float]]] = {
     CurvePreset.LINEAR: [(0.0, 0.0), (1.0, 1.0)],
     CurvePreset.S_CURVE: [(0.0, 0.0), (0.25, 0.15), (0.5, 0.5), (0.75, 0.85), (1.0, 1.0)],
     CurvePreset.CONTRAST_BOOST: [(0.0, 0.0), (0.2, 0.05), (0.5, 0.5), (0.8, 0.95), (1.0, 1.0)],
@@ -65,12 +64,12 @@ class CurveControlPoint:
         if not 0.0 <= self.y <= 1.0:
             raise ValueError(f"y must be in [0, 1], got {self.y}")
 
-    def to_tuple(self) -> Tuple[float, float]:
+    def to_tuple(self) -> tuple[float, float]:
         """Convert to tuple format."""
         return (self.x, self.y)
 
     @classmethod
-    def from_tuple(cls, t: Tuple[float, float]) -> CurveControlPoint:
+    def from_tuple(cls, t: tuple[float, float]) -> CurveControlPoint:
         """Create from tuple format."""
         return cls(x=t[0], y=t[1])
 
@@ -92,13 +91,13 @@ class DepthCurveConfig:
     """
 
     enabled: bool = False
-    control_points: List[CurveControlPoint] = field(
+    control_points: list[CurveControlPoint] = field(
         default_factory=lambda: [
             CurveControlPoint(0.0, 0.0),
             CurveControlPoint(1.0, 1.0),
         ]
     )
-    preset: Optional[str] = None
+    preset: str | None = None
 
     def __post_init__(self) -> None:
         """Validate and normalize configuration."""
@@ -139,7 +138,7 @@ class DepthCurveConfig:
                     f"Point {i - 1}: x={self.control_points[i - 1].x}"
                 )
 
-    def get_xy_arrays(self) -> Tuple[np.ndarray, np.ndarray]:
+    def get_xy_arrays(self) -> tuple[np.ndarray, np.ndarray]:
         """Get x and y values as numpy arrays for interpolation.
 
         Returns:
@@ -189,8 +188,8 @@ class DepthCurveError(Exception):
         self,
         message: str,
         *,
-        operation: Optional[str] = None,
-        original_exception: Optional[Exception] = None,
+        operation: str | None = None,
+        original_exception: Exception | None = None,
     ) -> None:
         """Initialize the error.
 

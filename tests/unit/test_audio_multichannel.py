@@ -232,7 +232,7 @@ class TestMultiChannelAudioProcessor:
         mock_which.return_value = "/usr/bin/ffmpeg"
         processor = MultiChannelAudioProcessor()
 
-        metadata = AudioMetadata(
+        AudioMetadata(
             file_path=Path("test.mp4"),
             has_audio=True,
             tracks=[AudioTrackInfo(index=0, channels=6)],
@@ -241,7 +241,7 @@ class TestMultiChannelAudioProcessor:
         with patch.object(processor, "downmix_to_stereo") as mock_downmix:
             mock_downmix.return_value = DownmixResult(success=True)
             with patch.object(Path, "exists", return_value=True):
-                result = processor.convert_channel_layout(
+                processor.convert_channel_layout(
                     "test.mp4",
                     "output.m4a",
                     AudioChannelLayout.STEREO,
@@ -254,7 +254,7 @@ class TestMultiChannelAudioProcessor:
         mock_which.return_value = "/usr/bin/ffmpeg"
         processor = MultiChannelAudioProcessor()
 
-        metadata = AudioMetadata(
+        AudioMetadata(
             file_path=Path("test.mp4"),
             has_audio=True,
             tracks=[AudioTrackInfo(index=0, channels=2)],
@@ -263,7 +263,7 @@ class TestMultiChannelAudioProcessor:
         with patch.object(processor, "upmix_to_surround") as mock_upmix:
             mock_upmix.return_value = DownmixResult(success=True)
             with patch.object(Path, "exists", return_value=True):
-                result = processor.convert_channel_layout(
+                processor.convert_channel_layout(
                     "test.mp4",
                     "output.m4a",
                     AudioChannelLayout.SURROUND_5_1,
@@ -289,7 +289,7 @@ class TestMultiChannelAudioProcessor:
                     ),
                 ),
             ):
-                result = processor.convert_channel_layout(
+                processor.convert_channel_layout(
                     "test.mp4",
                     "output.m4a",
                     AudioChannelLayout.STEREO,

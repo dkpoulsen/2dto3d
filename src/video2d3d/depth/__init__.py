@@ -129,14 +129,14 @@ class MiDaSConfig:
 
     model_type: MiDaSModelType = MiDaSModelType.MIDAS_V21_SMALL
     device: str = "auto"
-    cache_dir: Optional[Path] = None
+    cache_dir: Path | None = None
     auto_download: bool = True
-    output_resolution: Optional[int] = None
+    output_resolution: int | None = None
     use_fp16: bool = False
     optimize: bool = True
 
     # GPU acceleration settings
-    gpu_config: Optional[GPUConfig] = None
+    gpu_config: GPUConfig | None = None
     auto_batch_size: bool = True
     min_batch_size: int = 1
     max_batch_size: int = 32
@@ -187,9 +187,9 @@ class DepthEstimationError(Exception):
         self,
         message: str,
         *,
-        model_type: Optional[str] = None,
-        device: Optional[str] = None,
-        original_exception: Optional[Exception] = None,
+        model_type: str | None = None,
+        device: str | None = None,
+        original_exception: Exception | None = None,
     ) -> None:
         """Initialize the error.
 
@@ -256,9 +256,9 @@ class DepthEstimator:
 
     def __init__(
         self,
-        config: Optional[MiDaSConfig] = None,
+        config: MiDaSConfig | None = None,
         *,
-        model_type: Union[str, MiDaSModelType] = "midas_small",
+        model_type: str | MiDaSModelType = "midas_small",
         device: str = "auto",
     ) -> None:
         """Initialize the depth estimator.
@@ -277,13 +277,13 @@ class DepthEstimator:
             self.config = MiDaSConfig(model_type=model_type, device=device)
 
         # Model components (lazy loaded)
-        self._model: Optional[nn.Module] = None
-        self._transform: Optional[Compose] = None
+        self._model: nn.Module | None = None
+        self._transform: Compose | None = None
         self._is_loaded: bool = False
 
         # Temporal smoothing (lazy initialized)
-        self._temporal_smoother: Optional[TemporalSmoother] = None
-        self._temporal_config: Optional[TemporalSmoothingConfig] = None
+        self._temporal_smoother: TemporalSmoother | None = None
+        self._temporal_config: TemporalSmoothingConfig | None = None
 
         logger = _get_depth_logger()
         logger.info(
@@ -292,14 +292,14 @@ class DepthEstimator:
         )
 
     @property
-    def model(self) -> Optional[nn.Module]:
+    def model(self) -> nn.Module | None:
         """Get the loaded model (loads if not already loaded)."""
         if not self._is_loaded:
             self.load_model()
         return self._model
 
     @property
-    def transform(self) -> Optional[Compose]:
+    def transform(self) -> Compose | None:
         """Get the preprocessing transform (loads model if not already loaded)."""
         if not self._is_loaded:
             self.load_model()
@@ -493,7 +493,7 @@ class DepthEstimator:
         self,
         frame: np.ndarray,
         temporal_smoothing: bool = False,
-        temporal_config: Optional[TemporalSmoothingConfig] = None,
+        temporal_config: TemporalSmoothingConfig | None = None,
     ) -> np.ndarray:
         """Estimate depth from a single frame.
 

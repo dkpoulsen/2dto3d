@@ -20,7 +20,7 @@ from __future__ import annotations
 import time
 from dataclasses import dataclass
 from enum import Enum
-from typing import TYPE_CHECKING, Optional, Tuple
+from typing import TYPE_CHECKING
 
 import cv2
 import numpy as np
@@ -131,8 +131,8 @@ class DIBRError(Exception):
         self,
         message: str,
         *,
-        operation: Optional[str] = None,
-        original_exception: Optional[Exception] = None,
+        operation: str | None = None,
+        original_exception: Exception | None = None,
     ) -> None:
         """Initialize the error.
 
@@ -197,7 +197,7 @@ class DIBREngine:
 
     def __init__(
         self,
-        config: Optional[DIBRConfig] = None,
+        config: DIBRConfig | None = None,
         *,
         baseline: float = _DEFAULT_BASELINE,
         focal_length: float = _DEFAULT_FOCAL_LENGTH,
@@ -290,7 +290,7 @@ class DIBREngine:
         image: np.ndarray,
         disparity: np.ndarray,
         shift_sign: int,
-    ) -> Tuple[np.ndarray, np.ndarray]:
+    ) -> tuple[np.ndarray, np.ndarray]:
         """Warp image by shifting pixels based on disparity.
 
         Args:
@@ -486,7 +486,7 @@ class DIBREngine:
         self,
         image: np.ndarray,
         depth_map: np.ndarray,
-    ) -> Tuple[np.ndarray, np.ndarray]:
+    ) -> tuple[np.ndarray, np.ndarray]:
         """Generate left and right eye views from image and depth map.
 
         This is the main entry point for DIBR rendering.
@@ -582,7 +582,7 @@ class DIBREngine:
         self,
         image: np.ndarray,
         depth_map: np.ndarray,
-    ) -> Tuple[np.ndarray, np.ndarray]:
+    ) -> tuple[np.ndarray, np.ndarray]:
         """Render left and right views (callable interface).
 
         Args:
@@ -631,7 +631,7 @@ def render_stereo_pair(
     depth_map: np.ndarray,
     baseline: float = _DEFAULT_BASELINE,
     convergence: float = _DEFAULT_CONVERGENCE,
-) -> Tuple[np.ndarray, np.ndarray]:
+) -> tuple[np.ndarray, np.ndarray]:
     """Render stereo pair with default settings (convenience function).
 
     Args:

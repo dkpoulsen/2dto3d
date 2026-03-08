@@ -11,8 +11,6 @@ This module defines ready-to-use presets for different scenarios:
 
 from __future__ import annotations
 
-from typing import List
-
 from video2d3d.presets.models import (
     DepthEstimationSettings,
     Preset,
@@ -30,7 +28,7 @@ def _create_builtin_preset(
     name: str,
     description: str,
     category: PresetCategory,
-    tags: List[str],
+    tags: list[str],
     depth_model: str,
     stereo_format: str,
     video_preset: str,
@@ -326,7 +324,7 @@ BALANCED = _create_builtin_preset(
 # ALL BUILT-IN PRESETS
 # =============================================================================
 
-ALL_BUILTIN_PRESETS: List[Preset] = [
+ALL_BUILTIN_PRESETS: list[Preset] = [
     # Cinema
     CINEMA_SBS,
     CINEMA_ANAGLYPH,

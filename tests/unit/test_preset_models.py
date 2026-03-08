@@ -495,7 +495,7 @@ class TestPreset:
         preset = Preset(name="test")
         assert preset != "test"
         assert preset != 123
-        assert preset != None
+        assert preset is not None
 
     def test_hash_by_id(self):
         """Test hashing is based on ID."""

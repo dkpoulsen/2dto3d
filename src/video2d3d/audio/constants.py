@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import shutil
-from typing import Optional
 
 # Timeout constants (in seconds)
 FFPROBE_TIMEOUT = 30
@@ -82,9 +81,7 @@ def get_extension_for_codec(codec: str) -> str:
     return CODEC_EXTENSIONS.get(codec, DEFAULT_AUDIO_EXTENSION)
 
 
-def truncate_error_message(
-    message: Optional[str], max_length: int = ERROR_MESSAGE_MAX_LENGTH
-) -> str:
+def truncate_error_message(message: str | None, max_length: int = ERROR_MESSAGE_MAX_LENGTH) -> str:
     """Truncate an error message to a maximum length.
 
     Args:

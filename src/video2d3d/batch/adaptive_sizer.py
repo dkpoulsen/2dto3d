@@ -18,7 +18,7 @@ import time
 from contextlib import contextmanager
 from dataclasses import dataclass, field
 from enum import Enum, auto
-from typing import TYPE_CHECKING, Any, Callable, Optional
+from typing import TYPE_CHECKING, Any, Callable
 
 if TYPE_CHECKING:
     from collections.abc import Generator
@@ -111,7 +111,7 @@ class AdaptiveBatchConfig:
     adjustment_interval: float = DEFAULT_ADJUSTMENT_INTERVAL
     cooldown_period: float = DEFAULT_COOLDOWN_PERIOD
     stability_window: int = DEFAULT_STABILITY_WINDOW
-    gpu_config: Optional[GPUConfig] = None
+    gpu_config: GPUConfig | None = None
     image_height: int = 384
     image_width: int = 384
 
@@ -267,8 +267,8 @@ class AdaptiveBatchSizer:
 
     def __init__(
         self,
-        config: Optional[AdaptiveBatchConfig] = None,
-        initial_batch_size: Optional[int] = None,
+        config: AdaptiveBatchConfig | None = None,
+        initial_batch_size: int | None = None,
     ) -> None:
         """Initialize the adaptive batch sizer.
 
@@ -289,12 +289,12 @@ class AdaptiveBatchSizer:
 
         # Monitoring state
         self._monitoring = False
-        self._monitor_thread: Optional[threading.Thread] = None
+        self._monitor_thread: threading.Thread | None = None
         self._stop_event = threading.Event()
 
         # Cooldown tracking
         self._last_adjustment_time: float = 0.0
-        self._last_adjustment_reason: Optional[AdjustmentReason] = None
+        self._last_adjustment_reason: AdjustmentReason | None = None
 
         # Callbacks
         self._callbacks: list[BatchSizeCallback] = []
@@ -427,7 +427,7 @@ class AdaptiveBatchSizer:
         with self._callback_lock:
             self._callbacks.clear()
 
-    def _get_system_state(self) -> tuple[MemoryInfo, Optional[GPUInfo], float]:
+    def _get_system_state(self) -> tuple[MemoryInfo, GPUInfo | None, float]:
         """Get current system state.
 
         Returns:
@@ -437,7 +437,7 @@ class AdaptiveBatchSizer:
         memory_info = get_current_memory_info()
 
         # Get GPU info
-        gpu_info: Optional[GPUInfo] = None
+        gpu_info: GPUInfo | None = None
         gpu_util = 0.0
 
         if is_cuda_available():
@@ -453,9 +453,9 @@ class AdaptiveBatchSizer:
     def _calculate_optimal_batch_size(
         self,
         memory_info: MemoryInfo,
-        gpu_info: Optional[GPUInfo],
+        gpu_info: GPUInfo | None,
         gpu_util: float,
-    ) -> tuple[int, Optional[AdjustmentReason]]:
+    ) -> tuple[int, AdjustmentReason | None]:
         """Calculate optimal batch size based on system state.
 
         Args:
@@ -484,7 +484,7 @@ class AdaptiveBatchSizer:
 
         # Determine adjustment based on system state
         new_size = current_size
-        reason: Optional[AdjustmentReason] = None
+        reason: AdjustmentReason | None = None
 
         # High memory pressure - scale down aggressively
         if memory_usage >= config.memory_high_threshold:
@@ -691,8 +691,8 @@ class AdaptiveBatchSizer:
 
     def get_recommended_batch_size(
         self,
-        image_height: Optional[int] = None,
-        image_width: Optional[int] = None,
+        image_height: int | None = None,
+        image_width: int | None = None,
     ) -> int:
         """Get recommended batch size based on current system state.
 
@@ -708,8 +708,6 @@ class AdaptiveBatchSizer:
         memory_info, gpu_info, gpu_util = self._get_system_state()
 
         # Use provided dimensions or config defaults
-        height = image_height or self._config.image_height
-        width = image_width or self._config.image_width
 
         # Start with current batch size
         recommended = self._current_batch_size
@@ -757,8 +755,8 @@ class AdaptiveBatchSizer:
 
 @contextmanager
 def adaptive_batch_sizer_context(
-    config: Optional[AdaptiveBatchConfig] = None,
-    callback: Optional[BatchSizeCallback] = None,
+    config: AdaptiveBatchConfig | None = None,
+    callback: BatchSizeCallback | None = None,
 ) -> Generator[AdaptiveBatchSizer, None, None]:
     """Context manager for adaptive batch sizing.
 

@@ -12,7 +12,7 @@ from __future__ import annotations
 import gc
 from dataclasses import dataclass
 from enum import Enum
-from typing import TYPE_CHECKING, Any, Callable, Optional, TypeVar
+from typing import TYPE_CHECKING, Any, Callable, TypeVar
 
 import numpy as np
 
@@ -156,7 +156,7 @@ class DeviceSelection:
     device: str
     device_type: DeviceType
     device_name: str
-    gpu_info: Optional[GPUInfo] = None
+    gpu_info: GPUInfo | None = None
     fallback_used: bool = False
     reason: str = ""
 
@@ -168,8 +168,8 @@ class GPUError(Exception):
         self,
         message: str,
         *,
-        device: Optional[str] = None,
-        original_exception: Optional[Exception] = None,
+        device: str | None = None,
+        original_exception: Exception | None = None,
     ) -> None:
         """Initialize GPU error.
 
@@ -273,7 +273,7 @@ def get_device_count() -> int:
     return torch.cuda.device_count()  # type: ignore[no-any-return]
 
 
-def get_gpu_info(device_id: int = 0) -> Optional[GPUInfo]:
+def get_gpu_info(device_id: int = 0) -> GPUInfo | None:
     """Get detailed information about a specific GPU device.
 
     Args:
@@ -329,9 +329,9 @@ def get_all_gpu_info() -> list[GPUInfo]:
 
 
 def select_best_gpu(
-    min_memory_mb: Optional[float] = None,
+    min_memory_mb: float | None = None,
     prefer_memory: bool = True,
-) -> Optional[int]:
+) -> int | None:
     """Select the best available GPU device.
 
     Args:
@@ -374,7 +374,7 @@ def select_best_gpu(
     return best.device_id
 
 
-def select_device(config: Optional[GPUConfig] = None) -> DeviceSelection:
+def select_device(config: GPUConfig | None = None) -> DeviceSelection:
     """Select the best computation device based on configuration and availability.
 
     Args:
@@ -479,7 +479,7 @@ def select_device(config: Optional[GPUConfig] = None) -> DeviceSelection:
     raise GPUError(f"Unknown device type: {device_str}")
 
 
-def clear_gpu_memory(device: Optional[str] = None) -> None:
+def clear_gpu_memory(device: str | None = None) -> None:
     """Clear GPU memory cache.
 
     Args:
@@ -667,8 +667,8 @@ def compute_optimal_batch_size(
 
 def create_pinned_tensor(
     shape: tuple[int, ...],
-    dtype: Optional[torch.dtype] = None,
-) -> Optional[torch.Tensor]:
+    dtype: torch.dtype | None = None,
+) -> torch.Tensor | None:
     """Create a pinned memory tensor for faster CPU-GPU transfers.
 
     Args:
@@ -823,8 +823,8 @@ def configure_cudnn(device: str, benchmark: bool = True, deterministic: bool = F
 
 
 def setup_device(
-    config: Optional[GPUConfig] = None,
-    device_override: Optional[str] = None,
+    config: GPUConfig | None = None,
+    device_override: str | None = None,
 ) -> DeviceSelection:
     """Set up and configure the computation device.
 

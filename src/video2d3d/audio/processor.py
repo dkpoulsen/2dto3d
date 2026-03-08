@@ -7,7 +7,7 @@ import subprocess
 import tempfile
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Callable
 
 from video2d3d.audio.config import AudioConfig
 from video2d3d.audio.exceptions import AudioProcessingError
@@ -42,18 +42,18 @@ class AudioProcessingResult:
     """
 
     success: bool = True
-    output_path: Optional[Path] = None
-    temp_files: List[Path] = field(default_factory=list)
-    metadata: Optional[AudioMetadata] = None
-    spatial_result: Optional[SpatialProcessingResult] = None
-    track_preservation_result: Optional[TrackPreservationResult] = None
+    output_path: Path | None = None
+    temp_files: list[Path] = field(default_factory=list)
+    metadata: AudioMetadata | None = None
+    spatial_result: SpatialProcessingResult | None = None
+    track_preservation_result: TrackPreservationResult | None = None
     duration: float = 0.0
     channels: int = 2
     codec: str = "aac"
     bitrate: int = 192000
-    error_message: Optional[str] = None
+    error_message: str | None = None
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return {
             "success": self.success,
@@ -92,8 +92,8 @@ class AudioProcessor:
 
     def __init__(
         self,
-        config: Optional[AudioConfig] = None,
-        progress_callback: Optional[Callable[[int, int], None]] = None,
+        config: AudioConfig | None = None,
+        progress_callback: Callable[[int, int], None] | None = None,
     ) -> None:
         """Initialize the audio processor.
 
@@ -220,7 +220,7 @@ class AudioProcessor:
         """
         input_path = Path(input_path).resolve()
         output_path = Path(output_path).resolve()
-        temp_files: List[Path] = []
+        temp_files: list[Path] = []
 
         if not input_path.exists():
             return AudioProcessingResult(
@@ -396,7 +396,7 @@ class AudioProcessor:
         }
         return extension_map.get(self.config.format_config.codec, "m4a")
 
-    def get_ffmpeg_audio_args(self) -> List[str]:
+    def get_ffmpeg_audio_args(self) -> list[str]:
         """Get FFmpeg arguments for audio encoding.
 
         This is useful for integrating with video encoding pipelines.

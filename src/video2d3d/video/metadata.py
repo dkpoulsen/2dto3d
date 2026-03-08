@@ -15,7 +15,7 @@ import subprocess
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 from video2d3d.utils.logger import get_logger
 
@@ -156,18 +156,18 @@ class ExifMetadata:
     make: str = ""
     model: str = ""
     software: str = ""
-    datetime_original: Optional[datetime] = None
-    datetime_modified: Optional[datetime] = None
-    exposure_time: Optional[float] = None
-    f_number: Optional[float] = None
-    iso_speed: Optional[int] = None
-    focal_length: Optional[float] = None
-    gps_latitude: Optional[float] = None
-    gps_longitude: Optional[float] = None
-    gps_altitude: Optional[float] = None
+    datetime_original: datetime | None = None
+    datetime_modified: datetime | None = None
+    exposure_time: float | None = None
+    f_number: float | None = None
+    iso_speed: int | None = None
+    focal_length: float | None = None
+    gps_latitude: float | None = None
+    gps_longitude: float | None = None
+    gps_altitude: float | None = None
     orientation: int = 1
-    x_resolution: Optional[float] = None
-    y_resolution: Optional[float] = None
+    x_resolution: float | None = None
+    y_resolution: float | None = None
     color_space: str = "sRGB"
     custom_tags: dict[str, Any] = field(default_factory=dict)
 
@@ -193,7 +193,7 @@ class ExifMetadata:
         return f"f/{self.f_number:.1f}"
 
     @property
-    def gps_coordinates(self) -> Optional[tuple[float, float]]:
+    def gps_coordinates(self) -> tuple[float, float] | None:
         """Return GPS coordinates as (lat, lon) tuple."""
         if self.has_gps:
             return (self.gps_latitude, self.gps_longitude)
@@ -265,7 +265,7 @@ class IptcMetadata:
     city: str = ""
     country: str = ""
     location: str = ""
-    date_created: Optional[datetime] = None
+    date_created: datetime | None = None
     category: str = ""
     supplemental_categories: list[str] = field(default_factory=list)
     urgency: int = 5
@@ -342,7 +342,7 @@ class XmpMetadata:
     dc_creator: list[str] = field(default_factory=list)
     dc_subject: list[str] = field(default_factory=list)
     dc_publisher: str = ""
-    dc_date: Optional[datetime] = None
+    dc_date: datetime | None = None
     dc_type: str = ""
     dc_format: str = ""
     dc_identifier: str = ""
@@ -351,7 +351,7 @@ class XmpMetadata:
     dc_rights: str = ""
 
     # XMP specific
-    rating: Optional[int] = None
+    rating: int | None = None
     label: str = ""
     event: str = ""
     project: str = ""
@@ -481,7 +481,7 @@ class ExtendedVideoMetadata:
             ExtendedVideoMetadata with all available metadata.
         """
         file_path = Path(video_path).resolve()
-        logger = _get_video_metadata_logger()
+        _get_video_metadata_logger()
 
         # Import here to avoid circular import
         from video2d3d.video.handler import VideoInputHandler
@@ -528,7 +528,7 @@ class ExtendedVideoMetadata:
                 keywords.append(subject)
         return keywords
 
-    def get_creation_date(self) -> Optional[datetime]:
+    def get_creation_date(self) -> datetime | None:
         """Get creation date from any available metadata source."""
         return self.exif.datetime_original or self.iptc.date_created or self.xmp.dc_date
 
@@ -642,7 +642,7 @@ class VideoMetadataExtractor:
             video_path: Path to the video file.
         """
         self.video_path = Path(video_path).resolve()
-        self._raw_data: Optional[dict[str, Any]] = None
+        self._raw_data: dict[str, Any] | None = None
         self._tags: dict[str, Any] = {}
 
     @property
@@ -709,7 +709,7 @@ class VideoMetadataExtractor:
             self._raw_data = {}
             return self._raw_data
 
-    def _parse_datetime(self, value: Optional[str]) -> Optional[datetime]:
+    def _parse_datetime(self, value: str | None) -> datetime | None:
         """Parse datetime from various formats."""
         if not value:
             return None
@@ -731,7 +731,7 @@ class VideoMetadataExtractor:
 
         return None
 
-    def _get_tag(self, *keys: str) -> Optional[str]:
+    def _get_tag(self, *keys: str) -> str | None:
         """Get tag value trying multiple possible key names."""
         for key in keys:
             value = self._tags.get(key)
@@ -881,7 +881,7 @@ class VideoMetadataExtractor:
 
         return CustomMetadata(fields=custom_fields)
 
-    def _try_float(self, value: Optional[str]) -> Optional[float]:
+    def _try_float(self, value: str | None) -> float | None:
         """Try to parse a float value."""
         if not value:
             return None
@@ -890,7 +890,7 @@ class VideoMetadataExtractor:
         except (ValueError, TypeError):
             return None
 
-    def _try_int(self, value: Optional[str]) -> Optional[int]:
+    def _try_int(self, value: str | None) -> int | None:
         """Try to parse an integer value."""
         if not value:
             return None

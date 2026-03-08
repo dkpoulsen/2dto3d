@@ -398,7 +398,6 @@ class TestMotionCompensatedBatchProcessing:
 
         # Process first batch
         smoother.process_batch(depth_sequence[:3], frame_sequence[:3])
-        first_count = smoother.state.frame_count
 
         # Process second batch - should reset
         smoother.process_batch(depth_sequence[3:], frame_sequence[3:])
@@ -517,7 +516,7 @@ class TestMotionCompensatedEdgeCases:
         frame2 = np.roll(frame1, 5, axis=1)
 
         result1 = smoother.smooth(constant_depth, frame1)
-        result2 = smoother.smooth(constant_depth, frame2)
+        smoother.smooth(constant_depth, frame2)
 
         np.testing.assert_array_almost_equal(result1, constant_depth)
 

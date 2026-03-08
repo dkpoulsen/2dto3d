@@ -121,8 +121,8 @@ class TestPythonVersionSupport:
 
         # Get Python versions from CI matrix
         # Note: YAML parses 'on' as True in Python, so we access it as True
-        triggers = workflow_yaml.get(True, workflow_yaml.get("on", {}))
-        matrix_versions = workflow_yaml["jobs"]["test"]["strategy"]["matrix"]["python-version"]
+        workflow_yaml.get(True, workflow_yaml.get("on", {}))
+        workflow_yaml["jobs"]["test"]["strategy"]["matrix"]["python-version"]
 
         # Check that requires-python is compatible with matrix versions
         # Typically requires-python should be ">=3.9" for matrix ["3.9", "3.10", "3.11", "3.12"]

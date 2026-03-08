@@ -42,7 +42,7 @@ from __future__ import annotations
 import time
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import TYPE_CHECKING, Any, Optional, Union
+from typing import TYPE_CHECKING, Any
 
 import numpy as np
 
@@ -131,7 +131,7 @@ class EnsembleConfig:
 
     models: list[str] = field(default_factory=lambda: _DEFAULT_ENSEMBLE_MODELS.copy())
     method: EnsembleMethod = EnsembleMethod.WEIGHTED_AVERAGE
-    weights: Optional[list[float]] = None
+    weights: list[float] | None = None
     auto_weight: bool = True
     weight_strategy: WeightStrategy = WeightStrategy.PREDEFINED
     device: str = "auto"
@@ -139,7 +139,7 @@ class EnsembleConfig:
     normalize_weights: bool = True
     min_agreement: int = 2
     confidence_threshold: float = _DEFAULT_CONFIDENCE_THRESHOLD
-    gpu_config: Optional[GPUConfig] = None
+    gpu_config: GPUConfig | None = None
     fallback_on_error: bool = True
 
     def __post_init__(self) -> None:
@@ -192,9 +192,9 @@ class EnsembleError(Exception):
         self,
         message: str,
         *,
-        failed_models: Optional[list[str]] = None,
-        successful_models: Optional[list[str]] = None,
-        original_exceptions: Optional[list[Exception]] = None,
+        failed_models: list[str] | None = None,
+        successful_models: list[str] | None = None,
+        original_exceptions: list[Exception] | None = None,
     ) -> None:
         """Initialize the error.
 
@@ -239,9 +239,9 @@ def _normalize_weights_list(weights: list[float]) -> list[float]:
         self,
         message: str,
         *,
-        failed_models: Optional[list[str]] = None,
-        successful_models: Optional[list[str]] = None,
-        original_exceptions: Optional[list[Exception]] = None,
+        failed_models: list[str] | None = None,
+        successful_models: list[str] | None = None,
+        original_exceptions: list[Exception] | None = None,
     ) -> None:
         """Initialize the error.
 
@@ -302,9 +302,9 @@ class EnsemblePredictor:
 
     def __init__(
         self,
-        config: Optional[EnsembleConfig] = None,
+        config: EnsembleConfig | None = None,
         *,
-        models: Optional[list[str]] = None,
+        models: list[str] | None = None,
         method: str = "weighted_average",
         device: str = "auto",
     ) -> None:
@@ -329,7 +329,7 @@ class EnsemblePredictor:
         self._estimators: dict[str, Any] = {}
 
         # Compute weights
-        self._weights: Optional[list[float]] = None
+        self._weights: list[float] | None = None
         if self.config.weights is not None:
             self._weights = self.config.weights
         elif self.config.auto_weight:
@@ -683,7 +683,7 @@ class EnsemblePredictor:
     def _combine_predictions(
         self,
         predictions: list[np.ndarray],
-        weights: Optional[list[float]] = None,
+        weights: list[float] | None = None,
     ) -> np.ndarray:
         """Combine predictions using the configured method.
 
@@ -734,7 +734,7 @@ class EnsemblePredictor:
         self,
         frame: np.ndarray,
         return_uncertainty: bool = False,
-    ) -> Union[np.ndarray, tuple[np.ndarray, np.ndarray]]:
+    ) -> np.ndarray | tuple[np.ndarray, np.ndarray]:
         """Estimate depth using the ensemble of models.
 
         Args:
@@ -970,8 +970,8 @@ class EnsemblePredictor:
 
     def get_uncertainty_map(
         self,
-        predictions: Optional[list[np.ndarray]] = None,
-        frame: Optional[np.ndarray] = None,
+        predictions: list[np.ndarray] | None = None,
+        frame: np.ndarray | None = None,
     ) -> np.ndarray:
         """Compute uncertainty map from predictions.
 
@@ -1040,9 +1040,9 @@ class EnsemblePredictor:
 
 
 def create_ensemble_predictor(
-    models: Optional[list[str]] = None,
+    models: list[str] | None = None,
     method: str = "weighted_average",
-    weights: Optional[list[float]] = None,
+    weights: list[float] | None = None,
     device: str = "auto",
     **kwargs: Any,
 ) -> EnsemblePredictor:
@@ -1070,9 +1070,9 @@ def create_ensemble_predictor(
 
 def estimate_depth_ensemble(
     image: np.ndarray,
-    models: Optional[list[str]] = None,
+    models: list[str] | None = None,
     method: str = "weighted_average",
-    weights: Optional[list[float]] = None,
+    weights: list[float] | None = None,
     device: str = "auto",
 ) -> np.ndarray:
     """Estimate depth using an ensemble of models (convenience function).

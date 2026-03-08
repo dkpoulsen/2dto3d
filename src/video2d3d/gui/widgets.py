@@ -65,10 +65,7 @@ class FileSelector(QWidget):
     def _browse(self) -> None:
         """Open file dialog to browse for a file."""
         current_path = self._path_edit.text()
-        if current_path:
-            start_dir = str(Path(current_path).parent)
-        else:
-            start_dir = self._last_dir
+        start_dir = str(Path(current_path).parent) if current_path else self._last_dir
 
         if self._save_mode:
             path, _ = QFileDialog.getSaveFileName(
@@ -141,10 +138,7 @@ class DirectorySelector(QWidget):
     def _browse(self) -> None:
         """Open directory dialog to browse for a directory."""
         current_path = self._path_edit.text()
-        if current_path:
-            start_dir = current_path
-        else:
-            start_dir = self._last_dir
+        start_dir = current_path or self._last_dir
 
         path = QFileDialog.getExistingDirectory(
             self,
@@ -220,9 +214,8 @@ class CollapsibleBox(QGroupBox):
         """Toggle the visibility of the content."""
         # Show/hide all children except the checkbox
         for child in self.children():
-            if child is not self.layout():
-                if hasattr(child, "setVisible"):
-                    child.setVisible(checked)
+            if child is not self.layout() and hasattr(child, "setVisible"):
+                child.setVisible(checked)
 
         # Also toggle content widget visibility in layout
         layout = self.layout()

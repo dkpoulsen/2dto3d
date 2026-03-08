@@ -553,7 +553,7 @@ class TestTransferToGpu:
         from video2d3d.utils.gpu import transfer_to_gpu
 
         data = np.zeros((100, 100), dtype=np.float32)
-        result = transfer_to_gpu(data, "cpu", pinned=False)
+        transfer_to_gpu(data, "cpu", pinned=False)
 
         # Verify from_numpy was called
         mock_torch.from_numpy.assert_called_once()
@@ -604,7 +604,7 @@ class TestCreatePinnedTensor:
         from video2d3d.utils.gpu import create_pinned_tensor
 
         mock_torch.cuda.is_available.return_value = True
-        result = create_pinned_tensor((100, 100))
+        create_pinned_tensor((100, 100))
 
         # Verify empty and pin_memory were called
         mock_torch.empty.assert_called_once()

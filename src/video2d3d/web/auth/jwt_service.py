@@ -10,7 +10,6 @@ from __future__ import annotations
 
 import os
 from datetime import datetime, timedelta, timezone
-from typing import Optional
 
 from jose import JWTError, jwt
 from passlib.context import CryptContext
@@ -25,7 +24,7 @@ logger = get_logger("web.auth.jwt_service")
 _pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 # Default auth configuration - should be overridden by environment
-_auth_config: Optional[AuthConfig] = None
+_auth_config: AuthConfig | None = None
 
 
 def get_auth_config() -> AuthConfig:
@@ -75,7 +74,7 @@ def create_access_token(
     user_id: str,
     username: str,
     role: UserRole,
-    expires_delta: Optional[timedelta] = None,
+    expires_delta: timedelta | None = None,
 ) -> str:
     """Create a JWT access token.
 
@@ -112,7 +111,7 @@ def create_refresh_token(
     user_id: str,
     username: str,
     role: UserRole,
-    expires_delta: Optional[timedelta] = None,
+    expires_delta: timedelta | None = None,
 ) -> str:
     """Create a JWT refresh token.
 
@@ -145,7 +144,7 @@ def create_refresh_token(
     return jwt.encode(payload, config.secret_key, algorithm=config.algorithm)
 
 
-def decode_token(token: str) -> Optional[TokenPayload]:
+def decode_token(token: str) -> TokenPayload | None:
     """Decode and validate a JWT token.
 
     Args:
@@ -183,7 +182,7 @@ def decode_token(token: str) -> Optional[TokenPayload]:
         return None
 
 
-def authenticate_user(username_or_email: str, password: str) -> Optional[UserModel]:
+def authenticate_user(username_or_email: str, password: str) -> UserModel | None:
     """Authenticate a user by username/email and password.
 
     Args:
@@ -228,7 +227,7 @@ def authenticate_user(username_or_email: str, password: str) -> Optional[UserMod
         session.close()
 
 
-def get_user_by_id(user_id: str) -> Optional[UserModel]:
+def get_user_by_id(user_id: str) -> UserModel | None:
     """Get a user by ID.
 
     Args:
@@ -245,7 +244,7 @@ def get_user_by_id(user_id: str) -> Optional[UserModel]:
         session.close()
 
 
-def get_user_by_username(username: str) -> Optional[UserModel]:
+def get_user_by_username(username: str) -> UserModel | None:
     """Get a user by username.
 
     Args:
@@ -262,7 +261,7 @@ def get_user_by_username(username: str) -> Optional[UserModel]:
         session.close()
 
 
-def get_user_by_email(email: str) -> Optional[UserModel]:
+def get_user_by_email(email: str) -> UserModel | None:
     """Get a user by email.
 
     Args:

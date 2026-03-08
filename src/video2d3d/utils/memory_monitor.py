@@ -16,7 +16,7 @@ import time
 from contextlib import contextmanager
 from dataclasses import dataclass, field
 from enum import Enum, auto
-from typing import TYPE_CHECKING, Callable, Optional
+from typing import TYPE_CHECKING, Callable
 
 import psutil
 
@@ -177,10 +177,10 @@ class MemoryMonitor:
             pass
     """
 
-    _instance: Optional[MemoryMonitor] = None
+    _instance: MemoryMonitor | None = None
     _lock: threading.Lock = threading.Lock()
 
-    def __new__(cls, config: Optional[MemoryMonitorConfig] = None) -> MemoryMonitor:
+    def __new__(cls, config: MemoryMonitorConfig | None = None) -> MemoryMonitor:
         """Create or return the singleton instance."""
         with cls._lock:
             if cls._instance is None:
@@ -188,7 +188,7 @@ class MemoryMonitor:
                 cls._instance._initialized = False
             return cls._instance
 
-    def __init__(self, config: Optional[MemoryMonitorConfig] = None) -> None:
+    def __init__(self, config: MemoryMonitorConfig | None = None) -> None:
         """Initialize the memory monitor.
 
         Args:
@@ -204,9 +204,9 @@ class MemoryMonitor:
         self._callbacks: list[MemoryWarningCallback] = []
         self._callback_lock = threading.Lock()
         self._monitoring = False
-        self._monitor_thread: Optional[threading.Thread] = None
+        self._monitor_thread: threading.Thread | None = None
         self._stop_event = threading.Event()
-        self._last_info: Optional[MemoryInfo] = None
+        self._last_info: MemoryInfo | None = None
         self._last_gc_time: float = 0.0
         self._gc_cooldown: float = 5.0  # Minimum seconds between GC runs
         self._initialized = True
@@ -233,7 +233,7 @@ class MemoryMonitor:
         return self._monitoring
 
     @property
-    def last_info(self) -> Optional[MemoryInfo]:
+    def last_info(self) -> MemoryInfo | None:
         """Get the last memory info snapshot."""
         return self._last_info
 
@@ -384,7 +384,7 @@ class MemoryMonitor:
 
         return collected
 
-    def check_and_collect(self, info: Optional[MemoryInfo] = None) -> bool:
+    def check_and_collect(self, info: MemoryInfo | None = None) -> bool:
         """Check memory and run GC if thresholds exceeded.
 
         Args:
@@ -478,8 +478,8 @@ class MemoryMonitor:
 
 @contextmanager
 def memory_monitor_context(
-    config: Optional[MemoryMonitorConfig] = None,
-    callback: Optional[MemoryWarningCallback] = None,
+    config: MemoryMonitorConfig | None = None,
+    callback: MemoryWarningCallback | None = None,
 ) -> Generator[MemoryMonitor, None, None]:
     """Context manager for scoped memory monitoring.
 
@@ -511,7 +511,7 @@ def memory_monitor_context(
             monitor._logger.warning(f"Context exiting with elevated memory: {info.percent:.1f}%")
 
 
-def get_memory_monitor(config: Optional[MemoryMonitorConfig] = None) -> MemoryMonitor:
+def get_memory_monitor(config: MemoryMonitorConfig | None = None) -> MemoryMonitor:
     """Get the singleton MemoryMonitor instance.
 
     Args:
