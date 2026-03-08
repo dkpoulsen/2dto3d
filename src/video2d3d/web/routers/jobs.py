@@ -50,6 +50,12 @@ router = APIRouter()
 _config = get_config()
 API_PREFIX = _config.web_api.prefix
 
+# Thumbnail grid defaults
+DEFAULT_THUMBNAIL_COUNT = 24
+DEFAULT_FPS = 30.0
+DEFAULT_TOTAL_FRAMES = 0
+THUMBNAIL_COUNT_MIN = 1
+THUMBNAIL_COUNT_MAX = 100
 
 def priority_to_model(priority: JobPriorityRequest) -> JobPriority:
     """Convert API priority enum to batch model priority."""
@@ -610,7 +616,12 @@ async def get_queue_stats() -> QueueStatsResponse:
 )
 async def get_thumbnail_grid(
     job_id: str,
-    count: int | None = Query(default=24, ge=1, le=100, description="Number of thumbnails"),
+    count: int | None = Query(
+        default=DEFAULT_THUMBNAIL_COUNT, 
+        ge=THUMBNAIL_COUNT_MIN, 
+        le=THUMBNAIL_COUNT_MAX, 
+        description="Number of thumbnails"
+    ),
     start_frame: int | None = Query(default=None, ge=0, description="Start frame index"),
     end_frame: int | None = Query(default=None, ge=0, description="End frame index"),
 ) -> ThumbnailGridResponse:
@@ -639,9 +650,9 @@ async def get_thumbnail_grid(
     if not job:
         raise JobNotFoundError(job_id=job_id)
 
-    # Get video metadata from job
-    total_frames = getattr(job, "total_frames", 0) or 0
-    fps = getattr(job, "fps", 30.0) or 30.0
+    # Get video metadata from job (use constants for defaults)
+    total_frames = getattr(job, "total_frames", DEFAULT_TOTAL_FRAMES) or DEFAULT_TOTAL_FRAMES
+    fps = getattr(job, "fps", DEFAULT_FPS) or DEFAULT_FPS
     duration_seconds = total_frames / fps if fps > 0 else 0.0
 
     # Calculate frame indices for thumbnails

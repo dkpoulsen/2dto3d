@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, memo } from 'react';
+import { useState, useCallback, useEffect, useMemo, memo } from 'react';
 import {
   Grid3X3,
   ChevronLeft,
@@ -19,6 +19,19 @@ const ZOOM_MIN = 0.5;
 const ZOOM_MAX = 2;
 const ZOOM_STEP = 0.25;
 const ROWS_PER_PAGE = 3;
+
+// Predefined grid column classes for responsive layouts (moved outside component for performance)
+const GRID_COLS_CLASSES: Record<number, string> = {
+  2: 'grid-cols-1 sm:grid-cols-2',
+  3: 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3',
+  4: 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4',
+  5: 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-5',
+  6: 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-6',
+};
+
+/** Get responsive grid column class for a given column count */
+const getGridColsClass = (cols: number): string => 
+  GRID_COLS_CLASSES[cols] ?? GRID_COLS_CLASSES[4]!;
 
 export interface ThumbnailGridProps {
   /** Job ID to fetch thumbnails for */
@@ -128,16 +141,6 @@ export function ThumbnailGrid({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [handleKeyDown]);
 
-  const getGridColsClass = (cols: number): string => {
-    const colMap: Record<number, string> = {
-      2: 'grid-cols-1 sm:grid-cols-2',
-      3: 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3',
-      4: 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4',
-      5: 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-5',
-      6: 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-6',
-    };
-    return colMap[cols] || colMap[4];
-  };
 
   if (isLoading) {
     return (
@@ -506,6 +509,28 @@ const EnlargedFrameModal = memo(function EnlargedFrameModal({
 }: EnlargedFrameModalProps) {
   const showOriginal = displayMode === 'original' || displayMode === 'both';
   const showDepth = displayMode === 'depth' || displayMode === 'both';
+
+  // Lock body scroll when modal is open
+  useEffect(() => {
+    const originalStyle = window.getComputedStyle(document.body).overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = originalStyle;
+    };
+  }, []);
+
+  // Focus trap and keyboard navigation
+  useEffect(() => {
+    const handleModalKeyDown = (e: globalThis.KeyboardEvent) => {
+      if (e.key === 'ArrowLeft' && hasPrevious) {
+        onPrevious();
+      } else if (e.key === 'ArrowRight' && hasNext) {
+        onNext();
+      }
+    };
+    window.addEventListener('keydown', handleModalKeyDown);
+    return () => window.removeEventListener('keydown', handleModalKeyDown);
+  }, [hasPrevious, hasNext, onPrevious, onNext]);
 
   return (
     <div
