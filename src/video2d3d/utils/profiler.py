@@ -35,6 +35,7 @@ Example usage:
 
 from __future__ import annotations
 
+import random
 import time
 from collections.abc import Generator
 from contextlib import contextmanager
@@ -56,7 +57,6 @@ DEFAULT_TOP_N_COMPONENTS = 10
 MAX_STORED_TIMES = 10000  # Maximum times to store per component for stats
 
 F = TypeVar("F", bound=Callable[..., Any])
-
 
 @dataclass
 class ComponentStats:
@@ -122,8 +122,6 @@ class ComponentStats:
             self.times.append(time_ms)
         else:
             # Replace a random older time to maintain sample
-            import random
-
             idx = random.randint(0, self._max_times - 1)
             self.times[idx] = time_ms
 
@@ -237,11 +235,12 @@ class Profiler:
 
         self._components: dict[str, ComponentStats] = {}
         self._lock = Lock()
+        self._stack_lock = Lock()  # Separate lock for measurement stack
         self._start_time: float | None = None
         self._end_time: float | None = None
         self._logger = get_logger("profiler")
 
-        # Stack for nested measurements
+        # Stack for nested measurements (thread-safe)
         self._measurement_stack: list[str] = []
 
     def start(self) -> Profiler:
@@ -291,13 +290,18 @@ class Profiler:
             ```
         """
         start_time = time.perf_counter()
-        self._measurement_stack.append(component_name)
+
+        with self._stack_lock:
+            self._measurement_stack.append(component_name)
 
         try:
             yield
         finally:
             elapsed_ms = (time.perf_counter() - start_time) * 1000
-            self._measurement_stack.pop()
+
+            with self._stack_lock:
+                if self._measurement_stack:
+                    self._measurement_stack.pop()
 
             with self._lock:
                 if component_name not in self._components:
@@ -305,11 +309,13 @@ class Profiler:
                 self._components[component_name].add_measurement(elapsed_ms)
 
             if self.auto_log:
+                with self._stack_lock:
+                    stack_depth = len(self._measurement_stack)
                 log_performance(
                     f"component_{component_name}",
                     elapsed_ms,
                     session=self.session_name,
-                    depth=len(self._measurement_stack),
+                    depth=stack_depth,
                 )
 
     def record(self, component_name: str, time_ms: float) -> None:
@@ -318,7 +324,13 @@ class Profiler:
         Args:
             component_name: Name of the component.
             time_ms: Execution time in milliseconds.
+
+        Raises:
+            ValueError: If time_ms is negative.
         """
+        if time_ms < 0:
+            raise ValueError(f"Time cannot be negative: {time_ms}")
+
         with self._lock:
             if component_name not in self._components:
                 self._components[component_name] = ComponentStats(name=component_name)
@@ -389,9 +401,9 @@ class Profiler:
         lines.append(f"{'=' * 60}")
 
         # Bottleneck analysis
-        bottlenecks = result.get_bottlenecks(threshold_percent=15.0)
+        bottlenecks = result.get_bottlenecks(threshold_percent=DEFAULT_BOTTLENECK_THRESHOLD)
         if bottlenecks:
-            lines.append("\nPotential Bottlenecks (>15% of total time):")
+            lines.append(f"\nPotential Bottlenecks (>{DEFAULT_BOTTLENECK_THRESHOLD}% of total time):")
             for b in bottlenecks:
                 percent = (
                     (b.total_time_ms / result.total_time_ms * 100)

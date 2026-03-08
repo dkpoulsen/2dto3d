@@ -279,6 +279,24 @@ class TestProfiler:
         assert stats is not None
         assert stats.total_time_ms == 42.5
 
+    def test_record_negative_time_raises_error(self) -> None:
+        """Test record raises ValueError for negative time."""
+        from video2d3d.utils.profiler import Profiler
+
+        profiler = Profiler("test", auto_log=False)
+
+        with pytest.raises(ValueError, match="negative"):
+            profiler.record("op", -10.0)
+
+    def test_add_measurement_negative_time_raises_error(self) -> None:
+        """Test add_measurement raises ValueError for negative time."""
+        from video2d3d.utils.profiler import ComponentStats
+
+        stats = ComponentStats(name="test")
+
+        with pytest.raises(ValueError, match="negative"):
+            stats.add_measurement(-5.0)
+
     def test_get_result(self) -> None:
         """Test get_result returns complete ProfilerResult."""
         from video2d3d.utils.profiler import Profiler
