@@ -134,3 +134,9 @@ Input: {
   "filePath": "/home/dkp/Documents/Automaker/2dto3d/src/video2d3d/web/app.py",
   "limit": 100
 }
+
+🔧 Tool: bash
+Input: {
+  "command": "ls -la /home/dkp/Documents/Automaker/2dto3d/src/video2d3d/web/routers/ 2>/dev/null || ls -la /home/dkp/Documents/Automaker/2dto3d/src/video2d3d/web/",
+  "description": "List web router files"
+}
