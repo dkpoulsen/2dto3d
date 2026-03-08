@@ -610,3 +610,49 @@ export interface ThumbnailGridResponse {
   /** Video duration in seconds */
   duration_seconds: number;
 }
+
+// ============================================================================
+// Authentication Types
+// ============================================================================
+
+/** User role types for role-based access control */
+export type UserRole = 'user' | 'admin';
+
+/** Request to register a new user */
+export interface UserRegisterRequest {
+  email: string;
+  username: string;
+  password: string;
+}
+
+/** Request to login */
+export interface UserLoginRequest {
+  username: string;
+  password: string;
+}
+
+/** Request to refresh tokens */
+export interface TokenRefreshRequest {
+  refresh_token: string;
+}
+
+/** User information returned from API */
+export interface UserResponse {
+  user_id: string;
+  email: string;
+  username: string;
+  role: UserRole;
+  is_active: boolean;
+  created_at: string;
+  last_login: string | null;
+}
+
+/** Token response from login/register/refresh */
+export interface TokenResponse {
+  access_token: string;
+  refresh_token: string;
+  token_type: string;
+  expires_in: number;
+  user: UserResponse;
+}
+

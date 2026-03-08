@@ -38,11 +38,16 @@ class UserBase(BaseModel):
     @field_validator("username")
     @classmethod
     def validate_username(cls, v: str) -> str:
-        """Validate username format."""
-        if not v.isalnum() and "_" not in v and "-" not in v:
-            raise ValueError(
-                "Username must contain only alphanumeric characters, underscores, or hyphens"
-            )
+        """Validate username format.
+        
+        Username must contain only alphanumeric characters, underscores, or hyphens.
+        """
+        # Check each character is valid
+        for char in v:
+            if not (char.isalnum() or char == "_" or char == "-"):
+                raise ValueError(
+                    "Username must contain only alphanumeric characters, underscores, or hyphens"
+                )
         return v.lower()
 
 
@@ -59,8 +64,14 @@ class UserCreate(UserBase):
     @field_validator("password")
     @classmethod
     def validate_password(cls, v: str) -> str:
-        """Validate password strength."""
-        # Note: min_length=8 in Field handles length validation
+        """Validate password strength.
+        
+        Requirements:
+        - At least 8 characters (handled by Field min_length)
+        - At least one uppercase letter
+        - At least one lowercase letter
+        - At least one digit
+        """
         if not any(c.isupper() for c in v):
             raise ValueError("Password must contain at least one uppercase letter")
         if not any(c.islower() for c in v):

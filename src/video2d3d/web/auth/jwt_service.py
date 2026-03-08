@@ -28,14 +28,27 @@ _auth_config: AuthConfig | None = None
 
 
 def get_auth_config() -> AuthConfig:
-    """Get authentication configuration from environment or defaults."""
+    """Get authentication configuration from environment or defaults.
+    
+    Raises a warning if using the default secret key in production.
+    """
     global _auth_config
     if _auth_config is None:
+        secret_key = os.environ.get(
+            "JWT_SECRET_KEY",
+            "change-me-in-production-use-environment-variable",
+        )
+        
+        # Warn if using default secret key
+        if secret_key == "change-me-in-production-use-environment-variable":
+            logger.warning(
+                "SECURITY WARNING: Using default JWT secret key! "
+                "Set JWT_SECRET_KEY environment variable in production. "
+                "Authentication will work but tokens can be forged."
+            )
+        
         _auth_config = AuthConfig(
-            secret_key=os.environ.get(
-                "JWT_SECRET_KEY",
-                "change-me-in-production-use-environment-variable",
-            ),
+            secret_key=secret_key,
             algorithm=os.environ.get("JWT_ALGORITHM", "HS256"),
             access_token_expire_minutes=int(
                 os.environ.get("JWT_ACCESS_TOKEN_EXPIRE_MINUTES", "30")
@@ -223,6 +236,9 @@ def authenticate_user(username_or_email: str, password: str) -> UserModel | None
 
         return user
 
+    except Exception:
+        session.rollback()
+        raise
     finally:
         session.close()
 
@@ -330,6 +346,9 @@ def create_user(
 
         return user
 
+    except Exception:
+        session.rollback()
+        raise
     finally:
         session.close()
 

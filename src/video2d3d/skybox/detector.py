@@ -51,6 +51,21 @@ _COLOR_WEIGHT: float = 0.4
 _POSITION_WEIGHT: float = 0.3
 _EDGE_WEIGHT: float = 0.3
 
+# Cloudy sky detection thresholds
+_CLOUDY_SKY_SATURATION_THRESHOLD: float = 0.15
+_CLOUDY_SKY_VALUE_THRESHOLD: float = 0.7
+
+# Default confidence scores
+_POSITION_ONLY_CONFIDENCE: float = 0.7
+_POSITION_LOW_CONFIDENCE: float = 0.3
+_EDGE_DETECTED_CONFIDENCE: float = 0.6
+_EDGE_NO_HORIZON_CONFIDENCE: float = 0.2
+
+# Temporal smoothing threshold
+_TEMPORAL_BLEND_THRESHOLD: float = 0.5
+
+# Minimum image dimensions
+_MIN_IMAGE_DIMENSION: int = 4
 
 # ---------------------------------------------------------------------------
 # Exceptions
@@ -72,6 +87,14 @@ class SkyDetectionError(Exception):
         self.operation = operation
         self.original_exception = original_exception
 
+    def __str__(self) -> str:
+        """Return a detailed error message with context."""
+        parts = [super().__str__()]
+        if self.operation:
+            parts.append(f"Operation: {self.operation}")
+        if self.original_exception:
+            parts.append(f"Caused by: {type(self.original_exception).__name__}: {self.original_exception}")
+        return " | ".join(parts)
 
 # ---------------------------------------------------------------------------
 # Result Classes
@@ -187,6 +210,14 @@ class SkyDetector:
 
             h, w = image.shape[:2]
 
+            # Validate image dimensions
+            if h < _MIN_IMAGE_DIMENSION or w < _MIN_IMAGE_DIMENSION:
+                raise SkyDetectionError(
+                    f"Image dimensions ({h}x{w}) are too small. "
+                    f"Minimum size: {_MIN_IMAGE_DIMENSION}x{_MIN_IMAGE_DIMENSION}",
+                    operation="detect",
+                )
+
             # Run detection based on method
             method = self.config.detection_method
 
@@ -273,7 +304,12 @@ class SkyDetector:
         )
 
         # Cloudy sky: very low saturation, high brightness
-        cloudy_mask = (saturation <= 0.15) & (value >= 0.7) & config.enable_cloudy_sky
+        if config.enable_cloudy_sky:
+            cloudy_mask = (saturation <= _CLOUDY_SKY_SATURATION_THRESHOLD) & (
+                value >= _CLOUDY_SKY_VALUE_THRESHOLD
+            )
+        else:
+            cloudy_mask = np.zeros((h, w), dtype=bool)
 
         # Combine masks
         sky_mask = blue_mask | cloudy_mask
@@ -314,17 +350,15 @@ class SkyDetector:
         sky_mask[:sky_region_y, :] = True
 
         # Apply position weights (higher weight for top pixels)
-        y_coords = np.arange(h).reshape(-1, 1)
-        np.exp(-y_coords / (h * 0.3))
-
+        # Note: Weight-based confidence scoring is done below
         # Calculate weighted coverage
         weighted_coverage = np.sum(sky_mask) / (h * w)
 
         # Confidence based on whether coverage is in expected range
         if config.min_sky_coverage <= weighted_coverage <= config.max_sky_coverage:
-            confidence = 0.7  # Reasonable confidence for position-only detection
+            confidence = _POSITION_ONLY_CONFIDENCE  # Reasonable confidence for position-only detection
         else:
-            confidence = 0.3  # Low confidence if coverage is unusual
+            confidence = _POSITION_LOW_CONFIDENCE  # Low confidence if coverage is unusual
 
         method_results = {
             "position_sky_region_ratio": config.sky_region_ratio,
@@ -371,10 +405,10 @@ class SkyDetector:
         sky_mask = np.zeros((h, w), dtype=bool)
         if horizon_y is not None and horizon_y > 0:
             sky_mask[:horizon_y, :] = True
-            confidence = 0.6
+            confidence = _EDGE_DETECTED_CONFIDENCE
         else:
             # No horizon found, assume no sky
-            confidence = 0.2
+            confidence = _EDGE_NO_HORIZON_CONFIDENCE
 
         method_results = {
             "edge_horizon_y": horizon_y if horizon_y else -1,
@@ -663,7 +697,7 @@ class SkyDetector:
         ) * self._previous_mask.astype(np.float32)
 
         # Threshold
-        return blended > 0.5
+        return blended > _TEMPORAL_BLEND_THRESHOLD
 
     def reset_temporal_state(self) -> None:
         """Reset temporal smoothing state."""

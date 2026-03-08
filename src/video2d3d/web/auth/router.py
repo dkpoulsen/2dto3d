@@ -49,6 +49,36 @@ security = HTTPBearer(auto_error=False)
 # ============================================================================
 
 
+def _validate_user_from_credentials(
+    credentials: HTTPAuthorizationCredentials | None,
+) -> UserModel | None:
+    """Validate credentials and return user if valid.
+    
+    This is a private helper function shared by get_current_user and 
+    get_current_user_optional.
+
+    Args:
+        credentials: HTTP Bearer credentials from request header.
+
+    Returns:
+        UserModel if valid credentials, None otherwise.
+    """
+    if credentials is None:
+        return None
+
+    token = credentials.credentials
+    payload = decode_token(token)
+
+    if payload is None or payload.type != "access":
+        return None
+
+    user = get_user_by_id(payload.sub)
+    if user is None or not user.is_active:
+        return None
+
+    return user
+
+
 async def get_current_user(
     credentials: Annotated[HTTPAuthorizationCredentials | None, Depends(security)] = None,
 ) -> UserModel:
@@ -63,38 +93,15 @@ async def get_current_user(
     Raises:
         HTTPException: 401 if not authenticated or token invalid.
     """
-    credentials_exception = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate credentials",
-        headers={"WWW-Authenticate": "Bearer"},
-    )
-
-    if credentials is None:
-        raise credentials_exception
-
-    token = credentials.credentials
-    payload = decode_token(token)
-
-    if payload is None:
-        raise credentials_exception
-
-    if payload.type != "access":
+    user = _validate_user_from_credentials(credentials)
+    
+    if user is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid token type. Use access token.",
+            detail="Could not validate credentials",
             headers={"WWW-Authenticate": "Bearer"},
         )
-
-    user = get_user_by_id(payload.sub)
-    if user is None:
-        raise credentials_exception
-
-    if not user.is_active:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="User account is inactive",
-        )
-
+    
     return user
 
 
@@ -111,20 +118,7 @@ async def get_current_user_optional(
     Returns:
         Authenticated UserModel or None.
     """
-    if credentials is None:
-        return None
-
-    token = credentials.credentials
-    payload = decode_token(token)
-
-    if payload is None or payload.type != "access":
-        return None
-
-    user = get_user_by_id(payload.sub)
-    if user is None or not user.is_active:
-        return None
-
-    return user
+    return _validate_user_from_credentials(credentials)
 
 
 def require_roles(*required_roles: UserRole):

@@ -34,6 +34,13 @@ import type {
   ThumbnailFrame,
   ThumbnailGridRequest,
   ThumbnailGridResponse,
+  // Auth types
+  UserRole,
+  UserRegisterRequest,
+  UserLoginRequest,
+  TokenRefreshRequest,
+  UserResponse,
+  TokenResponse,
 } from './types';
 import { API_CONFIG } from '../utils/constants';
 
@@ -332,4 +339,46 @@ export const thumbnailApi = {
   },
 };
 
+export const authApi = {
+  /** Register a new user */
+  register: async (request: UserRegisterRequest): Promise<TokenResponse> => {
+    const response = await api.post<TokenResponse>('/auth/register', request);
+    return response.data;
+  },
+
+  /** Login with username/email and password */
+  login: async (request: UserLoginRequest): Promise<TokenResponse> => {
+    const response = await api.post<TokenResponse>('/auth/login', request);
+    return response.data;
+  },
+
+  /** Refresh access token */
+  refreshToken: async (request: TokenRefreshRequest): Promise<TokenResponse> => {
+    const response = await api.post<TokenResponse>('/auth/refresh', request);
+    return response.data;
+  },
+
+  /** Get current user info */
+  getCurrentUser: async (): Promise<UserResponse> => {
+    const response = await api.get<UserResponse>('/auth/me');
+    return response.data;
+  },
+
+  /** Logout (client should discard tokens) */
+  logout: async (): Promise<{ message: string }> => {
+    const response = await api.post<{ message: string }>('/auth/logout');
+    return response.data;
+  },
+
+  /** Set authorization header for authenticated requests */
+  setAuthToken: (token: string | null): void => {
+    if (token) {
+      api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    } else {
+      delete api.defaults.headers.common['Authorization'];
+    }
+  },
+};
+
 export default api;
+

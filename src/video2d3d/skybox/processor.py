@@ -62,6 +62,14 @@ class SkyProcessingError(Exception):
         self.operation = operation
         self.original_exception = original_exception
 
+    def __str__(self) -> str:
+        """Return a detailed error message with context."""
+        parts = [super().__str__()]
+        if self.operation:
+            parts.append(f"Operation: {self.operation}")
+        if self.original_exception:
+            parts.append(f"Caused by: {type(self.original_exception).__name__}: {self.original_exception}")
+        return " | ".join(parts)
 
 # ---------------------------------------------------------------------------
 # Logger
@@ -282,27 +290,11 @@ class SkyProcessor:
             return result
 
         # Create blend weights for smooth transition
-        h, w = depth_map.shape
-
-        # Dilate sky mask to get boundary region
-        kernel_size = config.boundary_blend_pixels * 2 + 1
-        kernel = cv2.getStructuringElement(
-            cv2.MORPH_ELLIPSE,
-            (kernel_size, kernel_size),
-        )
-
-        # Dilated mask
-        dilated_mask = cv2.dilate(sky_mask.astype(np.uint8), kernel)
-
-        # Boundary region (dilated - original)
-        dilated_mask.astype(bool) & ~sky_mask
-
         # Create distance-based blend weights
-        # Distance transform from sky boundary
+        # Distance transform from sky boundary for smooth blending
         dist_in_sky = cv2.distanceTransform(
             sky_mask.astype(np.uint8), cv2.DIST_L2, cv2.DIST_MASK_PRECISE
         )
-        cv2.distanceTransform((~sky_mask).astype(np.uint8), cv2.DIST_L2, cv2.DIST_MASK_PRECISE)
 
         # Normalize distances
         blend_distance = config.boundary_blend_pixels
@@ -402,7 +394,7 @@ def create_sky_depth_mask(
         y_coords = np.arange(h).reshape(-1, 1)
         normalized_y = np.clip(y_coords / horizon_y, 0, 1)
         gradient_depth = max_depth * (1 - gradient_strength * normalized_y)
-        depth_mask = np.where(sky_mask, gradient_depth, 0)
+        depth_mask = np.where(sky_mask, gradient_depth, max_depth)
 
     return depth_mask
 

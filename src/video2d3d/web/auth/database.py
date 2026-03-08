@@ -64,7 +64,7 @@ class UserModel(Base):
     )
     created_at: Mapped[datetime] = mapped_column(
         DateTime,
-        default=datetime.now(timezone.utc),
+        default=lambda: datetime.now(timezone.utc),
         nullable=False,
     )
     last_login: Mapped[datetime | None] = mapped_column(

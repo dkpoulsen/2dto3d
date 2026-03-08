@@ -92,6 +92,16 @@ class ColorDetectionConfig:
         if not 0 <= self.gradient_threshold <= 1:
             raise ValueError(f"gradient_threshold must be in [0, 1], got {self.gradient_threshold}")
 
+    def to_dict(self) -> dict[str, float | bool]:
+        """Convert configuration to dictionary."""
+        return {
+            "hue_min": self.hue_min,
+            "hue_max": self.hue_max,
+            "saturation_max": self.saturation_max,
+            "value_min": self.value_min,
+            "gradient_threshold": self.gradient_threshold,
+            "enable_cloudy_sky": self.enable_cloudy_sky,
+        }
 
 @dataclass
 class PositionDetectionConfig:
@@ -125,6 +135,14 @@ class PositionDetectionConfig:
         if self.prefer_top_weight < 1.0:
             raise ValueError(f"prefer_top_weight must be >= 1.0, got {self.prefer_top_weight}")
 
+    def to_dict(self) -> dict[str, float]:
+        """Convert configuration to dictionary."""
+        return {
+            "sky_region_ratio": self.sky_region_ratio,
+            "min_sky_coverage": self.min_sky_coverage,
+            "max_sky_coverage": self.max_sky_coverage,
+            "prefer_top_weight": self.prefer_top_weight,
+        }
 
 @dataclass
 class EdgeDetectionConfig:
@@ -153,6 +171,14 @@ class EdgeDetectionConfig:
         if self.min_edge_pixels < 0:
             raise ValueError(f"min_edge_pixels must be >= 0, got {self.min_edge_pixels}")
 
+    def to_dict(self) -> dict[str, float | int | bool]:
+        """Convert configuration to dictionary."""
+        return {
+            "horizon_search_ratio": self.horizon_search_ratio,
+            "edge_threshold": self.edge_threshold,
+            "min_edge_pixels": self.min_edge_pixels,
+            "use_hough_transform": self.use_hough_transform,
+        }
 
 @dataclass
 class SkyDepthConfig:
@@ -187,6 +213,16 @@ class SkyDepthConfig:
             )
         if not 0 <= self.gradient_strength <= 1:
             raise ValueError(f"gradient_strength must be in [0, 1], got {self.gradient_strength}")
+
+    def to_dict(self) -> dict[str, str | float | int | bool]:
+        """Convert configuration to dictionary."""
+        return {
+            "depth_mode": self.depth_mode,
+            "sky_depth_value": self.sky_depth_value,
+            "boundary_blend_pixels": self.boundary_blend_pixels,
+            "apply_depth_gradient": self.apply_depth_gradient,
+            "gradient_strength": self.gradient_strength,
+        }
 
 
 @dataclass
@@ -269,6 +305,24 @@ class SkyboxConfig:
             depth_config=depth_config,
             **config_dict,
         )
+
+    def to_dict(self) -> dict:
+        """Convert configuration to dictionary.
+
+        Returns:
+            Dictionary representation of the configuration.
+        """
+        return {
+            "enabled": self.enabled,
+            "detection_method": self.detection_method,
+            "min_confidence": self.min_confidence,
+            "color_config": self.color_config.to_dict() if self.color_config else None,
+            "position_config": self.position_config.to_dict() if self.position_config else None,
+            "edge_config": self.edge_config.to_dict() if self.edge_config else None,
+            "depth_config": self.depth_config.to_dict() if self.depth_config else None,
+            "temporal_consistency": self.temporal_consistency,
+            "smoothing_frames": self.smoothing_frames,
+        }
 
 
 # ---------------------------------------------------------------------------
