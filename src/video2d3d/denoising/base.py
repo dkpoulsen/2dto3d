@@ -8,13 +8,13 @@ from __future__ import annotations
 
 import time
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, List, Optional, Tuple
+from typing import TYPE_CHECKING, List, Optional
 
 import numpy as np
 
 from video2d3d.utils.logger import get_logger, log_model_inference
 
-from .exceptions import InferenceError, ModelLoadError
+from .exceptions import InferenceError
 
 if TYPE_CHECKING:
     from loguru import Logger
@@ -89,7 +89,7 @@ class VideoDenoiserBase(ABC):
         return self._device
 
     @property
-    def logger(self) -> "Logger":
+    def logger(self) -> Logger:
         """Get the logger (lazy initialization)."""
         if self._logger is None:
             self._logger = get_logger(f"denoising.{self._model_name}")
@@ -296,7 +296,7 @@ class VideoDenoiserBase(ABC):
         self._is_loaded = False
         self.logger.debug(f"{self._model_name} resources released")
 
-    def __enter__(self) -> "VideoDenoiserBase":
+    def __enter__(self) -> VideoDenoiserBase:
         """Context manager entry."""
         return self
 

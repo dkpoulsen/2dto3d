@@ -1,17 +1,17 @@
 """Unit tests for depth curve adjustment functionality."""
 
-import pytest
 import numpy as np
+import pytest
 
 from video2d3d.depth.curve import (
+    PRESET_CURVES,
     CurveControlPoint,
     CurvePreset,
     DepthCurveConfig,
     DepthCurveError,
-    PRESET_CURVES,
+    apply_curve_lut,
     apply_depth_curve,
     create_curve_lut,
-    apply_curve_lut,
 )
 
 
@@ -275,8 +275,16 @@ class TestCurvePresets:
         for preset in CurvePreset:
             points = PRESET_CURVES[preset]
             assert len(points) >= 2
-            assert points[0].x == 0.0 if isinstance(points[0], CurveControlPoint) else points[0][0] == 0.0
-            assert points[-1].x == 1.0 if isinstance(points[-1], CurveControlPoint) else points[-1][0] == 1.0
+            assert (
+                points[0].x == 0.0
+                if isinstance(points[0], CurveControlPoint)
+                else points[0][0] == 0.0
+            )
+            assert (
+                points[-1].x == 1.0
+                if isinstance(points[-1], CurveControlPoint)
+                else points[-1][0] == 1.0
+            )
 
     def test_all_presets_can_create_config(self):
         """Test that all presets can be used to create config."""

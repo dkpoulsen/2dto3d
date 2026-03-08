@@ -7,7 +7,7 @@ to avoid 3D artifacts in outdoor scenes.
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from enum import Enum
 from typing import Optional
 
@@ -242,7 +242,7 @@ class SkyboxConfig:
             self.depth_config = SkyDepthConfig()
 
     @classmethod
-    def from_dict(cls, config_dict: dict) -> "SkyboxConfig":
+    def from_dict(cls, config_dict: dict) -> SkyboxConfig:
         """Create configuration from dictionary.
 
         Args:

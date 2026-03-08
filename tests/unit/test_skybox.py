@@ -9,35 +9,31 @@ Tests cover:
 
 from __future__ import annotations
 
-import pytest
 import numpy as np
+import pytest
 
 from video2d3d.skybox.config import (
-    SkyDetectionMethod,
-    SkyDepthMode,
-    SkyboxConfig,
     ColorDetectionConfig,
     PositionDetectionConfig,
-    EdgeDetectionConfig,
+    SkyboxConfig,
     SkyDepthConfig,
 )
 from video2d3d.skybox.detector import (
-    SkyDetector,
-    SkyDetectionResult,
     SkyDetectionError,
+    SkyDetectionResult,
+    SkyDetector,
     create_sky_detector,
     detect_sky,
 )
 from video2d3d.skybox.processor import (
-    SkyProcessor,
     SkyProcessingError,
-    integrate_sky_depth,
-    create_sky_depth_mask,
+    SkyProcessor,
     blend_depth_at_boundary,
+    create_sky_depth_mask,
     create_sky_processor,
+    integrate_sky_depth,
     process_sky_depth,
 )
-
 
 # ---------------------------------------------------------------------------
 # Fixtures

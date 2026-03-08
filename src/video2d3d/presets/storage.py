@@ -105,9 +105,10 @@ class PresetStorage:
 
         except PresetStorageError:
             raise  # Re-raise our own errors
-        except (IOError, OSError) as e:
+        except OSError as e:
             logger.error(f"Failed to save preset '{preset.name}': {e}")
             raise PresetStorageError(f"Failed to save preset: {e}") from e
+
     def _atomic_write(self, file_path: Path, content: str) -> None:
         """Write content to a file atomically using temp file + rename.
 
@@ -137,7 +138,7 @@ class PresetStorage:
                 if os.path.exists(temp_path):
                     os.unlink(temp_path)
                 raise
-        except (IOError, OSError) as e:
+        except OSError as e:
             raise PresetStorageError(f"Atomic write failed: {e}") from e
 
     def load(self, preset_id: str, is_builtin: bool = False) -> Optional[Preset]:
@@ -284,7 +285,7 @@ class PresetStorage:
             logger.info(f"Exported preset '{preset.name}' to {export_path}")
             return export_path
 
-        except (IOError, OSError) as e:
+        except OSError as e:
             logger.error(f"Failed to export preset: {e}")
             raise PresetStorageError(f"Failed to export preset: {e}") from e
 
@@ -324,7 +325,7 @@ class PresetStorage:
         except json.JSONDecodeError as e:
             logger.error(f"Invalid preset file format: {e}")
             raise PresetStorageError(f"Invalid preset file format: {e}") from e
-        except (IOError, OSError) as e:
+        except OSError as e:
             logger.error(f"Failed to import preset: {e}")
             raise PresetStorageError(f"Failed to import preset: {e}") from e
 

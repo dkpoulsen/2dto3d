@@ -252,9 +252,9 @@ class BatchQueueConfig:
             max_retries=data.get("max_retries", 3),
             retry_delay_seconds=data.get("retry_delay_seconds", 5.0),
             job_timeout_seconds=data.get("job_timeout_seconds", 3600.0),
-            output_directory=Path(data["output_directory"])
-            if data.get("output_directory")
-            else None,
+            output_directory=(
+                Path(data["output_directory"]) if data.get("output_directory") else None
+            ),
             output_naming_pattern=data.get("output_naming_pattern", "{name}_3d{ext}"),
             preserve_directory_structure=data.get("preserve_directory_structure", False),
             skip_existing=data.get("skip_existing", True),
@@ -266,9 +266,11 @@ class BatchQueueConfig:
             progress_update_interval=data.get("progress_update_interval", 1.0),
             error_callback_url=data.get("error_callback_url"),
             completion_callback_url=data.get("completion_callback_url"),
-            checkpoint=CheckpointConfig.from_dict(data["checkpoint"])
-            if data.get("checkpoint")
-            else CheckpointConfig(),
+            checkpoint=(
+                CheckpointConfig.from_dict(data["checkpoint"])
+                if data.get("checkpoint")
+                else CheckpointConfig()
+            ),
         )
 
 

@@ -11,24 +11,24 @@ from __future__ import annotations
 
 import json
 import re
-from dataclasses import dataclass, field, asdict
+from dataclasses import asdict, dataclass, field
 from datetime import datetime, timezone
 from enum import Enum
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 from uuid import uuid4
 
-
 # Sanitization pattern for filenames - keep only safe characters
 SAFE_FILENAME_PATTERN = re.compile(r"[^\w\-.]")
 
 
 def _sanitize_filename(text: str) -> str:
-    """Sanitize text for use in a filename.    
+    """Sanitize text for use in a filename.
 
     Replaces any characters that are not word characters, hyphens, or dots with underscores.
     """
     return SAFE_FILENAME_PATTERN.sub("_", text)
+
 
 class CrashType(str, Enum):
     """Types of crashes that can be detected."""
@@ -71,7 +71,7 @@ class ActiveJobInfo:
         return asdict(self)
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> "ActiveJobInfo":
+    def from_dict(cls, data: Dict[str, Any]) -> ActiveJobInfo:
         return cls(**data)
 
 
@@ -176,7 +176,7 @@ class SystemState:
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> "SystemState":
+    def from_dict(cls, data: Dict[str, Any]) -> SystemState:
         gpu_data = data.get("gpu", {})
         memory_data = data.get("memory", {})
         process_data = data.get("process", {})
@@ -269,7 +269,7 @@ class CrashReport:
         return json.dumps(self.to_dict(), indent=indent)
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> "CrashReport":
+    def from_dict(cls, data: Dict[str, Any]) -> CrashReport:
         system_state = None
         if data.get("system_state"):
             system_state = SystemState.from_dict(data["system_state"])
@@ -295,7 +295,7 @@ class CrashReport:
         )
 
     @classmethod
-    def from_json(cls, json_str: str) -> "CrashReport":
+    def from_json(cls, json_str: str) -> CrashReport:
         return cls.from_dict(json.loads(json_str))
 
     def save(self, crash_dir: Path) -> Path:
@@ -316,7 +316,7 @@ class CrashReport:
         return filepath
 
     @classmethod
-    def load(cls, filepath: Path) -> "CrashReport":
+    def load(cls, filepath: Path) -> CrashReport:
         """Load crash report from a file.
 
         Args:
@@ -327,7 +327,7 @@ class CrashReport:
         """
         return cls.from_json(filepath.read_text())
 
-    def get_summary(self) -> "CrashReportSummary":
+    def get_summary(self) -> CrashReportSummary:
         """Get a lightweight summary of this crash report."""
         return CrashReportSummary(
             report_id=self.report_id,

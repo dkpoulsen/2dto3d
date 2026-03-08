@@ -22,22 +22,18 @@ from typing import TYPE_CHECKING, Any, Callable, Optional
 
 if TYPE_CHECKING:
     from collections.abc import Generator
-    from loguru import Logger
 
-#BQ|from video2d3d.utils.gpu import (
-#QJ|    GPUConfig,
-#ZN|    GPUInfo,
-#RS|    compute_optimal_batch_size,
-#ZH|    get_gpu_info,
-#PJ|    get_memory_usage,
-#RK|    is_cuda_available,
-#RK|)
+
+# BQ|from video2d3d.utils.gpu import (
+# QJ|    GPUConfig,
+# ZN|    GPUInfo,
+# RS|    compute_optimal_batch_size,
+# ZH|    get_gpu_info,
+# PJ|    get_memory_usage,
+# RK|    is_cuda_available,
+# RK|)
 from video2d3d.utils.logger import get_logger, log_exception
-from video2d3d.utils.memory_monitor import (
-    MemoryInfo,
-    MemoryWarningLevel,
-    get_current_memory_info,
-)
+from video2d3d.utils.memory_monitor import MemoryInfo, get_current_memory_info
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -490,7 +486,7 @@ class AdaptiveBatchSizer:
         new_size = current_size
         reason: Optional[AdjustmentReason] = None
 
-                # High memory pressure - scale down aggressively
+        # High memory pressure - scale down aggressively
         if memory_usage >= config.memory_high_threshold:
             new_size = max(
                 config.min_batch_size,
@@ -501,7 +497,6 @@ class AdaptiveBatchSizer:
                 new_size = min(new_size, current_size - config.min_scale_step)
                 new_size = max(config.min_batch_size, new_size)
             reason = AdjustmentReason.MEMORY_PRESSURE
-
 
         # Low memory usage and low GPU util - scale up
         elif (
@@ -742,15 +737,15 @@ class AdaptiveBatchSizer:
         elif gpu_util < self._config.gpu_util_low_threshold:
             recommended = min(self._config.max_batch_size, recommended + 1)
 
-        #KN|        # If we have GPU info, use GPU memory-based calculation as a ceiling
-#MT|        if gpu_info and self._config.gpu_config:
-#HJ|            gpu_recommended = compute_optimal_batch_size(
-#PQ|                self._config.gpu_config,
-#SW|                height,
-#QZ|                width,
-#NV|            )
-#WB|            recommended = min(recommended, gpu_recommended)
-#RN|
+        # KN|        # If we have GPU info, use GPU memory-based calculation as a ceiling
+        # MT|        if gpu_info and self._config.gpu_config:
+        # HJ|            gpu_recommended = compute_optimal_batch_size(
+        # PQ|                self._config.gpu_config,
+        # SW|                height,
+        # QZ|                width,
+        # NV|            )
+        # WB|            recommended = min(recommended, gpu_recommended)
+        # RN|
 
         # Clamp to bounds
         recommended = max(

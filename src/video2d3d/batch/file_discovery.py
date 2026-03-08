@@ -8,8 +8,8 @@ from __future__ import annotations
 
 import fnmatch
 import os
+from collections.abc import Generator
 from pathlib import Path
-from typing import Callable, Generator
 
 from video2d3d.batch.config import FileDiscoveryConfig
 from video2d3d.batch.exceptions import FileDiscoveryError

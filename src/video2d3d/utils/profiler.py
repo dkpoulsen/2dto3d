@@ -36,26 +36,18 @@ Example usage:
 from __future__ import annotations
 
 import time
+from collections.abc import Generator
 from contextlib import contextmanager
 from dataclasses import dataclass, field
 from functools import wraps
 from statistics import median, stdev
 from threading import Lock
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    Callable,
-    Dict,
-    Generator,
-    List,
-    Optional,
-    TypeVar,
-)
+from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, TypeVar
 
 from video2d3d.utils.logger import get_logger, log_performance
 
 if TYPE_CHECKING:
-    from loguru import Logger
+    pass
 
 
 # Constants
@@ -131,6 +123,7 @@ class ComponentStats:
         else:
             # Replace a random older time to maintain sample
             import random
+
             idx = random.randint(0, self._max_times - 1)
             self.times[idx] = time_ms
 
@@ -179,7 +172,9 @@ class ProfilerResult:
             reverse=True,
         )
 
-    def get_bottlenecks(self, threshold_percent: float = 10.0) -> List[ComponentStats]:
+    def get_bottlenecks(
+        self, threshold_percent: float = DEFAULT_BOTTLENECK_THRESHOLD
+    ) -> List[ComponentStats]:
         """Get components that exceed the threshold percentage of total time.
 
         Args:
@@ -193,18 +188,6 @@ class ProfilerResult:
 
         threshold_ms = self.total_time_ms * (threshold_percent / 100)
         return [c for c in self.components.values() if c.total_time_ms >= threshold_ms]
-
-    def to_dict(self) -> Dict[str, Any]:
-        """Convert to dictionary for serialization."""
-        return {
-            "session_name": self.session_name,
-            "total_time_ms": round(self.total_time_ms, 3),
-            "total_time_seconds": round(self.total_time_seconds, 3),
-            "start_time": self.start_time,
-            "end_time": self.end_time,
-            "components": {name: stats.to_dict() for name, stats in self.components.items()},
-            "bottlenecks": [b.name for b in self.get_bottlenecks()],
-        }
 
 
 class Profiler:
@@ -239,7 +222,7 @@ class Profiler:
         self,
         session_name: str,
         auto_log: bool = True,
-        parent: Optional["Profiler"] = None,
+        parent: Optional[Profiler] = None,
     ) -> None:
         """Initialize the profiler.
 
@@ -261,7 +244,7 @@ class Profiler:
         # Stack for nested measurements
         self._measurement_stack: List[str] = []
 
-    def start(self) -> "Profiler":
+    def start(self) -> Profiler:
         """Start the profiling session.
 
         Returns:
@@ -427,7 +410,7 @@ class Profiler:
             self._end_time = None
         self._logger.debug(f"Profiler '{self.session_name}' reset")
 
-    def create_child(self, name: str) -> "Profiler":
+    def create_child(self, name: str) -> Profiler:
         """Create a child profiler for nested profiling.
 
         Args:
@@ -610,7 +593,7 @@ class PipelineProfiler:
         self._stage_times: List[float] = []
         self._logger = get_logger("pipeline_profiler")
 
-    def start(self) -> "PipelineProfiler":
+    def start(self) -> PipelineProfiler:
         """Start the pipeline profiling.
 
         Returns:

@@ -30,6 +30,7 @@ import gc
 import multiprocessing as mp
 import threading
 import time
+from collections.abc import Generator, Iterable, Iterator
 from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor, as_completed
 from dataclasses import dataclass
 from enum import Enum
@@ -37,10 +38,7 @@ from typing import (
     TYPE_CHECKING,
     Any,
     Callable,
-    Generator,
     Generic,
-    Iterable,
-    Iterator,
     List,
     Optional,
     Tuple,
@@ -102,7 +100,7 @@ class WorkerInitializationError(BatchProcessorError):
     pass
 
 
-def _get_batch_logger() -> "Logger":
+def _get_batch_logger() -> Logger:
     return get_logger("batch_processor")
 
 
@@ -161,7 +159,7 @@ class BatchProcessorConfig:
             raise ValueError(f"max_retries must be >= 0, got {self.max_retries}")
 
     @classmethod
-    def from_processing_config(cls, config: Any) -> "BatchProcessorConfig":
+    def from_processing_config(cls, config: Any) -> BatchProcessorConfig:
         return cls(
             batch_size=getattr(config, "batch_size", DEFAULT_BATCH_SIZE),
             num_workers=getattr(config, "num_workers", DEFAULT_NUM_WORKERS),

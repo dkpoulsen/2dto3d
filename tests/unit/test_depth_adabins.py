@@ -15,7 +15,7 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 from typing import TYPE_CHECKING
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 import numpy as np
 import pytest
@@ -115,7 +115,7 @@ def mock_torch_modules() -> Generator[None, None, None]:
     sys.modules["loguru"] = MagicMock()
     sys.modules["video2d3d.utils"] = MagicMock()
     sys.modules["video2d3d.utils.logger"] = _create_mock_logger_module()
-    
+
     # Create proper GPU mock with select_device returning cpu
     mock_gpu = MagicMock()
     mock_gpu.GPUConfig = MagicMock
@@ -327,11 +327,7 @@ class TestAdaBinsEstimatorInit:
 
     def test_init_with_config(self, mock_torch: MagicMock) -> None:
         """Test initialization with AdaBinsConfig."""
-        from video2d3d.depth.adadepth import (
-            AdaBinsEstimator,
-            AdaBinsConfig,
-            AdaBinsModelType,
-        )
+        from video2d3d.depth.adadepth import AdaBinsConfig, AdaBinsEstimator, AdaBinsModelType
 
         config = AdaBinsConfig(model_type=AdaBinsModelType.ADADEPTH_KITTI, device="cpu")
         estimator = AdaBinsEstimator(config=config)
@@ -414,20 +410,14 @@ class TestAdaBinsConvenienceFunctions:
 
     def test_create_adabins_estimator_defaults(self, mock_torch: MagicMock) -> None:
         """Test create_adabins_estimator with default values."""
-        from video2d3d.depth.adadepth import (
-            create_adabins_estimator,
-            AdaBinsModelType,
-        )
+        from video2d3d.depth.adadepth import AdaBinsModelType, create_adabins_estimator
 
         estimator = create_adabins_estimator()
         assert estimator.config.model_type == AdaBinsModelType.ADADEPTH_NYU
 
     def test_create_adabins_estimator_custom_values(self, mock_torch: MagicMock) -> None:
         """Test create_adabins_estimator with custom values."""
-        from video2d3d.depth.adadepth import (
-            create_adabins_estimator,
-            AdaBinsModelType,
-        )
+        from video2d3d.depth.adadepth import AdaBinsModelType, create_adabins_estimator
 
         estimator = create_adabins_estimator(model_type="adabins_kitti", device="cuda")
         assert estimator.config.model_type == AdaBinsModelType.ADADEPTH_KITTI

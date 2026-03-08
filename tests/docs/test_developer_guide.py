@@ -15,7 +15,6 @@ from pathlib import Path
 import pytest
 import yaml
 
-
 # Path to the DEVELOPER_GUIDE.md file
 DEVELOPER_GUIDE_PATH = Path(__file__).parent.parent.parent / "docs" / "DEVELOPER_GUIDE.md"
 
@@ -39,7 +38,9 @@ class TestDeveloperGuideExists:
 
     def test_developer_guide_file_exists(self) -> None:
         """Verify DEVELOPER_GUIDE.md exists in docs directory."""
-        assert DEVELOPER_GUIDE_PATH.exists(), f"DEVELOPER_GUIDE.md not found at {DEVELOPER_GUIDE_PATH}"
+        assert (
+            DEVELOPER_GUIDE_PATH.exists()
+        ), f"DEVELOPER_GUIDE.md not found at {DEVELOPER_GUIDE_PATH}"
 
     def test_developer_guide_not_empty(self, developer_guide_content: str) -> None:
         """Verify DEVELOPER_GUIDE.md has substantial content."""
@@ -66,15 +67,17 @@ class TestDeveloperGuideStructure:
 
     def test_has_table_of_contents(self, developer_guide_content: str) -> None:
         """Verify table of contents exists."""
-        assert "## Table of Contents" in developer_guide_content, "Missing Table of Contents section"
+        assert (
+            "## Table of Contents" in developer_guide_content
+        ), "Missing Table of Contents section"
 
     def test_has_all_required_sections(self, developer_guide_content: str) -> None:
         """Verify all required sections are present."""
         for section in self.REQUIRED_SECTIONS:
             pattern = rf"##\s+.*{re.escape(section)}"
-            assert re.search(pattern, developer_guide_content, re.IGNORECASE), (
-                f"Missing required section: {section}"
-            )
+            assert re.search(
+                pattern, developer_guide_content, re.IGNORECASE
+            ), f"Missing required section: {section}"
 
     def test_section_hierarchy(self, developer_guide_lines: list[str]) -> None:
         """Verify headings use valid markdown levels (1-6)."""
@@ -85,15 +88,19 @@ class TestDeveloperGuideStructure:
 
     def test_has_architecture_diagram(self, developer_guide_content: str) -> None:
         """Verify architecture diagram is present."""
-        assert "High-Level Architecture" in developer_guide_content, "Missing High-Level Architecture section"
+        assert (
+            "High-Level Architecture" in developer_guide_content
+        ), "Missing High-Level Architecture section"
         # Check for ASCII diagram indicators
-        assert "┌" in developer_guide_content or "```" in developer_guide_content, (
-            "Missing architecture diagram"
-        )
+        assert (
+            "┌" in developer_guide_content or "```" in developer_guide_content
+        ), "Missing architecture diagram"
 
     def test_has_processing_pipeline(self, developer_guide_content: str) -> None:
         """Verify processing pipeline is documented."""
-        assert "Processing Pipeline" in developer_guide_content, "Missing Processing Pipeline section"
+        assert (
+            "Processing Pipeline" in developer_guide_content
+        ), "Missing Processing Pipeline section"
 
 
 class TestDeveloperGuideCodeBlocks:
@@ -102,9 +109,9 @@ class TestDeveloperGuideCodeBlocks:
     def test_code_blocks_balanced(self, developer_guide_content: str) -> None:
         """Verify all code blocks are properly closed."""
         code_block_count = developer_guide_content.count("```")
-        assert code_block_count % 2 == 0, (
-            f"Unbalanced code blocks: found {code_block_count} ``` markers (should be even)"
-        )
+        assert (
+            code_block_count % 2 == 0
+        ), f"Unbalanced code blocks: found {code_block_count} ``` markers (should be even)"
 
     def test_yaml_code_blocks_valid(self, developer_guide_content: str) -> None:
         """Verify YAML code blocks are valid syntax."""
@@ -118,7 +125,7 @@ class TestDeveloperGuideCodeBlocks:
             except yaml.YAMLError as e:
                 errors.append(f"YAML block {i + 1}: {e}")
 
-        assert not errors, f"Invalid YAML code blocks:\n" + "\n".join(errors)
+        assert not errors, "Invalid YAML code blocks:\n" + "\n".join(errors)
 
     def test_python_code_blocks_syntax(self, developer_guide_content: str) -> None:
         """Verify Python code blocks have valid syntax."""
@@ -132,16 +139,16 @@ class TestDeveloperGuideCodeBlocks:
             except SyntaxError as e:
                 errors.append(f"Python block {i + 1}: {e}")
 
-        assert not errors, f"Invalid Python code blocks:\n" + "\n".join(errors)
+        assert not errors, "Invalid Python code blocks:\n" + "\n".join(errors)
 
     def test_bash_code_blocks_present(self, developer_guide_content: str) -> None:
         """Verify bash code blocks are present for CLI examples."""
         bash_pattern = r"```bash\n(.*?)```"
         bash_blocks = re.findall(bash_pattern, developer_guide_content, re.DOTALL)
 
-        assert len(bash_blocks) >= 5, (
-            f"Expected at least 5 bash code examples, found {len(bash_blocks)}"
-        )
+        assert (
+            len(bash_blocks) >= 5
+        ), f"Expected at least 5 bash code examples, found {len(bash_blocks)}"
 
     def test_has_import_examples(self, developer_guide_content: str) -> None:
         """Verify import examples are provided."""
@@ -149,7 +156,7 @@ class TestDeveloperGuideCodeBlocks:
             r"from video2d3d\.",
             r"import video2d3d",
         ]
-        
+
         found = any(re.search(pattern, developer_guide_content) for pattern in import_patterns)
         assert found, "Missing import examples from video2d3d package"
 
@@ -159,48 +166,53 @@ class TestDeveloperGuideModuleDocumentation:
 
     def test_video_module_documented(self, developer_guide_content: str) -> None:
         """Verify video module is documented."""
-        assert "Video Module" in developer_guide_content or "video/" in developer_guide_content, (
-            "Missing Video Module documentation"
-        )
+        assert (
+            "Video Module" in developer_guide_content or "video/" in developer_guide_content
+        ), "Missing Video Module documentation"
         assert "FrameExtractor" in developer_guide_content, "Missing FrameExtractor documentation"
         assert "VideoWriter" in developer_guide_content, "Missing VideoWriter documentation"
 
     def test_depth_module_documented(self, developer_guide_content: str) -> None:
         """Verify depth module is documented."""
-        assert "Depth Module" in developer_guide_content or "depth/" in developer_guide_content, (
-            "Missing Depth Module documentation"
-        )
-        assert "DepthMapProcessor" in developer_guide_content, "Missing DepthMapProcessor documentation"
-        assert "TemporalSmoother" in developer_guide_content, "Missing TemporalSmoother documentation"
+        assert (
+            "Depth Module" in developer_guide_content or "depth/" in developer_guide_content
+        ), "Missing Depth Module documentation"
+        assert (
+            "DepthMapProcessor" in developer_guide_content
+        ), "Missing DepthMapProcessor documentation"
+        assert (
+            "TemporalSmoother" in developer_guide_content
+        ), "Missing TemporalSmoother documentation"
 
     def test_stereo_module_documented(self, developer_guide_content: str) -> None:
         """Verify stereo module is documented."""
-        assert "Stereo Module" in developer_guide_content or "stereo/" in developer_guide_content, (
-            "Missing Stereo Module documentation"
-        )
+        assert (
+            "Stereo Module" in developer_guide_content or "stereo/" in developer_guide_content
+        ), "Missing Stereo Module documentation"
         assert "DIBREngine" in developer_guide_content, "Missing DIBREngine documentation"
         assert "DIBRConfig" in developer_guide_content, "Missing DIBRConfig documentation"
 
     def test_core_module_documented(self, developer_guide_content: str) -> None:
         """Verify core module is documented."""
-        assert "Core Module" in developer_guide_content or "core/" in developer_guide_content, (
-            "Missing Core Module documentation"
-        )
-        assert "BatchProcessor" in developer_guide_content or "FrameBatchProcessor" in developer_guide_content, (
-            "Missing BatchProcessor documentation"
-        )
+        assert (
+            "Core Module" in developer_guide_content or "core/" in developer_guide_content
+        ), "Missing Core Module documentation"
+        assert (
+            "BatchProcessor" in developer_guide_content
+            or "FrameBatchProcessor" in developer_guide_content
+        ), "Missing BatchProcessor documentation"
 
     def test_web_api_module_documented(self, developer_guide_content: str) -> None:
         """Verify web API module is documented."""
-        assert "Web API" in developer_guide_content or "web/" in developer_guide_content, (
-            "Missing Web API Module documentation"
-        )
+        assert (
+            "Web API" in developer_guide_content or "web/" in developer_guide_content
+        ), "Missing Web API Module documentation"
 
     def test_batch_module_documented(self, developer_guide_content: str) -> None:
         """Verify batch module is documented."""
-        assert "Batch Module" in developer_guide_content or "batch/" in developer_guide_content, (
-            "Missing Batch Module documentation"
-        )
+        assert (
+            "Batch Module" in developer_guide_content or "batch/" in developer_guide_content
+        ), "Missing Batch Module documentation"
 
 
 class TestDeveloperGuideAPIReferences:
@@ -209,51 +221,61 @@ class TestDeveloperGuideAPIReferences:
     def test_depth_processor_config_exists(self) -> None:
         """Verify DepthProcessorConfig exists in the codebase."""
         from video2d3d.depth import DepthProcessorConfig
+
         assert DepthProcessorConfig is not None
 
     def test_depth_map_processor_exists(self) -> None:
         """Verify DepthMapProcessor exists in the codebase."""
         from video2d3d.depth import DepthMapProcessor
+
         assert DepthMapProcessor is not None
 
     def test_dibr_engine_exists(self) -> None:
         """Verify DIBREngine exists in the codebase."""
         from video2d3d.stereo import DIBREngine
+
         assert DIBREngine is not None
 
     def test_dibr_config_exists(self) -> None:
         """Verify DIBRConfig exists in the codebase."""
         from video2d3d.stereo import DIBRConfig
+
         assert DIBRConfig is not None
 
     def test_frame_batch_processor_exists(self) -> None:
         """Verify FrameBatchProcessor exists in the codebase."""
         from video2d3d.core import FrameBatchProcessor
+
         assert FrameBatchProcessor is not None
 
     def test_batch_processor_config_exists(self) -> None:
         """Verify BatchProcessorConfig exists in the codebase."""
         from video2d3d.core import BatchProcessorConfig
+
         assert BatchProcessorConfig is not None
 
     def test_processing_mode_exists(self) -> None:
         """Verify ProcessingMode exists in the codebase."""
         from video2d3d.core import ProcessingMode
+
         assert ProcessingMode is not None
 
     def test_stereo_generator_exists(self) -> None:
         """Verify StereoGenerator exists in the codebase."""
         from video2d3d.stereo import StereoGenerator
+
         assert StereoGenerator is not None
 
     def test_anaglyph_encoder_exists(self) -> None:
         """Verify AnaglyphEncoder exists in the codebase."""
         from video2d3d.stereo import AnaglyphEncoder
+
         assert AnaglyphEncoder is not None
 
     def test_side_by_side_encoder_exists(self) -> None:
         """Verify SideBySideEncoder exists in the codebase."""
         from video2d3d.stereo import SideBySideEncoder
+
         assert SideBySideEncoder is not None
 
 
@@ -268,7 +290,12 @@ class TestDeveloperGuideConfigDocumentation:
 
     def test_depth_processor_config_documented(self, developer_guide_content: str) -> None:
         """Verify DepthProcessorConfig fields are documented."""
-        expected_fields = ["edge_aware_smoothing", "bilateral_filter", "hole_filling", "normalization_method"]
+        expected_fields = [
+            "edge_aware_smoothing",
+            "bilateral_filter",
+            "hole_filling",
+            "normalization_method",
+        ]
         for field in expected_fields:
             assert field in developer_guide_content, f"Missing DepthProcessorConfig field: {field}"
 
@@ -284,9 +311,9 @@ class TestDeveloperGuideExceptionDocumentation:
 
     def test_exception_table_exists(self, developer_guide_content: str) -> None:
         """Verify exception documentation table exists."""
-        assert "Exception Classes" in developer_guide_content or "Exception" in developer_guide_content, (
-            "Missing exception documentation"
-        )
+        assert (
+            "Exception Classes" in developer_guide_content or "Exception" in developer_guide_content
+        ), "Missing exception documentation"
 
     def test_key_exceptions_documented(self, developer_guide_content: str) -> None:
         """Verify key exceptions are documented."""
@@ -304,21 +331,21 @@ class TestDeveloperGuideExtensionGuides:
 
     def test_adding_depth_model_guide(self, developer_guide_content: str) -> None:
         """Verify guide for adding new depth models exists."""
-        assert "Adding a New Depth Model" in developer_guide_content, (
-            "Missing guide for adding new depth models"
-        )
+        assert (
+            "Adding a New Depth Model" in developer_guide_content
+        ), "Missing guide for adding new depth models"
 
     def test_adding_stereo_format_guide(self, developer_guide_content: str) -> None:
         """Verify guide for adding new stereo formats exists."""
-        assert "Adding a New Stereo Output Format" in developer_guide_content, (
-            "Missing guide for adding new stereo formats"
-        )
+        assert (
+            "Adding a New Stereo Output Format" in developer_guide_content
+        ), "Missing guide for adding new stereo formats"
 
     def test_adding_cli_command_guide(self, developer_guide_content: str) -> None:
         """Verify guide for adding new CLI commands exists."""
-        assert "Adding a New CLI Command" in developer_guide_content, (
-            "Missing guide for adding new CLI commands"
-        )
+        assert (
+            "Adding a New CLI Command" in developer_guide_content
+        ), "Missing guide for adding new CLI commands"
 
 
 class TestDeveloperGuideTestingDocumentation:
@@ -346,9 +373,9 @@ class TestDeveloperGuideDebuggingDocumentation:
 
     def test_logging_documentation(self, developer_guide_content: str) -> None:
         """Verify logging documentation exists."""
-        assert "LOG_LEVEL" in developer_guide_content or "logging" in developer_guide_content.lower(), (
-            "Missing logging documentation"
-        )
+        assert (
+            "LOG_LEVEL" in developer_guide_content or "logging" in developer_guide_content.lower()
+        ), "Missing logging documentation"
 
     def test_common_issues_table(self, developer_guide_content: str) -> None:
         """Verify common issues table exists."""
@@ -364,9 +391,9 @@ class TestDeveloperGuidePerformanceDocumentation:
 
     def test_gpu_memory_documentation(self, developer_guide_content: str) -> None:
         """Verify GPU memory management documentation exists."""
-        assert "GPU" in developer_guide_content or "memory" in developer_guide_content.lower(), (
-            "Missing GPU memory documentation"
-        )
+        assert (
+            "GPU" in developer_guide_content or "memory" in developer_guide_content.lower()
+        ), "Missing GPU memory documentation"
 
 
 class TestDeveloperGuideLinks:
@@ -377,9 +404,9 @@ class TestDeveloperGuideLinks:
         anchor_pattern = r"\[([^\]]+)\]\(#[a-z0-9-]+\)"
         anchor_links = re.findall(anchor_pattern, developer_guide_content)
 
-        assert len(anchor_links) >= 5, (
-            f"Expected at least 5 internal anchor links, found {len(anchor_links)}"
-        )
+        assert (
+            len(anchor_links) >= 5
+        ), f"Expected at least 5 internal anchor links, found {len(anchor_links)}"
 
     def test_no_broken_markdown_links(self, developer_guide_content: str) -> None:
         """Verify no broken markdown link syntax."""
@@ -403,18 +430,18 @@ class TestDeveloperGuideCompleteness:
     def test_minimum_line_count(self, developer_guide_content: str) -> None:
         """Verify documentation has sufficient content."""
         line_count = len(developer_guide_content.split("\n"))
-        assert line_count >= 500, (
-            f"Documentation too short: {line_count} lines (expected at least 500)"
-        )
+        assert (
+            line_count >= 500
+        ), f"Documentation too short: {line_count} lines (expected at least 500)"
 
     def test_minimum_word_count(self, developer_guide_content: str) -> None:
         """Verify documentation has sufficient detail."""
         # Remove code blocks for word count
         text_only = re.sub(r"```.*?```", "", developer_guide_content, flags=re.DOTALL)
         word_count = len(text_only.split())
-        assert word_count >= 3000, (
-            f"Documentation lacks detail: {word_count} words (expected at least 3000)"
-        )
+        assert (
+            word_count >= 3000
+        ), f"Documentation lacks detail: {word_count} words (expected at least 3000)"
 
     def test_no_placeholder_text(self, developer_guide_content: str) -> None:
         """Verify no TODO or placeholder text remains."""
@@ -427,15 +454,15 @@ class TestDeveloperGuideCompleteness:
         ]
 
         for placeholder in placeholders:
-            assert placeholder not in developer_guide_content.upper(), (
-                f"Found placeholder text: {placeholder}"
-            )
+            assert (
+                placeholder not in developer_guide_content.upper()
+            ), f"Found placeholder text: {placeholder}"
 
     def test_documentation_freshness(self, developer_guide_content: str) -> None:
         """Verify documentation includes last updated date."""
-        assert "2026" in developer_guide_content or "2025" in developer_guide_content, (
-            "Documentation may be outdated - no recent year found"
-        )
+        assert (
+            "2026" in developer_guide_content or "2025" in developer_guide_content
+        ), "Documentation may be outdated - no recent year found"
 
 
 class TestDeveloperGuideProjectStructure:
@@ -443,7 +470,9 @@ class TestDeveloperGuideProjectStructure:
 
     def test_project_structure_section(self, developer_guide_content: str) -> None:
         """Verify project structure section exists."""
-        assert "## Project Structure" in developer_guide_content, "Missing Project Structure section"
+        assert (
+            "## Project Structure" in developer_guide_content
+        ), "Missing Project Structure section"
 
     def test_main_directories_documented(self, developer_guide_content: str) -> None:
         """Verify main directories are documented."""
@@ -454,7 +483,9 @@ class TestDeveloperGuideProjectStructure:
             "docs/",
         ]
         for dir_path in expected_dirs:
-            assert dir_path in developer_guide_content, f"Missing directory documentation: {dir_path}"
+            assert (
+                dir_path in developer_guide_content
+            ), f"Missing directory documentation: {dir_path}"
 
     def test_source_structure_documented(self, developer_guide_content: str) -> None:
         """Verify source code structure is documented."""

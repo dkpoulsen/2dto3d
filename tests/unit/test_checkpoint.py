@@ -11,7 +11,6 @@ Tests cover:
 
 from __future__ import annotations
 
-import json
 import tempfile
 from collections.abc import Generator
 from datetime import datetime
@@ -225,13 +224,16 @@ class TestConversionCheckpoint:
         assert checkpoint.resume_frame == 50
 
         checkpoint.frame_checkpoints[40] = FrameCheckpoint(
-            frame_index=40, extracted=True, depth_processed=True, stereo_generated=True, written=True
+            frame_index=40,
+            extracted=True,
+            depth_processed=True,
+            stereo_generated=True,
+            written=True,
         )
         checkpoint.frame_checkpoints[41] = FrameCheckpoint(
             frame_index=41, extracted=True, depth_processed=False
         )
         assert checkpoint.resume_frame == 41
-
 
     def test_update_stage(self) -> None:
         checkpoint = ConversionCheckpoint(
@@ -241,7 +243,6 @@ class TestConversionCheckpoint:
         )
 
         checkpoint.update_stage("depth", frames_processed=50, completed=False)
-
 
     def test_update_stage(self) -> None:
         checkpoint = ConversionCheckpoint(
@@ -551,7 +552,6 @@ class TestCheckpointManager:
         assert loaded is not None
         assert loaded.current_frame == 11
 
-
     def test_list_checkpoints(self, checkpoint_manager: CheckpointManager) -> None:
         for i in range(3):
             checkpoint = checkpoint_manager.create_checkpoint(
@@ -668,8 +668,6 @@ class TestBatchQueueConfigCheckpointIntegration:
         assert str(config.checkpoint.checkpoint_dir) == "/restored/checkpoints"
         assert config.checkpoint.checkpoint_interval == 100
 
-
-
     def test_get_frame_data_path(self, checkpoint_manager: CheckpointManager) -> None:
         """Test get_frame_data_path returns correct path."""
         path = checkpoint_manager.get_frame_data_path("test-job", 42, "depth")
@@ -678,18 +676,14 @@ class TestBatchQueueConfigCheckpointIntegration:
         assert "depth" in str(path)
         assert str(path).endswith(".npy")
 
-    def test_save_and_load_frame_data(
-        self, checkpoint_manager: CheckpointManager
-    ) -> None:
+    def test_save_and_load_frame_data(self, checkpoint_manager: CheckpointManager) -> None:
         """Test save_frame_data and load_frame_data roundtrip."""
         import numpy as np
 
         checkpoint_manager.config.keep_intermediate = True
 
         original_data = np.random.rand(10, 10).astype(np.float32)
-        path = checkpoint_manager.save_frame_data(
-            "test-job", 0, "depth", original_data
-        )
+        path = checkpoint_manager.save_frame_data("test-job", 0, "depth", original_data)
 
         assert path is not None
         assert path.exists()
@@ -701,9 +695,7 @@ class TestBatchQueueConfigCheckpointIntegration:
         # Cleanup
         path.unlink(missing_ok=True)
 
-    def test_save_frame_data_disabled(
-        self, checkpoint_manager: CheckpointManager
-    ) -> None:
+    def test_save_frame_data_disabled(self, checkpoint_manager: CheckpointManager) -> None:
         """Test save_frame_data returns None when keep_intermediate is False."""
         import numpy as np
 
@@ -714,23 +706,17 @@ class TestBatchQueueConfigCheckpointIntegration:
 
         assert result is None
 
-    def test_load_frame_data_nonexistent(
-        self, checkpoint_manager: CheckpointManager
-    ) -> None:
+    def test_load_frame_data_nonexistent(self, checkpoint_manager: CheckpointManager) -> None:
         """Test load_frame_data returns None for nonexistent file."""
         result = checkpoint_manager.load_frame_data("/nonexistent/path.npy")
         assert result is None
 
-    def test_get_resume_info_none(
-        self, checkpoint_manager: CheckpointManager
-    ) -> None:
+    def test_get_resume_info_none(self, checkpoint_manager: CheckpointManager) -> None:
         """Test get_resume_info returns None for nonexistent job."""
         info = checkpoint_manager.get_resume_info("nonexistent-job")
         assert info is None
 
-    def test_get_resume_info_complete(
-        self, checkpoint_manager: CheckpointManager
-    ) -> None:
+    def test_get_resume_info_complete(self, checkpoint_manager: CheckpointManager) -> None:
         """Test get_resume_info returns None for complete job."""
         checkpoint = checkpoint_manager.create_checkpoint(
             job_id="complete-resume-test",
@@ -745,9 +731,7 @@ class TestBatchQueueConfigCheckpointIntegration:
 
         checkpoint_manager.delete("complete-resume-test")
 
-    def test_cleanup_old_checkpoints_zero_max(
-        self, checkpoint_manager: CheckpointManager
-    ) -> None:
+    def test_cleanup_old_checkpoints_zero_max(self, checkpoint_manager: CheckpointManager) -> None:
         """Test cleanup_old_checkpoints with max_checkpoints=0."""
         checkpoint_manager.config.max_checkpoints = 0
 
@@ -894,9 +878,7 @@ class TestConversionCheckpointFramesCompleted:
 class TestCheckpointManagerGetCheckpoint:
     """Tests for CheckpointManager.get_checkpoint method."""
 
-    def test_get_checkpoint_in_memory(
-        self, checkpoint_manager: CheckpointManager
-    ) -> None:
+    def test_get_checkpoint_in_memory(self, checkpoint_manager: CheckpointManager) -> None:
         """Test get_checkpoint returns in-memory checkpoint."""
         checkpoint = checkpoint_manager.create_checkpoint(
             job_id="memory-test",
@@ -909,9 +891,7 @@ class TestCheckpointManagerGetCheckpoint:
         assert retrieved is not None
         assert retrieved.job_id == "memory-test"
 
-    def test_get_checkpoint_from_disk(
-        self, checkpoint_manager: CheckpointManager
-    ) -> None:
+    def test_get_checkpoint_from_disk(self, checkpoint_manager: CheckpointManager) -> None:
         """Test get_checkpoint loads from disk if not in memory."""
         checkpoint = checkpoint_manager.create_checkpoint(
             job_id="disk-test",

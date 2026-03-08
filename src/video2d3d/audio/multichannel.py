@@ -6,10 +6,10 @@ import shutil
 import subprocess
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Optional
 
 from video2d3d.audio.config import AudioChannelLayout, AudioFormatConfig
-from video2d3d.audio.exceptions import AudioChannelLayoutError, AudioProcessingError
+from video2d3d.audio.exceptions import AudioProcessingError
 from video2d3d.audio.metadata import AudioMetadata
 from video2d3d.utils.logger import get_logger
 

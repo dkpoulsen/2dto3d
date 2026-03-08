@@ -114,10 +114,10 @@ def mock_torch_modules() -> Generator[None, None, None]:
     sys.modules["torch.nn.functional"] = mock_torch_nn.functional
     sys.modules["torchvision"] = mock_torchvision
     sys.modules["torchvision.transforms"] = mock_torchvision.transforms
-    
+
     # Mock loguru
     sys.modules["loguru"] = MagicMock()
-    
+
     # Mock video2d3d.utils modules
     sys.modules["video2d3d.utils"] = MagicMock()
     sys.modules["video2d3d.utils.logger"] = _create_mock_logger_module()
@@ -457,14 +457,14 @@ class TestConvenienceFunctions:
 
     def test_create_estimator_defaults(self, mock_torch: MagicMock) -> None:
         """Test create_estimator with default values."""
-        from video2d3d.depth import create_estimator, MiDaSModelType
+        from video2d3d.depth import MiDaSModelType, create_estimator
 
         estimator = create_estimator()
         assert estimator.config.model_type == MiDaSModelType.MIDAS_V21_SMALL
 
     def test_create_estimator_custom_values(self, mock_torch: MagicMock) -> None:
         """Test create_estimator with custom values."""
-        from video2d3d.depth import create_estimator, MiDaSModelType
+        from video2d3d.depth import MiDaSModelType, create_estimator
 
         estimator = create_estimator(model_type="dpt_large", device="cuda")
         assert estimator.config.model_type == MiDaSModelType.DPT_LARGE
@@ -480,7 +480,7 @@ class TestModuleConstants:
 
     def test_resolution_constants(self, mock_torch: MagicMock) -> None:
         """Test resolution constants are defined."""
-        from video2d3d.depth import _MIDAS_DEFAULT_RESOLUTION, _DPT_DEFAULT_RESOLUTION
+        from video2d3d.depth import _DPT_DEFAULT_RESOLUTION, _MIDAS_DEFAULT_RESOLUTION
 
         assert _MIDAS_DEFAULT_RESOLUTION == 256
         assert _DPT_DEFAULT_RESOLUTION == 384
@@ -529,18 +529,23 @@ class TestModelCaching:
 
     def test_torch_hub_directory_set(self, mock_torch: MagicMock) -> None:
         """Test that torch hub directory is configured."""
-        from video2d3d.depth import DepthEstimator
         from pathlib import Path
 
+        from video2d3d.depth import DepthEstimator
+
         custom_cache = Path("/tmp/test_cache")
-        config = type('Config', (), {
-            'model_type': type('MT', (), {'value': 'MiDaS_small', 'hub_name': 'MiDaS_small'})(),
-            'device': 'cpu',
-            'cache_dir': custom_cache,
-            'auto_download': True,
-            'optimize': False,
-            'use_fp16': False,
-        })()
+        config = type(
+            "Config",
+            (),
+            {
+                "model_type": type("MT", (), {"value": "MiDaS_small", "hub_name": "MiDaS_small"})(),
+                "device": "cpu",
+                "cache_dir": custom_cache,
+                "auto_download": True,
+                "optimize": False,
+                "use_fp16": False,
+            },
+        )()
 
         estimator = DepthEstimator.__new__(DepthEstimator)
         estimator.config = config
@@ -556,8 +561,9 @@ class TestModelCaching:
 
     def test_cache_dir_from_config(self, mock_torch: MagicMock) -> None:
         """Test that cache directory is used from config."""
-        from video2d3d.depth import DepthEstimator, MiDaSConfig
         from pathlib import Path
+
+        from video2d3d.depth import DepthEstimator, MiDaSConfig
 
         custom_cache = Path("/tmp/test_cache")
         config = MiDaSConfig(cache_dir=custom_cache)
@@ -578,9 +584,7 @@ class TestModelCaching:
         # Should use the default torch hub directory
         assert str(hub_dir) == "/default/torch/hub"
 
-    def test_auto_download_flag_passed_to_torch_hub(
-        self, mock_torch: MagicMock
-    ) -> None:
+    def test_auto_download_flag_passed_to_torch_hub(self, mock_torch: MagicMock) -> None:
         """Test that auto_download flag is passed correctly."""
         from video2d3d.depth import DepthEstimator, MiDaSConfig
 
@@ -675,7 +679,11 @@ class TestGPUFallback:
 
         with patch("video2d3d.depth.F") as mock_F:
             mock_F.interpolate.return_value = MagicMock(
-                squeeze=MagicMock(return_value=MagicMock(numpy=MagicMock(return_value=np.zeros((100, 100), dtype=np.float32))))
+                squeeze=MagicMock(
+                    return_value=MagicMock(
+                        numpy=MagicMock(return_value=np.zeros((100, 100), dtype=np.float32))
+                    )
+                )
             )
             result = estimator.estimate_depth(sample_rgb_image)
 
@@ -687,7 +695,7 @@ class TestGPUFallback:
         self, mock_torch: MagicMock, sample_rgb_image: np.ndarray
     ) -> None:
         """Test that OOM raises error when fallback is disabled."""
-        from video2d3d.depth import DepthEstimator, MiDaSConfig, InferenceError
+        from video2d3d.depth import DepthEstimator, InferenceError, MiDaSConfig
 
         config = MiDaSConfig(device="cuda", fallback_to_cpu=False)
         estimator = DepthEstimator(config=config)

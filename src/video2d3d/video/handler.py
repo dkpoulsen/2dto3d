@@ -13,7 +13,6 @@ import numpy as np
 from video2d3d.utils.config import VideoInputConfig, get_config
 from video2d3d.utils.logger import get_logger
 
-
 from .exceptions import (
     VideoCorruptedError,
     VideoFileNotFoundError,
@@ -26,6 +25,7 @@ from .metadata import VideoMetadata
 def _get_video_logger():
     """Get the video module logger (lazy initialization)."""
     return get_logger("video")
+
 
 # Magic bytes (file signatures) for video format detection
 MAGIC_BYTES: dict[str, list[bytes]] = {
@@ -163,11 +163,15 @@ class VideoInputHandler:
             expected_signatures = MAGIC_BYTES[expected_format]
             for signature in expected_signatures:
                 if header.startswith(signature) or signature in header[:12]:
-                    _get_video_logger().debug(f"Magic bytes validated for {expected_format}: {file_path}")
+                    _get_video_logger().debug(
+                        f"Magic bytes validated for {expected_format}: {file_path}"
+                    )
                     return True
 
-            _get_video_logger().warning(f"Magic bytes mismatch for {file_path}. "
-            f"Expected {expected_format} signature not found.")
+            _get_video_logger().warning(
+                f"Magic bytes mismatch for {file_path}. "
+                f"Expected {expected_format} signature not found."
+            )
             return False
         except OSError as e:
             _get_video_logger().warning(f"Could not read file header for magic bytes check: {e}")
@@ -446,8 +450,10 @@ class VideoInputHandler:
             if ffprobe_data:
                 metadata = self.enrich_metadata_with_ffmpeg(metadata, ffprobe_data)
 
-            _get_video_logger().info(f"Video validated: {metadata.width}x{metadata.height}, "
-            f"{metadata.fps:.2f}fps, {metadata.duration_formatted}")
+            _get_video_logger().info(
+                f"Video validated: {metadata.width}x{metadata.height}, "
+                f"{metadata.fps:.2f}fps, {metadata.duration_formatted}"
+            )
 
             return metadata
 
@@ -521,6 +527,7 @@ class VideoInputHandler:
         if self._cap is not None:
             self._cap.release()
             self._cap = None
+
 
 def validate_video(video_path: str | Path, strict: bool = True) -> VideoMetadata:
     """

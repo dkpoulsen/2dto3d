@@ -8,7 +8,7 @@ during processing for quality assessment.
 from __future__ import annotations
 
 import threading
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from enum import Enum
 from typing import TYPE_CHECKING, Optional
 
@@ -550,7 +550,7 @@ class PreviewWindow:
 
             self._is_created = False
 
-    def __enter__(self) -> "PreviewWindow":
+    def __enter__(self) -> PreviewWindow:
         """Context manager entry."""
         return self
 

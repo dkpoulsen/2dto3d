@@ -13,7 +13,7 @@ and can be configured via the depth_processing section in the config.
 from __future__ import annotations
 
 import time
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from enum import Enum
 from typing import TYPE_CHECKING, Any, Dict, Optional, Union
 
@@ -23,8 +23,8 @@ import numpy as np
 if TYPE_CHECKING:
     from loguru import Logger
 
-from video2d3d.utils.logger import get_logger, log_exception, log_performance
 from video2d3d.depth.curve import DepthCurveConfig, apply_depth_curve
+from video2d3d.utils.logger import get_logger, log_exception, log_performance
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -40,6 +40,7 @@ _DEFAULT_PERCENTILE_HIGH: float = 98.0
 _DEFAULT_GUIDED_FILTER_RADIUS: int = 8
 _DEFAULT_GUIDED_FILTER_EPS: float = 0.01
 
+
 class NormalizationMethod(Enum):
     """Available depth normalization methods."""
 
@@ -54,6 +55,7 @@ class HoleFillingMethod(Enum):
     INPAINT = "inpaint"
     NEAREST = "nearest"
     LINEAR = "linear"
+
 
 class ColorMapType(Enum):
     """Available color map types for visualization."""
@@ -73,6 +75,7 @@ class EdgeAwareFilterType(Enum):
     BILATERAL = "bilateral"
     GUIDED = "guided"
     NONE = "none"
+
 
 @dataclass
 class DepthProcessorConfig:
@@ -117,6 +120,7 @@ class DepthProcessorConfig:
     colormap: str = "turbo"
     # Depth curve adjustment for non-linear depth mapping
     depth_curve: Optional[Dict[str, Any]] = None  # DepthCurveConfig as dict
+
     def __post_init__(self) -> None:
         """Validate and normalize configuration."""
         # Validate normalization method
@@ -157,14 +161,10 @@ class DepthProcessorConfig:
 
         # Validate guided filter parameters
         if self.guided_filter_radius < 1:
-            raise ValueError(
-                f"guided_filter_radius must be >= 1, got {self.guided_filter_radius}"
-            )
+            raise ValueError(f"guided_filter_radius must be >= 1, got {self.guided_filter_radius}")
 
         if self.guided_filter_eps <= 0:
-            raise ValueError(
-                f"guided_filter_eps must be > 0, got {self.guided_filter_eps}"
-            )
+            raise ValueError(f"guided_filter_eps must be > 0, got {self.guided_filter_eps}")
 
         # Validate edge filter type
         valid_filter_types = [f.value for f in EdgeAwareFilterType]
@@ -177,10 +177,13 @@ class DepthProcessorConfig:
         # Warn about potential config inconsistencies
         if self.edge_filter_type == EdgeAwareFilterType.GUIDED.value and not self.guided_filter:
             # Auto-enable guided_filter if edge_filter_type is guided
-            object.__setattr__(self, 'guided_filter', True)
-        elif self.edge_filter_type == EdgeAwareFilterType.BILATERAL.value and not self.bilateral_filter:
+            object.__setattr__(self, "guided_filter", True)
+        elif (
+            self.edge_filter_type == EdgeAwareFilterType.BILATERAL.value
+            and not self.bilateral_filter
+        ):
             # Auto-enable bilateral_filter if edge_filter_type is bilateral
-            object.__setattr__(self, 'bilateral_filter', True)
+            object.__setattr__(self, "bilateral_filter", True)
 
 
 class DepthProcessingError(Exception):
@@ -205,7 +208,7 @@ class DepthProcessingError(Exception):
         self.original_exception = original_exception
 
 
-def _get_processor_logger() -> "Logger":
+def _get_processor_logger() -> Logger:
     """Get the depth processor logger (lazy initialization)."""
     return get_logger("depth.processor")
 
@@ -519,7 +522,6 @@ class DepthMapProcessor:
                 operation="guided_filter",
                 original_exception=e,
             ) from e
-
 
     def fill_holes(
         self,
@@ -918,6 +920,7 @@ def process_depth_map(
 
     processor = DepthMapProcessor(config=config)
     return processor.process(depth_map, apply_colormap=colormap is not None)
+
 
 __all__ = [
     # Classes

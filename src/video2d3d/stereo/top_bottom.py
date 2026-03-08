@@ -50,7 +50,6 @@ if TYPE_CHECKING:
 
 from video2d3d.utils.logger import get_logger
 
-
 # ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------
@@ -65,7 +64,7 @@ LUMINANCE_G: Final[float] = 0.587
 LUMINANCE_B: Final[float] = 0.114
 
 
-def _get_top_bottom_logger() -> "Logger":
+def _get_top_bottom_logger() -> Logger:
     """Get the top-bottom module logger (lazy initialization)."""
     return get_logger("stereo.top_bottom")
 
@@ -146,9 +145,7 @@ class TopBottomEncoder:
 
     def __repr__(self) -> str:
         """Return a string representation of the encoder."""
-        return (
-            f"TopBottomEncoder(layout={self.layout.value}, half_width={self.half_width})"
-        )
+        return f"TopBottomEncoder(layout={self.layout.value}, half_width={self.half_width})"
 
     def encode(
         self,

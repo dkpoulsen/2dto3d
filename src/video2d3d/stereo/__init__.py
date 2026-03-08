@@ -18,42 +18,34 @@ import numpy as np
 if TYPE_CHECKING:
     from loguru import Logger
 
-from video2d3d.stereo.dibr import (
-    DIBRConfig,
-    DIBREngine,
-    DIBRError,
-    HoleFillingMethod,
-    DepthInterpretation,
-    create_dibr_engine,
-    render_stereo_pair,
-)
-from video2d3d.stereo.anaglyph import (
-    AnaglyphEncoder,
-    AnaglyphType,
-    encode_anaglyph,
-)
-from video2d3d.stereo.side_by_side import (
-    SideBySideEncoder,
-    SideBySideLayout,
-    encode_side_by_side,
-)
+from video2d3d.stereo.anaglyph import AnaglyphEncoder, AnaglyphType, encode_anaglyph
 from video2d3d.stereo.checkerboard import (
     CheckerboardEncoder,
     CheckerboardPattern,
     encode_checkerboard,
 )
-from video2d3d.stereo.interlaced import (
-    InterlacedEncoder,
-    InterlacedPattern,
-    encode_interlaced,
+from video2d3d.stereo.dibr import (
+    DepthInterpretation,
+    DIBRConfig,
+    DIBREngine,
+    DIBRError,
+    HoleFillingMethod,
+    create_dibr_engine,
+    render_stereo_pair,
 )
+from video2d3d.stereo.interlaced import InterlacedEncoder, InterlacedPattern, encode_interlaced
+from video2d3d.stereo.side_by_side import SideBySideEncoder, SideBySideLayout, encode_side_by_side
 from video2d3d.stereo.top_bottom import (
     TopBottomEncoder,
     TopBottomLayout,
-    encode_top_bottom,
     create_top_bottom_encoder,
+    encode_top_bottom,
 )
 from video2d3d.stereo.vr import (
+    DEFAULT_IPD,
+    VR_RESOLUTION_4K,
+    VR_RESOLUTION_4K_PLUS,
+    VR_RESOLUTION_8K,
     VREncoder,
     VREncoderConfig,
     VREncoderError,
@@ -62,24 +54,15 @@ from video2d3d.stereo.vr import (
     VRProjectionType,
     VRStereoGenerator,
     create_vr_encoder,
+    encode_vr180,
     encode_vr_sbs,
     encode_vr_top_bottom,
-    encode_vr180,
     get_vr_metadata_for_format,
-    VR_RESOLUTION_4K,
-    VR_RESOLUTION_4K_PLUS,
-    VR_RESOLUTION_8K,
-    DEFAULT_IPD,
 )
-
-from video2d3d.utils.logger import (
-    get_logger,
-    log_exception,
-    log_video_processing,
-)
+from video2d3d.utils.logger import get_logger, log_exception, log_video_processing
 
 
-def _get_stereo_logger() -> "Logger":
+def _get_stereo_logger() -> Logger:
     """Get the stereo module logger (lazy initialization)."""
     return get_logger("stereo")
 
@@ -414,9 +397,7 @@ class AnaglyphGenerator(StereoGenerator):
         type_lower = type_str.lower().strip()
         if type_lower not in self._ANAGLYPH_TYPE_MAP:
             valid_options = list(self._ANAGLYPH_TYPE_MAP.keys())
-            raise ValueError(
-                f"Invalid anaglyph type '{type_str}'. Valid options: {valid_options}"
-            )
+            raise ValueError(f"Invalid anaglyph type '{type_str}'. Valid options: {valid_options}")
         return self._ANAGLYPH_TYPE_MAP[type_lower]
 
     def combine_to_anaglyph(
@@ -453,7 +434,9 @@ class AnaglyphGenerator(StereoGenerator):
         """
         if isinstance(anaglyph_type, str):
             anaglyph_type = self._parse_anaglyph_type(anaglyph_type)
-        _get_stereo_logger().info(f"Changing anaglyph type: {self.anaglyph_type} -> {anaglyph_type}")
+        _get_stereo_logger().info(
+            f"Changing anaglyph type: {self.anaglyph_type} -> {anaglyph_type}"
+        )
         self.anaglyph_type = anaglyph_type
         self._encoder.default_type = anaglyph_type
 
@@ -482,6 +465,7 @@ class AnaglyphGenerator(StereoGenerator):
     def encode_amber_blue(self, left: np.ndarray, right: np.ndarray) -> np.ndarray:
         """Encode using amber-blue (ColorCode3D) method."""
         return self._encoder.encode_amber_blue(left, right)
+
 
 class SideBySideGenerator(StereoGenerator):
     """Generate side-by-side 3D video.

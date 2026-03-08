@@ -16,27 +16,27 @@ import pytest
 from pydantic import ValidationError as PydanticValidationError
 
 from video2d3d.web.schemas import (
-    JobStatusResponse,
-    JobPriorityRequest,
-    StereoFormat,
-    DepthModel,
-    JobConfigRequest,
-    SubmitJobRequest,
-    SubmitBatchRequest,
-    UploadResponse,
-    JobResultResponse,
-    JobResponse,
-    JobListResponse,
-    SubmitJobResponse,
-    QueueStatsResponse,
+    APIInfoResponse,
     CancelJobResponse,
-    RetryJobResponse,
+    DepthCurveRequest,
+    DepthFocusRequest,
+    DepthModel,
     DownloadInfoResponse,
     ErrorResponse,
     HealthCheckResponse,
-    APIInfoResponse,
-    DepthFocusRequest,
-    DepthCurveRequest,
+    JobConfigRequest,
+    JobListResponse,
+    JobPriorityRequest,
+    JobResponse,
+    JobResultResponse,
+    JobStatusResponse,
+    QueueStatsResponse,
+    RetryJobResponse,
+    StereoFormat,
+    SubmitBatchRequest,
+    SubmitJobRequest,
+    SubmitJobResponse,
+    UploadResponse,
 )
 
 
@@ -706,6 +706,7 @@ class TestDepthCurveRequest:
     def test_control_point_validation(self) -> None:
         """Test control point validation."""
         from video2d3d.web.schemas import CurveControlPointRequest
+
         point = CurveControlPointRequest(x=0.5, y=0.7)
         assert point.x == 0.5
         assert point.y == 0.7
@@ -713,24 +714,28 @@ class TestDepthCurveRequest:
     def test_control_point_x_validation_below_min(self) -> None:
         """Test control point x validation rejects below minimum."""
         from video2d3d.web.schemas import CurveControlPointRequest
+
         with pytest.raises(PydanticValidationError):
             CurveControlPointRequest(x=-0.1, y=0.5)
 
     def test_control_point_x_validation_above_max(self) -> None:
         """Test control point x validation rejects above maximum."""
         from video2d3d.web.schemas import CurveControlPointRequest
+
         with pytest.raises(PydanticValidationError):
             CurveControlPointRequest(x=1.1, y=0.5)
 
     def test_control_point_y_validation_below_min(self) -> None:
         """Test control point y validation rejects below minimum."""
         from video2d3d.web.schemas import CurveControlPointRequest
+
         with pytest.raises(PydanticValidationError):
             CurveControlPointRequest(x=0.5, y=-0.1)
 
     def test_control_point_y_validation_above_max(self) -> None:
         """Test control point y validation rejects above maximum."""
         from video2d3d.web.schemas import CurveControlPointRequest
+
         with pytest.raises(PydanticValidationError):
             CurveControlPointRequest(x=0.5, y=1.1)
 

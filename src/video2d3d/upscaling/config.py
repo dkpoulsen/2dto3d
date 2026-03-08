@@ -6,7 +6,7 @@ model selection, processing parameters, and GPU settings.
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
@@ -255,7 +255,7 @@ class UpscalerConfig:
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> "UpscalerConfig":
+    def from_dict(cls, data: Dict[str, Any]) -> UpscalerConfig:
         """Create config from dictionary.
 
         Args:

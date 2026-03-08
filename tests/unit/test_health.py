@@ -5,12 +5,9 @@ from __future__ import annotations
 from datetime import datetime
 from unittest.mock import MagicMock, patch
 
-import pytest
-
 from video2d3d.web.health import (
     GPU_MEMORY_CRITICAL_THRESHOLD,
     GPU_MEMORY_WARNING_THRESHOLD,
-    MEMORY_CRITICAL_THRESHOLD,
     MEMORY_WARNING_THRESHOLD,
     determine_health_status,
     get_comprehensive_health,
@@ -148,6 +145,7 @@ class TestGetQueueHealth:
         assert isinstance(result, QueueHealthResponse)
         assert result.running is False
         assert result.paused is False
+
     def test_get_queue_health_running(self) -> None:
         """Test queue health when queue is running."""
         mock_queue = MagicMock()
@@ -404,7 +402,6 @@ class TestDetermineHealthStatus:
 
         assert status == HealthStatus.DEGRADED
         assert all(checks.values()) is True
-
 
     """Tests for get_comprehensive_health function."""
 

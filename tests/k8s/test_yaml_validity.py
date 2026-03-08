@@ -9,7 +9,6 @@ This module tests that all Kubernetes manifest files:
 
 from pathlib import Path
 
-import pytest
 import yaml
 
 
@@ -237,9 +236,9 @@ class TestKubernetesApiVersion:
                 # Allow kustomize config API version
                 if "kustomize.config.k8s.io" in api_version:
                     continue
-                assert api_version in self.VALID_API_VERSIONS, (
-                    f"{path.name}: invalid apiVersion '{api_version}'"
-                )
+                assert (
+                    api_version in self.VALID_API_VERSIONS
+                ), f"{path.name}: invalid apiVersion '{api_version}'"
 
 
 class TestKubernetesMetadata:
@@ -284,6 +283,6 @@ class TestKubernetesMetadata:
                     continue
 
                 # Namespaced resources should have namespace
-                assert "namespace" in metadata or kind == "Namespace", (
-                    f"{path.name}: {kind} should have metadata.namespace"
-                )
+                assert (
+                    "namespace" in metadata or kind == "Namespace"
+                ), f"{path.name}: {kind} should have metadata.namespace"

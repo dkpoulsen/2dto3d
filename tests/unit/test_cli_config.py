@@ -2,15 +2,11 @@
 
 import json
 from pathlib import Path
-from unittest.mock import patch
 
-import pytest
 import yaml
 from typer.testing import CliRunner
 
 from video2d3d.cli import app
-from video2d3d.utils.config import FORMAT_JSON, FORMAT_YAML, Config
-
 
 runner = CliRunner()
 

@@ -7,13 +7,10 @@ from __future__ import annotations
 
 import threading
 import time
-from collections import defaultdict
-from datetime import datetime
 from pathlib import Path
 from typing import TYPE_CHECKING, Callable
 
 from video2d3d.batch.config import FolderWatcherConfig
-from video2d3d.batch.exceptions import FolderWatcherError
 from video2d3d.utils.logger import get_logger
 
 if TYPE_CHECKING:

@@ -14,11 +14,9 @@ import shutil
 import threading
 from datetime import datetime
 from pathlib import Path
-from typing import Optional
 
 from video2d3d.checkpoint.models import (
     CheckpointConfig,
-    CheckpointState,
     ConversionCheckpoint,
     FrameCheckpoint,
 )
@@ -192,9 +190,7 @@ class CheckpointManager:
         return deleted
 
     def cleanup_old_checkpoints(self, max_to_keep: int | None = None) -> int:
-        max_checkpoints = (
-            max_to_keep if max_to_keep is not None else self.config.max_checkpoints
-        )
+        max_checkpoints = max_to_keep if max_to_keep is not None else self.config.max_checkpoints
         if max_checkpoints <= 0:
             return 0
 

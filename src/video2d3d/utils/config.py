@@ -11,7 +11,6 @@ from typing import Any, Dict, List, Optional, Union
 import yaml
 from dotenv import load_dotenv
 
-
 # ============================================================================
 # Constants
 # ============================================================================
@@ -51,27 +50,9 @@ __all__ = [
     "FORMAT_YAML",
     "SUPPORTED_EXPORT_FORMATS",
 ]
-    "Config",
-    "ProcessingConfig",
-    "VideoInputConfig",
-    "VideoOutputConfig",
-    "DepthEstimationConfig",
-    "AnaglyphConfig",
-    "SideBySideConfig",
-    "StereoGenerationConfig",
-    "QualityConfig",
-    "LoggingConfig",
-    "RateLimitConfig",
-    "WebApiConfig",
-    "PreviewConfig",
-    "ProgressTrackingConfig",
-    "VideoDenoisingConfig",
-    "export_config",
-]
 
 # Load environment variables from .env file
 load_dotenv()
-
 
 
 def get_env_var(key: str, default: Optional[str] = None) -> Optional[str]:
@@ -106,7 +87,7 @@ class ProcessingConfig:
     max_memory_percent: int = 80
     frame_buffer_size: int = 100
     mixed_precision: bool = True
-    
+
     # GPU memory management
     auto_batch_size: bool = True
     min_batch_size: int = 1
@@ -114,15 +95,15 @@ class ProcessingConfig:
     memory_fraction: float = 0.8
     fallback_to_cpu: bool = True
     pinned_memory: bool = True
-    
+
     # GPU optimization
     cudnn_benchmark: bool = True
     async_transfer: bool = True
 
-
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary."""
         return asdict(self)
+
 
 @dataclass
 class VideoInputConfig:
@@ -137,10 +118,10 @@ class VideoInputConfig:
     max_width: int = 3840
     max_height: int = 2160
 
-
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary."""
         return asdict(self)
+
 
 @dataclass
 class VideoOutputConfig:
@@ -152,10 +133,10 @@ class VideoOutputConfig:
     crf: int = 23
     pixel_format: str = "yuv420p"
 
-
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary."""
         return asdict(self)
+
 
 @dataclass
 class DepthEstimationConfig:
@@ -171,10 +152,10 @@ class DepthEstimationConfig:
     temporal_consistency: bool = True
     temporal_smoothing_factor: float = 0.5
 
-
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary."""
         return asdict(self)
+
 
 @dataclass
 class AnaglyphConfig:
@@ -183,10 +164,10 @@ class AnaglyphConfig:
     type: str = "red_cyan"
     color_method: str = "dubois"
 
-
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary."""
         return asdict(self)
+
 
 @dataclass
 class SideBySideConfig:
@@ -196,10 +177,10 @@ class SideBySideConfig:
     swap_eyes: bool = False
     half_width: bool = False
 
-
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary."""
         return asdict(self)
+
 
 @dataclass
 class StereoGenerationConfig:
@@ -211,9 +192,11 @@ class StereoGenerationConfig:
     convergence: float = 0.5
     anaglyph: AnaglyphConfig = field(default_factory=AnaglyphConfig)
     side_by_side: SideBySideConfig = field(default_factory=SideBySideConfig)
+
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary."""
         return asdict(self)
+
 
 @dataclass
 class QualityConfig:
@@ -222,9 +205,11 @@ class QualityConfig:
     preset: str = "balanced"
     post_processing: bool = True
     calculate_metrics: bool = False
+
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary."""
         return asdict(self)
+
 
 @dataclass
 class LoggingConfig:
@@ -236,9 +221,11 @@ class LoggingConfig:
     rotation: str = "10 MB"
     retention: str = "7 days"
     colorize: bool = True
+
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary."""
         return asdict(self)
+
 
 @dataclass
 class RateLimitConfig:
@@ -269,12 +256,12 @@ class RateLimitConfig:
         if self.upload_requests_per_minute <= 0:
             raise ValueError("upload_requests_per_minute must be positive")
         if self.requests_per_hour < self.requests_per_minute:
-            raise ValueError(
-                "requests_per_hour must be >= requests_per_minute"
-            )
+            raise ValueError("requests_per_hour must be >= requests_per_minute")
+
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary."""
         return asdict(self)
+
 
 @dataclass
 class WebApiConfig:
@@ -288,9 +275,11 @@ class WebApiConfig:
     max_upload_size: int = 500
     upload_dir: str = "uploads"
     rate_limit: RateLimitConfig = field(default_factory=RateLimitConfig)
+
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary."""
         return asdict(self)
+
 
 @dataclass
 class PreviewConfig:
@@ -306,9 +295,12 @@ class PreviewConfig:
     max_width: int = 1920
     max_height: int = 1080
     update_interval_ms: int = 33
+
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary."""
         return asdict(self)
+
+
 @dataclass
 class ProgressTrackingConfig:
     """Progress tracking configuration settings.
@@ -332,6 +324,7 @@ class ProgressTrackingConfig:
     show_overall: bool = True
     refresh_rate: float = 0.1
     transient: bool = False
+
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary."""
         return asdict(self)
@@ -359,6 +352,7 @@ class UpscalerConfig:
         """Convert to dictionary."""
         return asdict(self)
 
+
 @dataclass
 class VideoDenoisingConfig:
     """Video denoising configuration settings.
@@ -383,6 +377,7 @@ class VideoDenoisingConfig:
         """Convert to dictionary."""
         return asdict(self)
 
+
 @dataclass
 class Config:
     """Main configuration class."""
@@ -402,13 +397,12 @@ class Config:
     upscaler: UpscalerConfig = field(default_factory=UpscalerConfig)
     video_denoising: VideoDenoisingConfig = field(default_factory=VideoDenoisingConfig)
 
-
     def to_dict(self) -> Dict[str, Any]:
         """Convert the entire configuration to a dictionary."""
         return asdict(self)
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> "Config":
+    def from_dict(cls, data: Dict[str, Any]) -> Config:
         """Create a Config instance from a dictionary.
 
         Args:
@@ -429,9 +423,7 @@ class Config:
                 config.version = data["version"]
 
             if "processing" in data:
-                config.processing = cls._parse_simple_section(
-                    data["processing"], ProcessingConfig
-                )
+                config.processing = cls._parse_simple_section(data["processing"], ProcessingConfig)
 
             if "video_input" in data:
                 config.video_input = cls._parse_simple_section(
@@ -452,22 +444,16 @@ class Config:
                 config.stereo_generation = cls._parse_stereo_generation(data["stereo_generation"])
 
             if "quality" in data:
-                config.quality = cls._parse_simple_section(
-                    data["quality"], QualityConfig
-                )
+                config.quality = cls._parse_simple_section(data["quality"], QualityConfig)
 
             if "logging" in data:
-                config.logging = cls._parse_simple_section(
-                    data["logging"], LoggingConfig
-                )
+                config.logging = cls._parse_simple_section(data["logging"], LoggingConfig)
 
             if "web_api" in data:
                 config.web_api = cls._parse_web_api(data["web_api"])
 
             if "preview" in data:
-                config.preview = cls._parse_simple_section(
-                    data["preview"], PreviewConfig
-                )
+                config.preview = cls._parse_simple_section(data["preview"], PreviewConfig)
 
             if "progress" in data:
                 config.progress = cls._parse_simple_section(
@@ -479,16 +465,13 @@ class Config:
                     data["video_denoising"], VideoDenoisingConfig
                 )
 
-
         except (TypeError, KeyError) as e:
             raise ValueError(f"Invalid configuration data: {e}") from e
 
         return config
 
     @staticmethod
-    def _parse_simple_section(
-        section_data: Dict[str, Any], config_class: type
-    ) -> Any:
+    def _parse_simple_section(section_data: Dict[str, Any], config_class: type) -> Any:
         """Parse a simple (non-nested) configuration section.
 
         Args:
@@ -498,10 +481,7 @@ class Config:
         Returns:
             Instantiated configuration object.
         """
-        filtered_data = {
-            k: v for k, v in section_data.items()
-            if hasattr(config_class, k)
-        }
+        filtered_data = {k: v for k, v in section_data.items() if hasattr(config_class, k)}
         return config_class(**filtered_data)
 
     @staticmethod
@@ -510,7 +490,8 @@ class Config:
         anaglyph = AnaglyphConfig(**sg_data.get("anaglyph", {}))
         side_by_side = SideBySideConfig(**sg_data.get("side_by_side", {}))
         filtered_data = {
-            k: v for k, v in sg_data.items()
+            k: v
+            for k, v in sg_data.items()
             if k not in ("anaglyph", "side_by_side") and hasattr(StereoGenerationConfig, k)
         }
         return StereoGenerationConfig(anaglyph=anaglyph, side_by_side=side_by_side, **filtered_data)
@@ -520,8 +501,7 @@ class Config:
         """Parse web_api section with nested rate_limit config."""
         rate_limit = RateLimitConfig(**web_data.get("rate_limit", {}))
         filtered_data = {
-            k: v for k, v in web_data.items()
-            if k != "rate_limit" and hasattr(WebApiConfig, k)
+            k: v for k, v in web_data.items() if k != "rate_limit" and hasattr(WebApiConfig, k)
         }
         return WebApiConfig(rate_limit=rate_limit, **filtered_data)
 
@@ -646,10 +626,12 @@ def load_config(
         config.upscaler = _parse_config_section(merged_config, "upscaler", UpscalerConfig)
 
     if "video_denoising" in merged_config:
-        config.video_denoising = _parse_config_section(merged_config, "video_denoising", VideoDenoisingConfig)
-
+        config.video_denoising = _parse_config_section(
+            merged_config, "video_denoising", VideoDenoisingConfig
+        )
 
     return config
+
 
 # Global configuration instance (lazy-loaded)
 _config: Optional[Config] = None
@@ -680,6 +662,7 @@ def reload_config() -> Config:
 # Configuration Export/Import Functions
 # ============================================================================
 
+
 def export_config(
     config: Config,
     output_path: Union[str, Path],
@@ -709,11 +692,10 @@ def export_config(
         with open(output_path, "w", encoding="utf-8") as f:
             yaml.dump(config_dict, f, default_flow_style=False, sort_keys=False)
     else:
-        raise ValueError(
-            f"Unsupported format: {format}. Use {SUPPORTED_EXPORT_FORMATS}."
-        )
+        raise ValueError(f"Unsupported format: {format}. Use {SUPPORTED_EXPORT_FORMATS}.")
 
     return output_path
+
 
 def import_config(
     input_path: Union[str, Path],
@@ -744,9 +726,7 @@ def import_config(
         elif suffix in (".yaml", ".yml"):
             data = load_yaml_file(input_path)
         else:
-            raise ValueError(
-                f"Unsupported file format: {suffix}. Use .json, .yaml, or .yml."
-            )
+            raise ValueError(f"Unsupported file format: {suffix}. Use .json, .yaml, or .yml.")
 
         if not isinstance(data, dict):
             raise ValueError(
@@ -756,6 +736,7 @@ def import_config(
         return Config.from_dict(data)
     except json.JSONDecodeError as e:
         raise ValueError(f"Invalid JSON in configuration file: {e}") from e
+
 
 def export_current_config(
     output_path: Union[str, Path],
@@ -773,6 +754,7 @@ def export_current_config(
     config = get_config()
     return export_config(config, output_path, format)
 
+
 def import_and_apply_config(
     input_path: Union[str, Path],
 ) -> Config:
@@ -787,4 +769,3 @@ def import_and_apply_config(
     global _config
     _config = import_config(input_path)
     return _config
-

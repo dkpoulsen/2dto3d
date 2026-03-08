@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import json
 import statistics
-from dataclasses import dataclass, field, asdict
+from dataclasses import asdict, dataclass, field
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Optional
@@ -95,7 +95,9 @@ class BenchmarkResult:
     resolution: tuple[int, int]
     device: str
     batch_size: int = 1
-    timing: TimingMetrics = field(default_factory=lambda: TimingMetrics(total_time_ms=0.0, inference_time_ms=0.0))
+    timing: TimingMetrics = field(
+        default_factory=lambda: TimingMetrics(total_time_ms=0.0, inference_time_ms=0.0)
+    )
     memory: MemoryMetrics = field(default_factory=MemoryMetrics)
     gpu: GPUMetrics = field(default_factory=GPUMetrics)
     success: bool = True
@@ -131,7 +133,7 @@ class BenchmarkResult:
         return result
 
     @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> "BenchmarkResult":
+    def from_dict(cls, data: dict[str, Any]) -> BenchmarkResult:
         """Create result from dictionary."""
         # Parse timestamp
         if isinstance(data.get("timestamp"), str):
@@ -312,7 +314,7 @@ class BenchmarkResults:
             json.dump(data, f, indent=2)
 
     @classmethod
-    def load(cls, path: Path) -> "BenchmarkResults":
+    def load(cls, path: Path) -> BenchmarkResults:
         """Load results from a JSON file.
 
         Args:
@@ -330,7 +332,7 @@ class BenchmarkResults:
         if not path.exists():
             raise FileNotFoundError(f"Benchmark results file not found: {path}")
 
-        with open(path, "r", encoding="utf-8") as f:
+        with open(path, encoding="utf-8") as f:
             data = json.load(f)
 
         # Safely parse datetime fields

@@ -16,10 +16,8 @@ import time
 from typing import TYPE_CHECKING
 from unittest.mock import MagicMock, patch
 
-import pytest
-
 if TYPE_CHECKING:
-    from collections.abc import Generator
+    pass
 
 
 # Re-use fixtures from the main test file
@@ -359,7 +357,6 @@ class TestHistoryTracking:
         from video2d3d.batch.adaptive_sizer import (
             AdaptiveBatchConfig,
             AdaptiveBatchSizer,
-            AdjustmentReason,
         )
 
         config = AdaptiveBatchConfig(initial_batch_size=4)
@@ -411,10 +408,7 @@ class TestEdgeCases:
 
     def test_batch_size_at_max_no_scale_up(self) -> None:
         """Test that batch size doesn't exceed max even when resources available."""
-        from video2d3d.batch.adaptive_sizer import (
-            AdaptiveBatchConfig,
-            AdaptiveBatchSizer,
-        )
+        from video2d3d.batch.adaptive_sizer import AdaptiveBatchConfig, AdaptiveBatchSizer
 
         config = AdaptiveBatchConfig(
             initial_batch_size=64,
@@ -444,10 +438,7 @@ class TestEdgeCases:
 
     def test_batch_size_at_min_no_scale_down(self) -> None:
         """Test that batch size doesn't go below min even under pressure."""
-        from video2d3d.batch.adaptive_sizer import (
-            AdaptiveBatchConfig,
-            AdaptiveBatchSizer,
-        )
+        from video2d3d.batch.adaptive_sizer import AdaptiveBatchConfig, AdaptiveBatchSizer
 
         config = AdaptiveBatchConfig(
             initial_batch_size=1,
@@ -477,10 +468,7 @@ class TestEdgeCases:
 
     def test_callback_exception_handling(self) -> None:
         """Test that callback exceptions don't crash the sizer."""
-        from video2d3d.batch.adaptive_sizer import (
-            AdaptiveBatchSizer,
-            AdjustmentReason,
-        )
+        from video2d3d.batch.adaptive_sizer import AdaptiveBatchSizer, AdjustmentReason
 
         sizer = AdaptiveBatchSizer()
 

@@ -47,10 +47,11 @@ from __future__ import annotations
 import threading
 import time
 import types
+from collections.abc import Generator
 from contextlib import contextmanager
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Callable, Generator
+from typing import Any, Callable
 
 from rich.console import Console
 from rich.progress import (
@@ -63,8 +64,6 @@ from rich.progress import (
     TimeRemainingColumn,
 )
 from rich.table import Table
-
-
 
 DEFAULT_REFRESH_RATE: float = 0.1  # seconds
 DEFAULT_BAR_WIDTH: int = 40
@@ -615,6 +614,7 @@ class VideoConversionProgress:
         self.stop()
         if exc_type is None:
             self.print_summary()
+
 
 class SimpleProgressTracker:
     """Simple progress tracker for basic use cases.

@@ -35,7 +35,6 @@ if TYPE_CHECKING:
 
 from video2d3d.utils.logger import get_logger
 
-
 # ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------
@@ -60,7 +59,7 @@ DEFAULT_VR180_FOV: Final[float] = 180.0
 MIN_VR_DIMENSION: Final[int] = 256
 
 
-def _get_vr_logger() -> "Logger":
+def _get_vr_logger() -> Logger:
     """Get the VR module logger (lazy initialization)."""
     return get_logger("stereo.vr")
 
@@ -137,9 +136,11 @@ class VRMetadata:
             "Spherical": "true",
             "Stitched": "true",
             "StereoMode": self.stereo_mode,
-            "ProjectionType": "equirectangular"
-            if self.projection == "equirectangular"
-            else "half-equirectangular",
+            "ProjectionType": (
+                "equirectangular"
+                if self.projection == "equirectangular"
+                else "half-equirectangular"
+            ),
             "SourceCount": "1",
             "InitialViewHeadingDegrees": "0",
             "InitialViewPitchDegrees": "0",

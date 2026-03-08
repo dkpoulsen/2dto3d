@@ -38,20 +38,11 @@ import threading
 import time
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    Callable,
-    Generic,
-    List,
-    Optional,
-    TypeVar,
-    Union,
-)
+from typing import TYPE_CHECKING, Any, Callable, Generic, List, Optional, TypeVar
 
 import numpy as np
 
-from video2d3d.utils.logger import get_logger, log_exception
+from video2d3d.utils.logger import get_logger
 
 if TYPE_CHECKING:
     from loguru import Logger
@@ -86,13 +77,13 @@ TIMEOUT_ERROR_SUBSTRINGS: tuple[str, ...] = ("timeout", "timed out")
 
 def _fibonacci(n: int) -> int:
     """Calculate the nth Fibonacci number iteratively.
-    
+
     Args:
         n: The index in the Fibonacci sequence (0-indexed).
-        
+
     Returns:
         The nth Fibonacci number.
-        
+
     Note:
         Uses iterative approach to avoid recursion overhead.
         Sequence: 0, 1, 1, 2, 3, 5, 8, 13, 21...
@@ -634,6 +625,7 @@ class ModelFallbackChain:
 
         if not self.models:
             raise ValueError("Model fallback chain cannot be empty")
+
     @property
     def current_model(self) -> str:
         """Get the current model name."""
@@ -658,7 +650,7 @@ class ModelFallbackChain:
             cpu_estimator_factory: Optional factory for CPU estimators. If not
                 provided and enable_cpu_fallback is True, will attempt to use
                 the same factory with device='cpu'.
-        
+
         Raises:
             ValueError: If all models fail to initialize.
         """
@@ -670,11 +662,11 @@ class ModelFallbackChain:
                 except Exception as e:
                     self._logger.warning(f"Failed to initialize estimator for {model}: {e}")
                     self._failed_models.add(model)
-            
+
             # Store CPU factory for later use
             if cpu_estimator_factory:
                 self.cpu_fallback_factory = cpu_estimator_factory
-            
+
             # Validate we have at least one working model
             if len(self._failed_models) >= len(self.models):
                 raise ValueError(
@@ -702,11 +694,12 @@ class ModelFallbackChain:
                 if self.cpu_fallback_factory:
                     self._cpu_estimators[model] = self.cpu_fallback_factory(model)
                     return self._cpu_estimators[model]
-            
+
             model = model_name or self.current_model
             if model not in self._estimators:
                 raise ValueError(f"No estimator available for model: {model}")
             return self._estimators[model]
+
     def switch_to_next_model(self) -> str:
         """Switch to the next available model in the chain.
 
@@ -742,12 +735,12 @@ class ModelFallbackChain:
 
     def _is_oom_error(self, exception: Exception) -> bool:
         """Check if exception indicates out-of-memory error.
-        
+
         Uses predefined substrings for reliable detection across platforms.
-        
+
         Args:
             exception: The exception to check.
-            
+
         Returns:
             True if this is an OOM error.
         """
@@ -756,12 +749,12 @@ class ModelFallbackChain:
 
     def _is_cuda_error(self, exception: Exception) -> bool:
         """Check if exception indicates CUDA/GPU error.
-        
+
         Uses predefined substrings for reliable detection across platforms.
-        
+
         Args:
             exception: The exception to check.
-            
+
         Returns:
             True if this is a CUDA error.
         """
@@ -770,12 +763,12 @@ class ModelFallbackChain:
 
     def _is_timeout_error(self, exception: Exception) -> bool:
         """Check if exception indicates timeout error.
-        
+
         Checks both exception type and error message.
-        
+
         Args:
             exception: The exception to check.
-            
+
         Returns:
             True if this is a timeout error.
         """
@@ -804,6 +797,7 @@ class ModelFallbackChain:
             return True
 
         return False
+
     def estimate_with_fallback(
         self,
         frame: FrameT,
@@ -822,7 +816,7 @@ class ModelFallbackChain:
             AllModelsFailedError: If all models fail (including CPU fallback).
         """
         last_exception: Optional[Exception] = None
-        
+
         with self._model_lock:
             tried_models: set[str] = set()
             available = list(self.available_models)  # Snapshot under lock
@@ -876,7 +870,7 @@ class ModelFallbackChain:
                         break
 
         raise AllModelsFailedError(
-            f"All depth estimation models failed",
+            "All depth estimation models failed",
             failed_models=list(tried_models),
             original_exception=last_exception,
         )
@@ -889,6 +883,7 @@ class ModelFallbackChain:
             self._using_cpu_fallback = False
             self._cpu_estimators.clear()
             self._logger.debug("Model fallback chain reset")
+
 
 # ---------------------------------------------------------------------------
 # Decorators and Utilities
@@ -969,16 +964,17 @@ def create_recovery_decorator(
             return depth_estimator.estimate_depth(frame)
         ```
     """
+
     def decorator(func: Callable[[InputT], OutputT]) -> Callable[[InputT], OutputT]:
         @functools.wraps(func)
         def wrapper(*args: Any, **kwargs: Any) -> OutputT:
             manager = FrameRecoveryManager(config)
-            
+
             # Create a process function that properly forwards all arguments
             # This avoids the issue of passing the wrong item to recovery
             def process_fn(_: Any) -> OutputT:
                 return func(*args, **kwargs)
-            
+
             # Use first argument as the recovery item (convention)
             item = args[0] if args else None
             return manager.process_with_recovery(
@@ -989,6 +985,7 @@ def create_recovery_decorator(
         return wrapper
 
     return decorator
+
 
 class RecoveryContext:
     """Context manager for temporary recovery configuration.
@@ -1034,7 +1031,7 @@ class RecoveryContext:
         """Get recovery statistics."""
         return self._manager.stats
 
-    def __enter__(self) -> "RecoveryContext":
+    def __enter__(self) -> RecoveryContext:
         return self
 
     def __exit__(
@@ -1044,21 +1041,19 @@ class RecoveryContext:
         exc_tb: Optional[Any],
     ) -> bool:
         """Exit the recovery context.
-        
+
         Args:
             exc_type: The exception type if an exception was raised.
             exc_val: The exception instance if an exception was raised.
             exc_tb: The traceback if an exception was raised.
-            
+
         Returns:
             False to propagate any exception that occurred.
         """
         # Log any exception that occurred within the context
         if exc_type is not None and exc_val is not None:
             logger = _get_recovery_logger()
-            logger.error(
-                f"Exception in RecoveryContext: {exc_type.__name__}: {exc_val}"
-            )
+            logger.error(f"Exception in RecoveryContext: {exc_type.__name__}: {exc_val}")
         return False  # Do not suppress exceptions
 
 
@@ -1067,7 +1062,7 @@ class RecoveryContext:
 # ---------------------------------------------------------------------------
 
 
-def _get_recovery_logger() -> "Logger":
+def _get_recovery_logger() -> Logger:
     """Get the recovery module logger."""
     return get_logger("error_recovery")
 

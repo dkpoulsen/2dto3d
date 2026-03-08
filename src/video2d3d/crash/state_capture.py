@@ -11,18 +11,11 @@ from __future__ import annotations
 
 import os
 import platform
-import sys
 import time
 from datetime import datetime, timezone
 from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
-from video2d3d.crash.models import (
-    ActiveJobInfo,
-    GPUInfo,
-    MemoryInfo,
-    ProcessInfo,
-    SystemState,
-)
+from video2d3d.crash.models import ActiveJobInfo, GPUInfo, MemoryInfo, ProcessInfo, SystemState
 
 if TYPE_CHECKING:
     from video2d3d.batch import BatchVideoQueue
@@ -102,7 +95,7 @@ def get_memory_info() -> MemoryInfo:
         # Fallback to /proc/meminfo on Linux
         try:
             if platform.system() == "Linux":
-                with open("/proc/meminfo", "r") as f:
+                with open("/proc/meminfo") as f:
                     meminfo = {}
                     for line in f:
                         parts = line.split(":")
@@ -172,7 +165,7 @@ def get_process_info() -> ProcessInfo:
     return process_info
 
 
-def get_active_jobs(queue: Optional["BatchVideoQueue"]) -> List[ActiveJobInfo]:
+def get_active_jobs(queue: Optional[BatchVideoQueue]) -> List[ActiveJobInfo]:
     """Get information about active jobs in the queue.
 
     Args:
@@ -214,7 +207,7 @@ def get_active_jobs(queue: Optional["BatchVideoQueue"]) -> List[ActiveJobInfo]:
     return jobs
 
 
-def get_queue_stats(queue: Optional["BatchVideoQueue"]) -> Dict[str, Any]:
+def get_queue_stats(queue: Optional[BatchVideoQueue]) -> Dict[str, Any]:
     """Get queue statistics.
 
     Args:
@@ -234,7 +227,7 @@ def get_queue_stats(queue: Optional["BatchVideoQueue"]) -> Dict[str, Any]:
 
 
 def capture_system_state(
-    queue: Optional["BatchVideoQueue"] = None,
+    queue: Optional[BatchVideoQueue] = None,
     app_version: str = "",
     app_config: Optional[Dict[str, Any]] = None,
     app_start_time: Optional[float] = None,

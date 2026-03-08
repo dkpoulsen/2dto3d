@@ -12,10 +12,8 @@ from PyQt6.QtWidgets import (
     QFileDialog,
     QLabel,
     QMainWindow,
-    QMenu,
     QMessageBox,
     QProgressBar,
-    QStatusBar,
     QTabWidget,
     QToolBar,
     QVBoxLayout,
@@ -29,6 +27,7 @@ from video2d3d.gui.settings_tab import SettingsTab
 
 if TYPE_CHECKING:
     pass
+
 
 class MainWindow(QMainWindow):
     """Main application window for 2Dto3D Video Converter."""
@@ -190,7 +189,7 @@ class MainWindow(QMainWindow):
         file_path, _ = QFileDialog.getOpenFileName(
             self,
             "Open Video File",
-            str(),
+            "",
             "Video Files (*.mp4 *.avi *.mov *.mkv *.webm);;All Files (*)",
         )
 

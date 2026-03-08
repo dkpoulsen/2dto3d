@@ -21,24 +21,21 @@ Example usage:
 """
 
 from video2d3d.benchmark.config import (
-    BenchmarkConfig,
     BenchmarkCategory,
-    ResolutionPreset,
-    QuickBenchmarkConfig,
+    BenchmarkConfig,
     FullBenchmarkConfig,
-)
-from video2d3d.benchmark.runner import BenchmarkRunner
-from video2d3d.benchmark.results import (
-    BenchmarkResult,
-    BenchmarkResults,
+    QuickBenchmarkConfig,
+    ResolutionPreset,
 )
 from video2d3d.benchmark.reporting import (
-    ReportGenerator,
-    MarkdownReporter,
-    JSONReporter,
     CSVReporter,
+    JSONReporter,
+    MarkdownReporter,
+    ReportGenerator,
     generate_report,
 )
+from video2d3d.benchmark.results import BenchmarkResult, BenchmarkResults
+from video2d3d.benchmark.runner import BenchmarkRunner
 
 __all__ = [
     # Core classes

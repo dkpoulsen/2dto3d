@@ -13,14 +13,10 @@ Tests cover:
 from __future__ import annotations
 
 import signal
-import sys
 import tempfile
 import threading
 from pathlib import Path
-from typing import Any, Dict
-from unittest.mock import MagicMock, patch
-
-import pytest
+from unittest.mock import MagicMock
 
 from video2d3d.crash.models import CrashReport, CrashSeverity, CrashType
 from video2d3d.crash.reporter import (

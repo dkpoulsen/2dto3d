@@ -92,12 +92,12 @@ class StageCheckpoint:
             completed=data.get("completed", False),
             frames_processed=data.get("frames_processed", 0),
             frames_total=data.get("frames_total", 0),
-            started_at=datetime.fromisoformat(data["started_at"])
-            if data.get("started_at")
-            else None,
-            completed_at=datetime.fromisoformat(data["completed_at"])
-            if data.get("completed_at")
-            else None,
+            started_at=(
+                datetime.fromisoformat(data["started_at"]) if data.get("started_at") else None
+            ),
+            completed_at=(
+                datetime.fromisoformat(data["completed_at"]) if data.get("completed_at") else None
+            ),
             metadata=data.get("metadata", {}),
         )
 

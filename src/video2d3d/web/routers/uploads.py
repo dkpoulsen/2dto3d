@@ -12,7 +12,6 @@ from __future__ import annotations
 import uuid
 from datetime import datetime
 from pathlib import Path
-from typing import Optional
 
 from fastapi import APIRouter, File, HTTPException, UploadFile, status
 
@@ -25,11 +24,7 @@ from video2d3d.web.exceptions import (
     UnsupportedFormatError,
     ValidationError,
 )
-from video2d3d.web.schemas import (
-    DownloadInfoResponse,
-    ErrorResponse,
-    UploadResponse,
-)
+from video2d3d.web.schemas import DownloadInfoResponse, ErrorResponse, UploadResponse
 from video2d3d.web.state import app_state
 from video2d3d.web.utils import (
     SUPPORTED_VIDEO_EXTENSIONS,

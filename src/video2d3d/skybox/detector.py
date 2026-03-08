@@ -22,15 +22,14 @@ import numpy as np
 if TYPE_CHECKING:
     from loguru import Logger
 
-from video2d3d.utils.logger import get_logger, log_exception, log_performance
 from video2d3d.skybox.config import (
     ColorDetectionConfig,
     EdgeDetectionConfig,
     PositionDetectionConfig,
-    SkyDetectionMethod,
     SkyboxConfig,
-    _DEFAULT_MIN_CONFIDENCE,
+    SkyDetectionMethod,
 )
+from video2d3d.utils.logger import get_logger, log_exception, log_performance
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -103,7 +102,7 @@ class SkyDetectionResult:
 # ---------------------------------------------------------------------------
 
 
-def _get_skybox_logger() -> "Logger":
+def _get_skybox_logger() -> Logger:
     """Get the skybox module logger."""
     return get_logger("skybox.detector")
 
@@ -287,9 +286,9 @@ class SkyDetector:
 
         method_results = {
             "color_blue_coverage": np.sum(blue_mask) / (h * w),
-            "color_cloudy_coverage": np.sum(cloudy_mask) / (h * w)
-            if config.enable_cloudy_sky
-            else 0,
+            "color_cloudy_coverage": (
+                np.sum(cloudy_mask) / (h * w) if config.enable_cloudy_sky else 0
+            ),
             "color_total_confidence": confidence,
         }
 

@@ -10,7 +10,6 @@ This module provides endpoints for:
 
 from __future__ import annotations
 
-from datetime import datetime
 from pathlib import Path
 from typing import Optional
 
@@ -30,7 +29,6 @@ from video2d3d.web.exceptions import (
 from video2d3d.web.schemas import (
     CancelJobResponse,
     ErrorResponse,
-    JobConfigRequest,
     JobListResponse,
     JobPriorityRequest,
     JobResponse,
@@ -42,7 +40,6 @@ from video2d3d.web.schemas import (
     SubmitJobRequest,
     SubmitJobResponse,
     ThumbnailFrameResponse,
-    ThumbnailGridRequest,
     ThumbnailGridResponse,
 )
 
@@ -53,6 +50,7 @@ router = APIRouter()
 # Configuration
 _config = get_config()
 API_PREFIX = _config.web_api.prefix
+
 
 def priority_to_model(priority: JobPriorityRequest) -> JobPriority:
     """Convert API priority enum to batch model priority."""
@@ -163,6 +161,7 @@ def find_uploaded_file(file_id: str) -> Path:
         raise FileNotFoundError(file_id=file_id)
 
     return file_path
+
 
 @router.post(
     "/",

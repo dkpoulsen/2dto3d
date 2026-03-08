@@ -14,7 +14,7 @@ from __future__ import annotations
 
 import sys
 from typing import TYPE_CHECKING
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 import numpy as np
 import pytest
@@ -258,10 +258,7 @@ class TestZoeDepthDepthEstimationIntegration:
         self, mock_torch_modules: None, sample_rgb_image: np.ndarray
     ) -> None:
         """Test metric mode preserves absolute depth scale."""
-        from video2d3d.depth.zoedepth import (
-            ZoeDepthEstimator,
-            ZoeDepthModelVariant,
-        )
+        from video2d3d.depth.zoedepth import ZoeDepthEstimator, ZoeDepthModelVariant
 
         estimator = ZoeDepthEstimator(
             model_variant=ZoeDepthModelVariant.ZOE_N,
@@ -340,10 +337,7 @@ class TestZoeDepthModelSelectorIntegration:
 
     def test_selector_creates_zoedepth_estimator(self, mock_torch_modules: None) -> None:
         """Test model selector can create ZoeDepth estimators."""
-        from video2d3d.depth.model_selector import (
-            DepthModelSelector,
-            DepthModelType,
-        )
+        from video2d3d.depth.model_selector import DepthModelSelector
 
         selector = DepthModelSelector()
 
@@ -356,10 +350,7 @@ class TestZoeDepthModelSelectorIntegration:
         self, mock_torch_modules: None, sample_rgb_image: np.ndarray
     ) -> None:
         """Test model selector can estimate depth using ZoeDepth."""
-        from video2d3d.depth.model_selector import (
-            DepthModelSelector,
-            DepthModelType,
-        )
+        from video2d3d.depth.model_selector import DepthModelSelector
 
         selector = DepthModelSelector()
 
@@ -376,10 +367,7 @@ class TestZoeDepthModelSelectorIntegration:
 
     def test_selector_all_three_zoedepth_variants(self, mock_torch_modules: None) -> None:
         """Test model selector supports all three ZoeDepth variants."""
-        from video2d3d.depth.model_selector import (
-            DepthModelSelector,
-            DepthModelType,
-        )
+        from video2d3d.depth.model_selector import DepthModelSelector
 
         selector = DepthModelSelector()
 
@@ -451,10 +439,7 @@ class TestZoeDepthErrorHandlingIntegration:
 
     def test_inference_error_on_invalid_input(self, mock_torch_modules: None) -> None:
         """Test ZoeDepthInferenceError is raised for invalid input."""
-        from video2d3d.depth.zoedepth import (
-            ZoeDepthEstimator,
-            ZoeDepthInferenceError,
-        )
+        from video2d3d.depth.zoedepth import ZoeDepthEstimator, ZoeDepthInferenceError
 
         estimator = ZoeDepthEstimator()
 
@@ -463,10 +448,7 @@ class TestZoeDepthErrorHandlingIntegration:
 
     def test_load_error_on_torch_hub_failure(self, mock_torch_modules: None) -> None:
         """Test ZoeDepthLoadError is raised when torch.hub.load fails."""
-        from video2d3d.depth.zoedepth import (
-            ZoeDepthEstimator,
-            ZoeDepthLoadError,
-        )
+        from video2d3d.depth.zoedepth import ZoeDepthEstimator, ZoeDepthLoadError
 
         mock_torch = sys.modules["torch"]
         mock_torch.hub.load.side_effect = RuntimeError("Network error")
@@ -478,10 +460,7 @@ class TestZoeDepthErrorHandlingIntegration:
 
     def test_error_preserves_context(self, mock_torch_modules: None) -> None:
         """Test errors preserve context about the failure."""
-        from video2d3d.depth.zoedepth import (
-            ZoeDepthEstimator,
-            ZoeDepthInferenceError,
-        )
+        from video2d3d.depth.zoedepth import ZoeDepthEstimator, ZoeDepthInferenceError
 
         estimator = ZoeDepthEstimator()
 
@@ -500,10 +479,7 @@ class TestZoeDepthConvenienceFunctionsIntegration:
         self, mock_torch_modules: None
     ) -> None:
         """Test create_zoedepth_estimator creates a valid estimator."""
-        from video2d3d.depth.zoedepth import (
-            create_zoedepth_estimator,
-            ZoeDepthEstimator,
-        )
+        from video2d3d.depth.zoedepth import ZoeDepthEstimator, create_zoedepth_estimator
 
         estimator = create_zoedepth_estimator(
             model_variant="zoedepth_nk",
@@ -547,4 +523,3 @@ class TestZoeDepthDepthModeIntegration:
 
 
 # Import for test discovery
-from video2d3d.depth.model_selector import DepthModelType

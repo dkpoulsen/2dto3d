@@ -1,17 +1,13 @@
 """Integration tests for preview window with config system."""
 
-import pytest
-from unittest.mock import MagicMock, patch
-import tempfile
 import os
+import tempfile
+from unittest.mock import MagicMock, patch
 
-from video2d3d.preview import (
-    PreviewConfig,
-    PreviewWindow,
-    PreviewLayout,
-    create_preview_window,
-)
-from video2d3d.utils.config import load_config, AppConfig
+import pytest
+
+from video2d3d.preview import PreviewConfig, PreviewLayout, PreviewWindow
+from video2d3d.utils.config import load_config
 
 
 class TestPreviewConfigIntegration:

@@ -1,21 +1,19 @@
 """Test configuration loading and management."""
 
-import pytest
 from pathlib import Path
 
 from video2d3d.utils.config import (
     Config,
-    ProcessingConfig,
-    VideoInputConfig,
-    VideoOutputConfig,
     DepthEstimationConfig,
-    StereoGenerationConfig,
+    ProcessingConfig,
     ProgressTrackingConfig,
     RateLimitConfig,
+    StereoGenerationConfig,
+    VideoInputConfig,
     WebApiConfig,
-    load_config,
-    get_config_path,
     deep_update,
+    get_config_path,
+    load_config,
 )
 
 
@@ -170,9 +168,7 @@ class TestRateLimitConfig:
 
     def test_rate_limit_config_with_whitelist(self):
         """Test RateLimitConfig with IP whitelist."""
-        rate_limit = RateLimitConfig(
-            whitelist_ips=["192.168.1.0/24", "10.0.0.1"]
-        )
+        rate_limit = RateLimitConfig(whitelist_ips=["192.168.1.0/24", "10.0.0.1"])
         assert len(rate_limit.whitelist_ips) == 2
 
 

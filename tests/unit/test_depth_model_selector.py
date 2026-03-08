@@ -17,7 +17,7 @@ from __future__ import annotations
 
 import sys
 from typing import TYPE_CHECKING
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 import numpy as np
 import pytest
@@ -287,10 +287,7 @@ class TestDepthModelConfig:
 
     def test_default_values(self, mock_torch: MagicMock) -> None:
         """Test default configuration values."""
-        from video2d3d.depth.model_selector import (
-            DepthModelConfig,
-            DepthModelType,
-        )
+        from video2d3d.depth.model_selector import DepthModelConfig, DepthModelType
 
         config = DepthModelConfig()
 
@@ -302,10 +299,7 @@ class TestDepthModelConfig:
 
     def test_custom_values(self, mock_torch: MagicMock) -> None:
         """Test custom configuration values."""
-        from video2d3d.depth.model_selector import (
-            DepthModelConfig,
-            DepthModelType,
-        )
+        from video2d3d.depth.model_selector import DepthModelConfig, DepthModelType
 
         config = DepthModelConfig(
             primary_model=DepthModelType.DPT_LARGE,
@@ -325,10 +319,7 @@ class TestDepthModelConfig:
 
     def test_string_model_type_conversion(self, mock_torch: MagicMock) -> None:
         """Test that string model types are converted to enums."""
-        from video2d3d.depth.model_selector import (
-            DepthModelConfig,
-            DepthModelType,
-        )
+        from video2d3d.depth.model_selector import DepthModelConfig, DepthModelType
 
         config = DepthModelConfig(
             primary_model="dpt_large",
@@ -339,10 +330,7 @@ class TestDepthModelConfig:
 
     def test_fallback_chain_normalization(self, mock_torch: MagicMock) -> None:
         """Test that fallback chain is normalized from strings."""
-        from video2d3d.depth.model_selector import (
-            DepthModelConfig,
-            DepthModelType,
-        )
+        from video2d3d.depth.model_selector import DepthModelConfig, DepthModelType
 
         config = DepthModelConfig(fallback_chain=["midas_small", "dpt_hybrid", "adabins_nyu"])
 
@@ -401,10 +389,7 @@ class TestDepthModelSelectorInit:
 
     def test_init_with_defaults(self, mock_torch: MagicMock) -> None:
         """Test initialization with default values."""
-        from video2d3d.depth.model_selector import (
-            DepthModelSelector,
-            DepthModelType,
-        )
+        from video2d3d.depth.model_selector import DepthModelSelector, DepthModelType
 
         selector = DepthModelSelector()
 
@@ -414,10 +399,7 @@ class TestDepthModelSelectorInit:
 
     def test_init_with_model_type_string(self, mock_torch: MagicMock) -> None:
         """Test initialization with model type as string."""
-        from video2d3d.depth.model_selector import (
-            DepthModelSelector,
-            DepthModelType,
-        )
+        from video2d3d.depth.model_selector import DepthModelSelector, DepthModelType
 
         selector = DepthModelSelector(
             primary_model="dpt_large",
@@ -428,8 +410,8 @@ class TestDepthModelSelectorInit:
     def test_init_with_config(self, mock_torch: MagicMock) -> None:
         """Test initialization with DepthModelConfig."""
         from video2d3d.depth.model_selector import (
-            DepthModelSelector,
             DepthModelConfig,
+            DepthModelSelector,
             DepthModelType,
         )
 
@@ -506,11 +488,7 @@ class TestModelSelectionForScene:
 
     def test_select_model_for_indoor(self, mock_torch: MagicMock) -> None:
         """Test that indoor scene selects NYU model."""
-        from video2d3d.depth.model_selector import (
-            DepthModelSelector,
-            DepthModelType,
-            SceneType,
-        )
+        from video2d3d.depth.model_selector import DepthModelSelector, DepthModelType, SceneType
 
         selector = DepthModelSelector()
 
@@ -520,11 +498,7 @@ class TestModelSelectionForScene:
 
     def test_select_model_for_outdoor(self, mock_torch: MagicMock) -> None:
         """Test that outdoor scene selects KITTI model."""
-        from video2d3d.depth.model_selector import (
-            DepthModelSelector,
-            DepthModelType,
-            SceneType,
-        )
+        from video2d3d.depth.model_selector import DepthModelSelector, DepthModelType, SceneType
 
         selector = DepthModelSelector()
 
@@ -534,11 +508,7 @@ class TestModelSelectionForScene:
 
     def test_select_model_for_unknown_uses_primary(self, mock_torch: MagicMock) -> None:
         """Test that unknown scene uses primary model."""
-        from video2d3d.depth.model_selector import (
-            DepthModelSelector,
-            DepthModelType,
-            SceneType,
-        )
+        from video2d3d.depth.model_selector import DepthModelSelector, DepthModelType, SceneType
 
         selector = DepthModelSelector(primary_model="dpt_large")
 
@@ -552,10 +522,7 @@ class TestDepthModelSelectorMethods:
 
     def test_switch_model_success(self, mock_torch: MagicMock) -> None:
         """Test switch_model returns True for valid model."""
-        from video2d3d.depth.model_selector import (
-            DepthModelSelector,
-            DepthModelType,
-        )
+        from video2d3d.depth.model_selector import DepthModelSelector, DepthModelType
 
         selector = DepthModelSelector()
 
@@ -582,10 +549,7 @@ class TestDepthModelSelectorMethods:
 
     def test_get_available_models(self, mock_torch: MagicMock) -> None:
         """Test get_available_models returns loaded estimators."""
-        from video2d3d.depth.model_selector import (
-            DepthModelSelector,
-            DepthModelType,
-        )
+        from video2d3d.depth.model_selector import DepthModelSelector, DepthModelType
 
         selector = DepthModelSelector()
         selector._estimators[DepthModelType.ADABINS_NYU] = MagicMock()
@@ -634,10 +598,7 @@ class TestDepthModelSelectorMethods:
 
     def test_close_clears_resources(self, mock_torch: MagicMock) -> None:
         """Test close method clears all resources."""
-        from video2d3d.depth.model_selector import (
-            DepthModelSelector,
-            DepthModelType,
-        )
+        from video2d3d.depth.model_selector import DepthModelSelector, DepthModelType
 
         selector = DepthModelSelector()
 
@@ -709,20 +670,14 @@ class TestConvenienceFunctions:
 
     def test_create_model_selector_defaults(self, mock_torch: MagicMock) -> None:
         """Test create_model_selector with default values."""
-        from video2d3d.depth.model_selector import (
-            create_model_selector,
-            DepthModelType,
-        )
+        from video2d3d.depth.model_selector import DepthModelType, create_model_selector
 
         selector = create_model_selector()
         assert selector.config.primary_model == DepthModelType.ADABINS_NYU
 
     def test_create_model_selector_custom_values(self, mock_torch: MagicMock) -> None:
         """Test create_model_selector with custom values."""
-        from video2d3d.depth.model_selector import (
-            create_model_selector,
-            DepthModelType,
-        )
+        from video2d3d.depth.model_selector import DepthModelType, create_model_selector
 
         selector = create_model_selector(
             primary_model="dpt_large",

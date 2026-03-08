@@ -8,24 +8,19 @@ This module tests the PresetManager class including:
 """
 
 from pathlib import Path
-from unittest.mock import MagicMock, patch
 
 import pytest
 
-from video2d3d.presets.manager import (
-    PresetManager,
-    PresetManagerError,
-    get_preset_manager,
-)
+from video2d3d.presets.manager import PresetManager, PresetManagerError, get_preset_manager
 from video2d3d.presets.models import (
+    DepthEstimationSettings,
     Preset,
     PresetCategory,
     PresetSettings,
-    DepthEstimationSettings,
-    StereoGenerationSettings,
-    VideoOutputSettings,
     ProcessingSettings,
     QualitySettings,
+    StereoGenerationSettings,
+    VideoOutputSettings,
 )
 
 

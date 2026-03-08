@@ -28,7 +28,6 @@ from video2d3d.stereo.interlaced import (
     encode_interlaced,
 )
 
-
 # ---------------------------------------------------------------------------
 # Fixtures
 # ---------------------------------------------------------------------------
@@ -557,11 +556,7 @@ class TestIntegration:
 
     def test_import_from_stereo_module(self) -> None:
         """Test that encoder can be imported from stereo module."""
-        from video2d3d.stereo import (
-            InterlacedEncoder,
-            InterlacedPattern,
-            encode_interlaced,
-        )
+        from video2d3d.stereo import InterlacedEncoder, InterlacedPattern, encode_interlaced
 
         assert InterlacedEncoder is not None
         assert InterlacedPattern is not None

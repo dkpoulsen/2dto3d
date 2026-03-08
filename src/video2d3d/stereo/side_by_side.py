@@ -36,7 +36,6 @@ if TYPE_CHECKING:
 
 from video2d3d.utils.logger import get_logger
 
-
 # ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------
@@ -50,7 +49,8 @@ LUMINANCE_R: Final[float] = 0.299
 LUMINANCE_G: Final[float] = 0.587
 LUMINANCE_B: Final[float] = 0.114
 
-def _get_sbs_logger() -> "Logger":
+
+def _get_sbs_logger() -> Logger:
     """Get the side-by-side module logger (lazy initialization)."""
     return get_logger("stereo.side_by_side")
 

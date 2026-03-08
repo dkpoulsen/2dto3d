@@ -12,7 +12,6 @@ This module tests both GPU and CPU docker-compose files for:
 
 from pathlib import Path
 
-import pytest
 import yaml
 
 

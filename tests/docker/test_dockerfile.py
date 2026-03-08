@@ -13,8 +13,6 @@ This module tests both GPU and CPU Dockerfiles for:
 import re
 from pathlib import Path
 
-import pytest
-
 
 class TestDockerfileExists:
     """Test Dockerfile file existence and basic properties."""
@@ -125,9 +123,9 @@ class TestDockerfileSecurity:
             r"token\s*=\s*['\"][^'\"]+['\"]",
         ]
         for pattern in secret_patterns:
-            assert not re.search(pattern, dockerfile_content, re.IGNORECASE), (
-                f"Potential hardcoded secret found: {pattern}"
-            )
+            assert not re.search(
+                pattern, dockerfile_content, re.IGNORECASE
+            ), f"Potential hardcoded secret found: {pattern}"
 
     def test_dockerfile_no_sudo(self, dockerfile_content: str) -> None:
         """Dockerfile should not use sudo."""
@@ -305,6 +303,7 @@ class TestDockerfileLayerOrdering:
         assert src_pos > 0, "src/ should be copied"
         # pip install should come before COPY src/
         assert pip_pos < src_pos, "pip install should come before COPY src/"
+
 
 class TestDockerfileOpenCVDependencies:
     """Test Dockerfile OpenCV runtime dependencies."""

@@ -16,7 +16,6 @@ from PyQt6.QtWidgets import (
     QLabel,
     QLineEdit,
     QListWidget,
-    QListWidgetItem,
     QMessageBox,
     QProgressBar,
     QPushButton,
@@ -31,6 +30,7 @@ from video2d3d.gui.workers import BatchConversionWorker
 
 if TYPE_CHECKING:
     pass
+
 
 class BatchTab(QWidget):
     """Tab for batch video conversion."""

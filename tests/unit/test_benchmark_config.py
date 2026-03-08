@@ -2,15 +2,16 @@
 
 from __future__ import annotations
 
-import pytest
 from pathlib import Path
 
+import pytest
+
 from video2d3d.benchmark.config import (
-    BenchmarkConfig,
     BenchmarkCategory,
-    ResolutionPreset,
-    QuickBenchmarkConfig,
+    BenchmarkConfig,
     FullBenchmarkConfig,
+    QuickBenchmarkConfig,
+    ResolutionPreset,
 )
 
 

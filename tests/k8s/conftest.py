@@ -10,7 +10,6 @@ from typing import Any
 import pytest
 import yaml
 
-
 # Path to k8s directory
 K8S_DIR = Path(__file__).parent.parent.parent / "k8s"
 K8S_BASE_DIR = K8S_DIR / "base"
@@ -197,6 +196,7 @@ def deployment_config(deployment_path: Path) -> dict:
         if doc is not None and doc.get("kind") == "Deployment":
             return doc
     return docs[0] if docs else None
+
 
 @pytest.fixture
 def service_configs(service_path: Path) -> list[dict]:

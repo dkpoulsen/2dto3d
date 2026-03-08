@@ -7,8 +7,7 @@ using Real-ESRGAN models with ONNX Runtime for inference.
 from __future__ import annotations
 
 import time
-from pathlib import Path
-from typing import Any, Dict, Optional, Tuple, Union
+from typing import Any, Dict, Optional
 
 import numpy as np
 

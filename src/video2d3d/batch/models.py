@@ -71,7 +71,7 @@ class JobPriority(Enum):
     URGENT = 20
 
     @classmethod
-    def from_value(cls, value: int) -> "JobPriority":
+    def from_value(cls, value: int) -> JobPriority:
         """Get JobPriority from its numeric value.
 
         Args:
@@ -84,6 +84,7 @@ class JobPriority(Enum):
             if priority.value == value:
                 return priority
         return cls.NORMAL
+
 
 @dataclass
 class BatchJobResult:
@@ -351,12 +352,12 @@ class BatchJob:
             status=JobStatus(data["status"]),
             priority=JobPriority(data.get("priority", 5)),
             created_at=datetime.fromisoformat(data["created_at"]),
-            started_at=datetime.fromisoformat(data["started_at"])
-            if data.get("started_at")
-            else None,
-            completed_at=datetime.fromisoformat(data["completed_at"])
-            if data.get("completed_at")
-            else None,
+            started_at=(
+                datetime.fromisoformat(data["started_at"]) if data.get("started_at") else None
+            ),
+            completed_at=(
+                datetime.fromisoformat(data["completed_at"]) if data.get("completed_at") else None
+            ),
             progress=data.get("progress", 0.0),
             current_stage=data.get("current_stage", ""),
             retry_count=data.get("retry_count", 0),
@@ -365,9 +366,9 @@ class BatchJob:
             config=data.get("config", {}),
             metadata=data.get("metadata", {}),
             source=data.get("source", "manual"),
-            scheduled_at=datetime.fromisoformat(data["scheduled_at"])
-            if data.get("scheduled_at")
-            else None,
+            scheduled_at=(
+                datetime.fromisoformat(data["scheduled_at"]) if data.get("scheduled_at") else None
+            ),
             depends_on=data.get("depends_on", []),
             dependent_jobs=data.get("dependent_jobs", []),
         )

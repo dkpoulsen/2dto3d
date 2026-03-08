@@ -220,6 +220,7 @@ class JobConfigRequest(BaseModel):
         description="AI upscaling configuration using ESRGAN/Real-ESRGAN models",
     )
 
+
 class UpscalingConfigRequest(BaseModel):
     """Configuration for AI-based video upscaling.
 
@@ -452,6 +453,7 @@ class UploadResponse(BaseModel):
         description="Success message.",
     )
 
+
 class JobResultResponse(BaseModel):
     """Result details for a completed job."""
 
@@ -594,6 +596,7 @@ class JobResponse(BaseModel):
         "These jobs will be notified when this job completes.",
     )
 
+
 class JobListResponse(BaseModel):
     """Response for job listing endpoint."""
 
@@ -668,8 +671,6 @@ class ErrorResponse(BaseModel):
     request_id: Optional[str] = Field(None, description="Request identifier for tracing")
 
 
-
-
 class GPUStatusResponse(BaseModel):
     """GPU status information for health check."""
 
@@ -679,7 +680,9 @@ class GPUStatusResponse(BaseModel):
     memory_used_mb: float = Field(default=0.0, description="GPU memory used in MB")
     memory_free_mb: float = Field(default=0.0, description="GPU memory free in MB")
     memory_total_mb: float = Field(default=0.0, description="Total GPU memory in MB")
-    memory_utilization_percent: float = Field(default=0.0, description="GPU memory utilization percentage")
+    memory_utilization_percent: float = Field(
+        default=0.0, description="GPU memory utilization percentage"
+    )
     compute_capability: Optional[str] = Field(None, description="GPU compute capability")
 
 
@@ -739,7 +742,9 @@ class ComprehensiveHealthResponse(BaseModel):
     status: HealthStatus = Field(..., description="Overall health status")
     version: str = Field(..., description="API version")
     uptime_seconds: float = Field(..., description="Service uptime in seconds")
-    timestamp: datetime = Field(default_factory=datetime.utcnow, description="Health check timestamp")
+    timestamp: datetime = Field(
+        default_factory=datetime.utcnow, description="Health check timestamp"
+    )
     gpu: GPUStatusResponse = Field(..., description="GPU status")
     memory: SystemMemoryResponse = Field(..., description="System memory status")
     queue: QueueHealthResponse = Field(..., description="Queue status")
@@ -747,7 +752,6 @@ class ComprehensiveHealthResponse(BaseModel):
         default_factory=dict,
         description="Individual component check results",
     )
-
 
 
 class HealthCheckResponse(BaseModel):
@@ -872,9 +876,15 @@ class SystemStateResponse(BaseModel):
     platform_system: str = Field(default="", description="Operating system")
     platform_python_version: str = Field(default="", description="Python version")
     gpu: GPUInfoResponse = Field(default_factory=GPUInfoResponse, description="GPU state")
-    memory: MemoryInfoResponse = Field(default_factory=MemoryInfoResponse, description="Memory state")
-    process: ProcessInfoResponse = Field(default_factory=ProcessInfoResponse, description="Process state")
-    active_jobs: list[ActiveJobInfoResponse] = Field(default_factory=list, description="Active jobs")
+    memory: MemoryInfoResponse = Field(
+        default_factory=MemoryInfoResponse, description="Memory state"
+    )
+    process: ProcessInfoResponse = Field(
+        default_factory=ProcessInfoResponse, description="Process state"
+    )
+    active_jobs: list[ActiveJobInfoResponse] = Field(
+        default_factory=list, description="Active jobs"
+    )
     queue_stats: dict[str, Any] = Field(default_factory=dict, description="Queue statistics")
     app_version: str = Field(default="", description="Application version")
 
@@ -931,7 +941,9 @@ class CrashReportSummaryResponse(BaseModel):
 class CrashReportListResponse(BaseModel):
     """List of crash report summaries with metadata."""
 
-    reports: list[CrashReportSummaryResponse] = Field(default_factory=list, description="Crash report summaries")
+    reports: list[CrashReportSummaryResponse] = Field(
+        default_factory=list, description="Crash report summaries"
+    )
     total_count: int = Field(default=0, description="Total number of reports")
     page: int = Field(default=1, description="Current page number")
     page_size: int = Field(default=20, description="Items per page")

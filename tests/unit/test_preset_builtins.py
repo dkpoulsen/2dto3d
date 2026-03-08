@@ -10,27 +10,23 @@ import pytest
 
 from video2d3d.presets.builtins import (
     ALL_BUILTIN_PRESETS,
+    BALANCED,
     BUILTIN_PRESETS_BY_ID,
     BUILTIN_PRESETS_BY_NAME,
-    CINEMA_SBS,
     CINEMA_ANAGLYPH,
-    VR_OVER_UNDER,
-    VR_SIDE_BY_SIDE,
-    WEB_SBS,
-    WEB_ANAGLYPH,
-    MOBILE_SBS,
-    MOBILE_ANAGLYPH,
+    CINEMA_SBS,
     FAST_PREVIEW,
     MAX_QUALITY,
-    BALANCED,
+    MOBILE_ANAGLYPH,
+    MOBILE_SBS,
+    VR_OVER_UNDER,
+    VR_SIDE_BY_SIDE,
+    WEB_ANAGLYPH,
+    WEB_SBS,
     get_builtin_preset,
     get_builtin_preset_by_name,
 )
-from video2d3d.presets.models import (
-    Preset,
-    PresetCategory,
-    PresetSettings,
-)
+from video2d3d.presets.models import Preset, PresetCategory, PresetSettings
 
 
 class TestBuiltinPresetsExist:
@@ -319,7 +315,6 @@ class TestPresetSerialization:
     @pytest.mark.parametrize("preset", ALL_BUILTIN_PRESETS, ids=lambda p: p.name)
     def test_to_json_round_trip(self, preset: Preset):
         """Test that presets survive JSON round trip."""
-        import json
 
         json_str = preset.to_json()
         restored = Preset.from_json(json_str)

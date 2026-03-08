@@ -28,7 +28,6 @@ from video2d3d.stereo.top_bottom import (
     encode_top_bottom,
 )
 
-
 # ---------------------------------------------------------------------------
 # Fixtures
 # ---------------------------------------------------------------------------
@@ -503,6 +502,7 @@ class TestEdgeCases:
         # Check bottom half is blue - rows 50-99
         assert result[75, 25, 0] == 0  # Red channel
         assert result[75, 25, 2] == 255  # Blue channel
+
     def test_none_input_raises_error(
         self,
         mock_logger: MagicMock,
@@ -549,8 +549,8 @@ class TestIntegration:
         from video2d3d.stereo import (
             TopBottomEncoder,
             TopBottomLayout,
-            encode_top_bottom,
             create_top_bottom_encoder,
+            encode_top_bottom,
         )
 
         assert TopBottomEncoder is not None

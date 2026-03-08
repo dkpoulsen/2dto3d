@@ -15,11 +15,7 @@ from typing import Optional
 
 from fastapi import APIRouter, HTTPException, Query, status
 
-from video2d3d.crash import (
-    CrashReport,
-    CrashSeverity,
-    get_crash_reporter,
-)
+from video2d3d.crash import CrashReport, CrashSeverity, get_crash_reporter
 from video2d3d.crash.models import CrashType
 from video2d3d.utils.logger import get_logger
 from video2d3d.web.schemas import (

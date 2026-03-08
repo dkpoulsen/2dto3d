@@ -2,16 +2,17 @@
 
 from __future__ import annotations
 
-import pytest
 from pathlib import Path
+
+import pytest
 
 from video2d3d.upscaling.config import (
     ModelType,
     UpscalerConfig,
+    get_default_model_path,
     get_model_info,
     get_model_scale,
     list_available_models,
-    get_default_model_path,
 )
 
 

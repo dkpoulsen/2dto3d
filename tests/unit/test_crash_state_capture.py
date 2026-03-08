@@ -13,12 +13,9 @@ from __future__ import annotations
 
 import os
 import time
-from typing import Any, Dict, List
 from unittest.mock import MagicMock, patch
 
-import pytest
-
-from video2d3d.crash.models import ActiveJobInfo, GPUInfo, MemoryInfo, ProcessInfo, SystemState
+from video2d3d.crash.models import GPUInfo, MemoryInfo, ProcessInfo, SystemState
 from video2d3d.crash.state_capture import (
     capture_system_state,
     get_active_jobs,

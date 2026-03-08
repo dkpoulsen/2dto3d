@@ -2,18 +2,18 @@
 
 from __future__ import annotations
 
-import json
-import pytest
 import tempfile
 from datetime import datetime
 from pathlib import Path
 
+import pytest
+
 from video2d3d.benchmark.results import (
-    TimingMetrics,
-    MemoryMetrics,
-    GPUMetrics,
     BenchmarkResult,
     BenchmarkResults,
+    GPUMetrics,
+    MemoryMetrics,
+    TimingMetrics,
 )
 
 

@@ -31,19 +31,8 @@ import sys
 import threading
 import traceback
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
 from pathlib import Path
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    Callable,
-    Dict,
-    List,
-    Optional,
-    Set,
-    Type,
-    Union,
-)
+from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Set, Type
 
 from video2d3d.crash.models import (
     CrashReport,
@@ -51,13 +40,12 @@ from video2d3d.crash.models import (
     CrashReportSummary,
     CrashSeverity,
     CrashType,
-    SystemState,
 )
 from video2d3d.crash.state_capture import capture_system_state, set_app_start_time
 from video2d3d.utils.logger import get_logger
 
 if TYPE_CHECKING:
-    from loguru import Logger
+
     from video2d3d.batch import BatchVideoQueue
 
 # Signal name mapping
@@ -68,7 +56,7 @@ SIGNAL_NAMES: Dict[int, str] = {
 }
 
 # Global crash reporter instance
-_crash_reporter: Optional["CrashReporter"] = None
+_crash_reporter: Optional[CrashReporter] = None
 
 
 @dataclass
@@ -131,7 +119,7 @@ class CrashReporter:
         self,
         config: Optional[CrashReporterConfig] = None,
         *,
-        queue: Optional["BatchVideoQueue"] = None,
+        queue: Optional[BatchVideoQueue] = None,
         app_config: Optional[Dict[str, Any]] = None,
     ):
         """Initialize the crash reporter.
@@ -635,7 +623,7 @@ class CrashReporter:
 
         return report
 
-    def set_queue(self, queue: Optional["BatchVideoQueue"]) -> None:
+    def set_queue(self, queue: Optional[BatchVideoQueue]) -> None:
         """Set the batch queue for job state capture.
 
         Args:
@@ -645,12 +633,10 @@ class CrashReporter:
             self.queue = queue
 
 
-
-
 def init_crash_reporting(
     config: Optional[CrashReporterConfig] = None,
     *,
-    queue: Optional["BatchVideoQueue"] = None,
+    queue: Optional[BatchVideoQueue] = None,
     app_config: Optional[Dict[str, Any]] = None,
     app_version: str = "",
     app_start_time: Optional[float] = None,
@@ -696,7 +682,7 @@ def get_crash_reporter() -> Optional[CrashReporter]:
     return _crash_reporter
 
 
-def set_crash_reporter_queue(queue: Optional["BatchVideoQueue"]) -> None:
+def set_crash_reporter_queue(queue: Optional[BatchVideoQueue]) -> None:
     """Set the batch queue for the global crash reporter.
 
     This allows the crash reporter to capture active job information
@@ -709,7 +695,6 @@ def set_crash_reporter_queue(queue: Optional["BatchVideoQueue"]) -> None:
 
     if _crash_reporter is not None:
         _crash_reporter.set_queue(queue)
-
 
 
 __all__ = [

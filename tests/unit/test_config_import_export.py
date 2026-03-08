@@ -1,7 +1,6 @@
 """Tests for configuration import/export functionality."""
 
 import json
-import tempfile
 from pathlib import Path
 
 import pytest

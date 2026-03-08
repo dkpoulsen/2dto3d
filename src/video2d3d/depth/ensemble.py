@@ -49,9 +49,8 @@ import numpy as np
 if TYPE_CHECKING:
     from loguru import Logger
 
-from video2d3d.utils.logger import get_logger, log_exception, log_model_inference
 from video2d3d.utils.gpu import GPUConfig, select_device
-
+from video2d3d.utils.logger import get_logger, log_model_inference
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -87,6 +86,8 @@ _MAX_PERFORMANCE_HISTORY_SIZE: int = 100
 
 # Number of recent performance scores to use for weight computation
 _PERFORMANCE_WINDOW_SIZE: int = 10
+
+
 class EnsembleMethod(Enum):
     """Available ensemble combination methods."""
 
@@ -256,7 +257,7 @@ def _normalize_weights_list(weights: list[float]) -> list[float]:
         self.original_exceptions = original_exceptions or []
 
 
-def _get_ensemble_logger() -> "Logger":
+def _get_ensemble_logger() -> Logger:
     """Get the ensemble module logger (lazy initialization)."""
     return get_logger("depth.ensemble")
 
@@ -366,6 +367,7 @@ class EnsemblePredictor:
             return [w / total for w in weights]
         n = len(weights)
         return [1.0 / n] * n if n > 0 else []
+
     @property
     def weights(self) -> list[float]:
         """Get the current weights for each model."""
@@ -443,6 +445,7 @@ class EnsemblePredictor:
                 weight = _DEFAULT_WEIGHTS.get(normalized, _DEFAULT_MODEL_WEIGHT)
             weights.append(weight)
         return weights
+
     def _get_estimator(self, model_name: str) -> Any:
         """Get or create an estimator for the specified model.
 
@@ -461,8 +464,8 @@ class EnsemblePredictor:
 
         # Import here to avoid circular imports
         from video2d3d.depth.model_selector import (
-            DepthModelSelector,
             DepthModelConfig,
+            DepthModelSelector,
             DepthModelType,
         )
 
@@ -554,6 +557,7 @@ class EnsemblePredictor:
 
         # Normalize: lower uncertainty -> higher weight
         return self._normalize_weights(uncertainties)
+
     def _compute_uncertainty_weights(
         self,
         predictions: list[np.ndarray],
@@ -864,6 +868,7 @@ class EnsemblePredictor:
                 uncertainty = uncertainty / u_max
             return uncertainty
         return np.zeros_like(combined)
+
     def estimate_depth_batch(
         self,
         frames: list[np.ndarray],
@@ -884,8 +889,7 @@ class EnsemblePredictor:
             return []
 
         self._logger.info(
-            f"Processing batch of {len(frames)} frames with ensemble "
-            f"(batch_size={batch_size})"
+            f"Processing batch of {len(frames)} frames with ensemble " f"(batch_size={batch_size})"
         )
 
         # TODO: Implement parallel batch processing when models support it
@@ -896,6 +900,7 @@ class EnsemblePredictor:
             depth_maps.append(depth_map)
 
         return depth_maps
+
     def get_model_weights(self) -> dict[str, float]:
         """Get the current weights for each model.
 
@@ -936,6 +941,7 @@ class EnsemblePredictor:
             new_weights = self._normalize_weights(new_weights)
 
         self._weights = new_weights
+
     def update_performance(self, model_name: str, score: float) -> None:
         """Update performance history for a model.
 
@@ -961,6 +967,7 @@ class EnsemblePredictor:
         # Recompute weights if using performance strategy
         if self.config.weight_strategy == WeightStrategy.PERFORMANCE:
             self._weights = self._compute_auto_weights()
+
     def get_uncertainty_map(
         self,
         predictions: Optional[list[np.ndarray]] = None,
@@ -996,11 +1003,12 @@ class EnsemblePredictor:
             uncertainty = uncertainty / u_max
 
         return uncertainty
+
     def __call__(self, frame: np.ndarray) -> np.ndarray:
         """Estimate depth from a single frame (callable interface)."""
         return self.estimate_depth(frame)
 
-    def __enter__(self) -> "EnsemblePredictor":
+    def __enter__(self) -> EnsemblePredictor:
         """Context manager entry."""
         return self
 

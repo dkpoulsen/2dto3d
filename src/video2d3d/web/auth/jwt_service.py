@@ -17,11 +17,7 @@ from passlib.context import CryptContext
 
 from video2d3d.utils.logger import get_logger
 from video2d3d.web.auth.database import UserModel, get_session
-from video2d3d.web.auth.schemas import (
-    AuthConfig,
-    TokenPayload,
-    UserRole,
-)
+from video2d3d.web.auth.schemas import AuthConfig, TokenPayload, UserRole
 
 logger = get_logger("web.auth.jwt_service")
 
@@ -170,12 +166,16 @@ def decode_token(token: str) -> Optional[TokenPayload]:
             sub=payload["sub"],
             username=payload["username"],
             role=UserRole(payload["role"]),
-            exp=datetime.fromtimestamp(payload["exp"], tz=timezone.utc)
-            if "exp" in payload
-            else None,
-            iat=datetime.fromtimestamp(payload["iat"], tz=timezone.utc)
-            if "iat" in payload
-            else None,
+            exp=(
+                datetime.fromtimestamp(payload["exp"], tz=timezone.utc)
+                if "exp" in payload
+                else None
+            ),
+            iat=(
+                datetime.fromtimestamp(payload["iat"], tz=timezone.utc)
+                if "iat" in payload
+                else None
+            ),
             type=payload.get("type", "access"),
         )
     except JWTError as e:

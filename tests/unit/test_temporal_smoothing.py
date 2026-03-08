@@ -26,15 +26,14 @@ if TYPE_CHECKING:
 
 # Import the module under test (mocks are set up in conftest.py)
 from video2d3d.depth.temporal import (
+    TemporalSmoother,
     TemporalSmoothingConfig,
     TemporalSmoothingError,
     TemporalSmoothingMethod,
-    TemporalSmoother,
     TemporalState,
     create_temporal_smoother,
     smooth_depth_temporal,
 )
-
 
 # ---------------------------------------------------------------------------
 # Fixtures
@@ -69,6 +68,7 @@ def depth_map_sequence() -> list[np.ndarray]:
         depth = (base * 0.5 + 0.3 + noise).astype(np.float32)
         sequence.append(depth)
     return sequence
+
 
 @pytest.fixture
 def frame_sequence() -> list[np.ndarray]:
@@ -114,6 +114,7 @@ class TestTemporalSmoothingConfig:
         assert config.flow_poly_sigma == 1.2
         assert config.enable_occlusion_handling is True
         assert config.occlusion_threshold == 0.1
+
     def test_custom_values(self, mock_logger: MagicMock) -> None:
         """Test custom configuration values."""
         config = TemporalSmoothingConfig(
@@ -313,6 +314,7 @@ class TestEMASmoothing:
         assert result_high.max() <= 1.0
         assert result_low.min() >= 0.0
 
+
 # ---------------------------------------------------------------------------
 # Optical Flow Smoothing Tests
 # ---------------------------------------------------------------------------
@@ -473,6 +475,7 @@ class TestBatchProcessing:
         smoother = TemporalSmoother()
         results = smoother.process_batch([])
         assert results == []
+
 
 # ---------------------------------------------------------------------------
 # Convenience Functions Tests

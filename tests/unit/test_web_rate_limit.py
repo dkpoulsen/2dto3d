@@ -11,10 +11,10 @@ Tests cover:
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
-from unittest.mock import MagicMock, patch, PropertyMock
+from unittest.mock import MagicMock, patch
 
 import pytest
-from fastapi import FastAPI, Request, status
+from fastapi import FastAPI, status
 from fastapi.responses import JSONResponse
 from fastapi.testclient import TestClient
 
@@ -22,18 +22,14 @@ if TYPE_CHECKING:
     from collections.abc import Generator
 
 from video2d3d.web.rate_limit import (
-    get_client_ip,
+    SLOWAPI_AVAILABLE,
     create_limiter,
+    get_client_ip,
+    get_limiter,
+    limit_api,
+    limit_upload,
     rate_limit_exceeded_handler,
     setup_rate_limiting,
-    get_limiter,
-    limit_upload,
-    limit_api,
-    SLOWAPI_AVAILABLE,
-    # Constants
-    UNKNOWN_IP,
-    UNKNOWN_LIMIT,
-    DEFAULT_RATE_LIMIT_MESSAGE,
 )
 
 

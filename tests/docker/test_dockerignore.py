@@ -9,8 +9,6 @@ This module tests the .dockerignore file for:
 
 from pathlib import Path
 
-import pytest
-
 
 class TestDockerignoreExists:
     """Test .dockerignore file existence."""

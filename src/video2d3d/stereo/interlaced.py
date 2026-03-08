@@ -37,7 +37,6 @@ if TYPE_CHECKING:
 
 from video2d3d.utils.logger import get_logger
 
-
 # ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------
@@ -46,7 +45,7 @@ from video2d3d.utils.logger import get_logger
 MIN_IMAGE_DIMENSION: Final[int] = 1
 
 
-def _get_interlaced_logger() -> "Logger":
+def _get_interlaced_logger() -> Logger:
     """Get the interlaced module logger (lazy initialization)."""
     return get_logger("stereo.interlaced")
 

@@ -9,9 +9,10 @@ Tests cover:
 
 from __future__ import annotations
 
+from collections.abc import Generator
 from pathlib import Path
-from typing import TYPE_CHECKING, Generator
-from unittest.mock import MagicMock, patch
+from typing import TYPE_CHECKING
+from unittest.mock import patch
 
 import pytest
 
@@ -27,12 +28,7 @@ except ImportError:
     pytestmark = pytest.mark.skip(reason="PyQt6 not available")
 
 if _pyqt6_available:
-    from video2d3d.gui.widgets import (
-        CollapsibleBox,
-        DirectorySelector,
-        FileSelector,
-        FormRow,
-    )
+    from video2d3d.gui.widgets import CollapsibleBox, DirectorySelector, FileSelector, FormRow
 
 
 @pytest.fixture(scope="module")

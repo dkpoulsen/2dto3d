@@ -13,9 +13,9 @@ import pytest
 from video2d3d.video import (
     FrameBuffer,
     FrameBufferError,
+    FrameExtractionError,
     FrameExtractor,
     FrameExtractorConfig,
-    FrameExtractionError,
     FrameInfo,
     InvalidSamplingStrategyError,
     MemoryLimitExceededError,
@@ -685,9 +685,7 @@ class TestEdgeCases:
         with pytest.raises(FrameExtractionError, match="not in sample indices"):
             extractor.seek(5)
 
-    def test_close_method(
-        self, sample_video_path: Path, mock_video_capture: MagicMock
-    ) -> None:
+    def test_close_method(self, sample_video_path: Path, mock_video_capture: MagicMock) -> None:
         """Test close method releases resources."""
         sample_video_path.touch()
 
@@ -707,9 +705,7 @@ class TestEdgeCases:
         buffer.put(0, sample_frame)
         assert buffer.memory_usage_mb > 0
 
-    def test_buffer_cache_hit(
-        self, sample_video_path: Path, mock_video_capture: MagicMock
-    ) -> None:
+    def test_buffer_cache_hit(self, sample_video_path: Path, mock_video_capture: MagicMock) -> None:
         """Test buffer returns cached frame on second request."""
         sample_video_path.touch()
 

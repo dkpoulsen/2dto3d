@@ -16,15 +16,16 @@ import time
 from contextlib import contextmanager
 from dataclasses import dataclass, field
 from enum import Enum, auto
-from typing import TYPE_CHECKING, Any, Callable, Optional
+from typing import TYPE_CHECKING, Callable, Optional
 
 import psutil
 
 from video2d3d.utils.logger import get_logger, log_exception
 
 if TYPE_CHECKING:
-    from loguru import Logger
     from collections.abc import Generator
+
+    from loguru import Logger
 
 # Type alias for memory warning callbacks
 MemoryWarningCallback = Callable[["MemoryInfo", "MemoryWarningLevel"], None]
@@ -176,10 +177,10 @@ class MemoryMonitor:
             pass
     """
 
-    _instance: Optional["MemoryMonitor"] = None
+    _instance: Optional[MemoryMonitor] = None
     _lock: threading.Lock = threading.Lock()
 
-    def __new__(cls, config: Optional[MemoryMonitorConfig] = None) -> "MemoryMonitor":
+    def __new__(cls, config: Optional[MemoryMonitorConfig] = None) -> MemoryMonitor:
         """Create or return the singleton instance."""
         with cls._lock:
             if cls._instance is None:
@@ -212,7 +213,7 @@ class MemoryMonitor:
         self._logger = self._get_memory_logger()
 
     @staticmethod
-    def _get_memory_logger() -> "Logger":
+    def _get_memory_logger() -> Logger:
         """Get the memory module logger (lazy initialization)."""
         return get_logger("memory_monitor")
 

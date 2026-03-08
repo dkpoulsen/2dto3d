@@ -9,8 +9,6 @@ This module provides endpoints for:
 from __future__ import annotations
 
 from datetime import datetime
-from pathlib import Path
-from typing import Optional
 
 from fastapi import APIRouter, HTTPException, status
 from fastapi.responses import FileResponse
@@ -18,10 +16,7 @@ from fastapi.responses import FileResponse
 from video2d3d.utils.config import get_config
 from video2d3d.utils.logger import get_logger
 from video2d3d.web.exceptions import FileNotFoundError, ValidationError
-from video2d3d.web.schemas import (
-    DownloadInfoResponse,
-    ErrorResponse,
-)
+from video2d3d.web.schemas import DownloadInfoResponse, ErrorResponse
 from video2d3d.web.state import app_state
 from video2d3d.web.utils import (
     SUPPORTED_VIDEO_EXTENSIONS,

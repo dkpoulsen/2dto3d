@@ -117,6 +117,11 @@ exclude = '''
 )/
 '''
 
+# isort configuration
+[tool.isort]
+profile = "black"
+line_length = 100
+known_first_party = ["video2d3d"]
 # Ruff configuration
 [tool.ruff]
 line-length = 100

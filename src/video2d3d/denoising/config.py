@@ -9,10 +9,9 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from enum import Enum
 from pathlib import Path
-from typing import List, Optional, Union
+from typing import List, Optional
 
 from video2d3d.utils.gpu import GPUConfig, select_device
-
 
 # Default configuration values
 _DEFAULT_NUM_INPUT_FRAMES: int = 5  # Number of frames for temporal denoising
@@ -29,7 +28,7 @@ class DenoiserModelType(Enum):
     NONE = "none"  # Disable denoising
 
     @classmethod
-    def from_string(cls, name: str) -> "DenoiserModelType":
+    def from_string(cls, name: str) -> DenoiserModelType:
         """Get model type from string name.
 
         Args:

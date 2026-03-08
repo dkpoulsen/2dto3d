@@ -23,11 +23,10 @@ Running the server:
 """
 
 from video2d3d.web.app import app, create_app
-from video2d3d.web.state import app_state
 from video2d3d.web.exceptions import (
     APIError,
-    FileSizeExceededError,
     FileNotFoundError,
+    FileSizeExceededError,
     FileUploadError,
     JobNotCancellableError,
     JobNotFoundError,
@@ -58,6 +57,7 @@ from video2d3d.web.schemas import (
     SubmitJobResponse,
     UploadResponse,
 )
+from video2d3d.web.state import app_state
 
 __all__ = [
     # App

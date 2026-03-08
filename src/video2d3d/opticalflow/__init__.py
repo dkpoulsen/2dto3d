@@ -30,27 +30,22 @@ Example usage:
     ```
 """
 
-from video2d3d.opticalflow.engine import (
-    # Classes
-    OpticalFlowEngine,
-    OpticalFlowConfig,
-    OpticalFlowModelType,
-    # Exceptions
-    OpticalFlowError,
-    ModelLoadError,
-    InferenceError,
-    # Functions
-    create_opticalflow_engine,
-    compute_optical_flow,
-    # Constants
-    _DEFAULT_RAFT_RESOLUTION,
-    _DEFAULT_PWC_RESOLUTION,
-    _DEFAULT_FARNEBACK_PYR_SCALE,
-    _DEFAULT_FARNEBACK_LEVELS,
-    _DEFAULT_FARNEBACK_WINDOW,
+from video2d3d.opticalflow.engine import (  # Classes; Exceptions; Functions; Constants
     _DEFAULT_FARNEBACK_ITERATIONS,
+    _DEFAULT_FARNEBACK_LEVELS,
+    _DEFAULT_FARNEBACK_PYR_SCALE,
+    _DEFAULT_FARNEBACK_WINDOW,
+    _DEFAULT_PWC_RESOLUTION,
+    _DEFAULT_RAFT_RESOLUTION,
+    InferenceError,
+    ModelLoadError,
+    OpticalFlowConfig,
+    OpticalFlowEngine,
+    OpticalFlowError,
+    OpticalFlowModelType,
+    compute_optical_flow,
+    create_opticalflow_engine,
 )
-
 
 __all__ = [
     # Classes

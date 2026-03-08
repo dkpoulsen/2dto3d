@@ -20,7 +20,7 @@ class AudioChannelLayout(Enum):
     SURROUND_7_1 = "7.1"  # 8 channels (L, R, C, LFE, BL, BR, SL, SR)
 
     @classmethod
-    def from_channel_count(cls, count: int) -> "AudioChannelLayout":
+    def from_channel_count(cls, count: int) -> AudioChannelLayout:
         """Get channel layout from channel count.
 
         Args:

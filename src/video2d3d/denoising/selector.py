@@ -12,16 +12,16 @@ from typing import TYPE_CHECKING, List, Optional, Union
 
 import numpy as np
 
-from video2d3d.utils.logger import get_logger, log_exception
+from video2d3d.utils.logger import get_logger
 
 from .base import VideoDenoiserBase
+from .basicvsr_plusplus import BasicVSRPlusPlusDenoiser
 from .config import DenoiserModelType, VideoDenoiserConfig
 from .exceptions import InferenceError, VideoDenoisingError
 from .fastdvdnet import FastDVDNetDenoiser
-from .basicvsr_plusplus import BasicVSRPlusPlusDenoiser
 
 if TYPE_CHECKING:
-    from loguru import Logger
+    pass
 
 
 class VideoDenoiserSelector:
@@ -332,7 +332,7 @@ class VideoDenoiserSelector:
         self._active_model = None
         self._logger.debug("VideoDenoiserSelector resources released")
 
-    def __enter__(self) -> "VideoDenoiserSelector":
+    def __enter__(self) -> VideoDenoiserSelector:
         """Context manager entry."""
         return self
 

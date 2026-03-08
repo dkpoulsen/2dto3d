@@ -43,18 +43,13 @@ if TYPE_CHECKING:
     from loguru import Logger
     from torch import nn
 
-from video2d3d.utils.logger import (
-    get_logger,
-    log_exception,
-    log_model_inference,
-)
 from video2d3d.utils.gpu import (
     GPUConfig,
     clear_gpu_memory,
     compute_optimal_batch_size,
     select_device,
 )
-
+from video2d3d.utils.logger import get_logger, log_exception, log_model_inference
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -77,7 +72,7 @@ class AdaBinsModelType(Enum):
     ADADEPTH_NYU = "adadepth_nyu"
 
     @classmethod
-    def from_string(cls, name: str) -> "AdaBinsModelType":
+    def from_string(cls, name: str) -> AdaBinsModelType:
         """Get model type from string name.
 
         Args:
@@ -243,7 +238,7 @@ class AdaBinsInferenceError(Exception):
         self.original_exception = original_exception
 
 
-def _get_adabins_logger() -> "Logger":
+def _get_adabins_logger() -> Logger:
     """Get the AdaBins module logger (lazy initialization)."""
     return get_logger("depth.adabins")
 
@@ -305,7 +300,7 @@ class AdaBinsEstimator:
             self.config = AdaBinsConfig(model_type=model_type, device=device)
 
         # Model components (lazy loaded)
-        self._model: Optional["nn.Module"] = None
+        self._model: Optional[nn.Module] = None
         self._is_loaded: bool = False
 
         logger = _get_adabins_logger()
@@ -315,7 +310,7 @@ class AdaBinsEstimator:
         )
 
     @property
-    def model(self) -> Optional["nn.Module"]:
+    def model(self) -> Optional[nn.Module]:
         """Get the loaded model (loads if not already loaded)."""
         if not self._is_loaded:
             self.load_model()
@@ -395,7 +390,7 @@ class AdaBinsEstimator:
                 original_exception=e,
             ) from e
 
-    def _load_adabins_model(self) -> "nn.Module":
+    def _load_adabins_model(self) -> nn.Module:
         """Load the AdaBins model architecture and weights.
 
         Returns:
@@ -406,8 +401,8 @@ class AdaBinsEstimator:
         try:
             # Try to load from HuggingFace Hub first
             try:
-                from huggingface_hub import hf_hub_download
                 import torch
+                from huggingface_hub import hf_hub_download
 
                 cache_dir = self._get_model_cache_dir()
 
@@ -449,7 +444,7 @@ class AdaBinsEstimator:
         except Exception as e:
             raise RuntimeError(f"Failed to load AdaBins model: {e}") from e
 
-    def _build_adabins_architecture(self) -> "nn.Module":
+    def _build_adabins_architecture(self) -> nn.Module:
         """Build the AdaBins model architecture.
 
         Returns:
@@ -474,7 +469,7 @@ class AdaBinsEstimator:
 
         return AdaBinsModel(max_depth=self.config.model_type.max_depth)
 
-    def _build_adabins_from_scratch(self) -> "nn.Module":
+    def _build_adabins_from_scratch(self) -> nn.Module:
         """Build AdaBins model from scratch as a last resort.
 
         Returns:
@@ -837,7 +832,7 @@ class AdaBinsEstimator:
         """Estimate depth from a single frame (callable interface)."""
         return self.estimate_depth(frame)
 
-    def __enter__(self) -> "AdaBinsEstimator":
+    def __enter__(self) -> AdaBinsEstimator:
         """Context manager entry."""
         return self
 

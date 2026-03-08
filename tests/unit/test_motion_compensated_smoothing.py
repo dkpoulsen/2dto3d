@@ -22,14 +22,12 @@ if TYPE_CHECKING:
     from collections.abc import Generator
 
 from video2d3d.depth.temporal import (
-    MotionCompensatedSmoother,
     MotionCompensatedConfig,
+    MotionCompensatedSmoother,
     TemporalSmoothingError,
-    TemporalState,
     create_motion_compensated_smoother,
     smooth_depth_motion_compensated,
 )
-
 
 # ---------------------------------------------------------------------------
 # Fixtures

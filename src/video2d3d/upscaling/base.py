@@ -7,7 +7,7 @@ data structures used across the upscaling module.
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, Union
 
@@ -82,13 +82,12 @@ class BaseUpscaler(ABC):
         ```
     """
 
-    def __init__(self, config: "UpscalerConfig") -> None:
+    def __init__(self, config: UpscalerConfig) -> None:
         """Initialize the upscaler.
 
         Args:
             config: Configuration for the upscaler.
         """
-        from video2d3d.upscaling.config import UpscalerConfig
         from video2d3d.utils.logger import get_logger
 
         self.config = config

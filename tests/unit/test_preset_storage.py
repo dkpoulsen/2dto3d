@@ -8,18 +8,12 @@ This module tests the PresetStorage class including:
 """
 
 import json
-import os
 from pathlib import Path
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 import pytest
 
-from video2d3d.presets.models import (
-    Preset,
-    PresetCategory,
-    PresetSettings,
-    DepthEstimationSettings,
-)
+from video2d3d.presets.models import Preset, PresetCategory
 from video2d3d.presets.storage import PresetStorage, PresetStorageError
 
 
@@ -127,7 +121,7 @@ class TestPresetStorageSave:
         storage = PresetStorage(presets_dir=tmp_path / "presets")
 
         # Simulate a write error
-        with patch("builtins.open", side_effect=IOError("Write failed")):
+        with patch("builtins.open", side_effect=OSError("Write failed")):
             with pytest.raises(PresetStorageError, match="Atomic write failed"):
                 storage._atomic_write(tmp_path / "presets" / "test.json", '{"test": "data"}')
 

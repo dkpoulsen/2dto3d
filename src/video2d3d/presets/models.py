@@ -179,7 +179,6 @@ class QualitySettings:
         return asdict(self)
 
 
-
 @dataclass
 class DepthCurveSettings:
     """Depth curve settings for artistic control over 3D effect strength."""
@@ -195,15 +194,14 @@ class DepthCurveSettings:
         return asdict(self)
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> "DepthCurveSettings":
+    def from_dict(cls, data: Dict[str, Any]) -> DepthCurveSettings:
         """Create from dictionary."""
         return cls(
             enabled=data.get("enabled", False),
             preset=data.get("preset"),
-            control_points=data.get(
-                "control_points", [{"x": 0.0, "y": 0.0}, {"x": 1.0, "y": 1.0}]
-            ),
+            control_points=data.get("control_points", [{"x": 0.0, "y": 0.0}, {"x": 1.0, "y": 1.0}]),
         )
+
 
 @dataclass
 class PresetSettings:
@@ -228,7 +226,7 @@ class PresetSettings:
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> "PresetSettings":
+    def from_dict(cls, data: Dict[str, Any]) -> PresetSettings:
         """Create from dictionary."""
         return cls(
             depth_estimation=DepthEstimationSettings.from_dict(data.get("depth_estimation", {})),

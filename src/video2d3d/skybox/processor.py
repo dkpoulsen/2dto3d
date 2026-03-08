@@ -22,15 +22,13 @@ import numpy as np
 if TYPE_CHECKING:
     from loguru import Logger
 
-from video2d3d.utils.logger import get_logger, log_exception, log_performance
 from video2d3d.skybox.config import (
+    SkyboxConfig,
     SkyDepthConfig,
     SkyDepthMode,
-    SkyboxConfig,
-    _DEFAULT_SKY_DEPTH_VALUE,
-    _DEFAULT_BOUNDARY_BLEND_PIXELS,
 )
 from video2d3d.skybox.detector import SkyDetectionResult, SkyDetector
+from video2d3d.utils.logger import get_logger, log_exception, log_performance
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -70,7 +68,7 @@ class SkyProcessingError(Exception):
 # ---------------------------------------------------------------------------
 
 
-def _get_processor_logger() -> "Logger":
+def _get_processor_logger() -> Logger:
     """Get the sky processor logger."""
     return get_logger("skybox.processor")
 

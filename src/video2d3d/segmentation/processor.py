@@ -14,7 +14,7 @@ with depth estimation for improved 3D object separation.
 from __future__ import annotations
 
 import time
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from enum import Enum
 from typing import TYPE_CHECKING, Any, Optional, Union
 
@@ -25,7 +25,6 @@ if TYPE_CHECKING:
     from loguru import Logger
 
 from video2d3d.utils.logger import get_logger, log_exception, log_performance
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -122,7 +121,7 @@ class SegmentationProcessorError(Exception):
         self.original_exception = original_exception
 
 
-def _get_processor_logger() -> "Logger":
+def _get_processor_logger() -> Logger:
     """Get the segmentation processor logger."""
     return get_logger("segmentation.processor")
 

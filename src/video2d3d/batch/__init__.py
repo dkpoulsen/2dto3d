@@ -9,6 +9,16 @@ This module provides comprehensive batch processing capabilities:
 - Adaptive batch sizing based on system resources
 """
 
+# Adaptive batch sizing
+from video2d3d.batch.adaptive_sizer import (
+    AdaptiveBatchConfig,
+    AdaptiveBatchSizer,
+    AdjustmentReason,
+    BatchSizeCallback,
+    BatchSizeHistory,
+    adaptive_batch_sizer_context,
+    create_adaptive_sizer,
+)
 from video2d3d.batch.config import BatchQueueConfig, FileDiscoveryConfig, FolderWatcherConfig
 from video2d3d.batch.exceptions import (
     BatchQueueError,
@@ -22,27 +32,9 @@ from video2d3d.batch.exceptions import (
     StatePersistenceError,
 )
 from video2d3d.batch.file_discovery import FileDiscovery, discover_videos
-from video2d3d.batch.folder_watcher import FolderWatcher, WATCHDOG_AVAILABLE
-from video2d3d.batch.models import (
-    BatchJob,
-    BatchJobResult,
-    BatchQueueStats,
-    JobPriority,
-    JobStatus,
-)
-
+from video2d3d.batch.folder_watcher import WATCHDOG_AVAILABLE, FolderWatcher
+from video2d3d.batch.models import BatchJob, BatchJobResult, BatchQueueStats, JobPriority, JobStatus
 from video2d3d.batch.queue import BatchVideoQueue
-
-# Adaptive batch sizing
-from video2d3d.batch.adaptive_sizer import (
-    AdaptiveBatchConfig,
-    AdaptiveBatchSizer,
-    AdjustmentReason,
-    BatchSizeCallback,
-    BatchSizeHistory,
-    create_adaptive_sizer,
-    adaptive_batch_sizer_context,
-)
 
 __all__ = [
     # Core queue components

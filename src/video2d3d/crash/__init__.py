@@ -25,12 +25,12 @@ Example usage:
 """
 
 from video2d3d.crash.models import (
+    ActiveJobInfo,
     CrashReport,
     CrashReportSummary,
     CrashSeverity,
     CrashType,
     SystemState,
-    ActiveJobInfo,
 )
 from video2d3d.crash.reporter import (
     CrashReporter,

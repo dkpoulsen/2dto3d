@@ -16,8 +16,7 @@ from __future__ import annotations
 
 import sys
 from typing import TYPE_CHECKING
-from unittest.mock import MagicMock, patch
-from collections.abc import Generator
+from unittest.mock import MagicMock
 
 import numpy as np
 import pytest
@@ -77,21 +76,22 @@ def _create_mock_torchvision() -> MagicMock:
 def _create_mock_scipy() -> MagicMock:
     """Create a mock scipy module."""
     mock = MagicMock()
-    
+
     # Mock ndimage
     mock.ndimage = MagicMock()
     mock.ndimage.laplace = MagicMock(return_value=np.zeros((10, 10)))
     mock.ndimage.zoom = MagicMock(return_value=np.zeros((10, 10)))
-    
+
     # Mock interpolate
     mock.interpolate = MagicMock()
     mock.interpolate.CubicSpline = MagicMock
     mock.interpolate.interp1d = MagicMock
-    
+
     # Mock signal
     mock.signal = MagicMock()
-    
+
     return mock
+
 
 # Mock torch, torchvision, and scipy before importing the module
 sys.modules["torch"] = _create_mock_torch()
@@ -106,16 +106,15 @@ sys.modules["scipy.interpolate"] = _scipy_mock.interpolate
 sys.modules["scipy.signal"] = _scipy_mock.signal
 # Now import the module under test
 from video2d3d.depth.ensemble import (
-    EnsemblePredictor,
+    _DEFAULT_WEIGHTS,
     EnsembleConfig,
-    EnsembleMethod,
-    WeightStrategy,
     EnsembleError,
+    EnsembleMethod,
+    EnsemblePredictor,
+    WeightStrategy,
+    _normalize_weights_list,
     create_ensemble_predictor,
     estimate_depth_ensemble,
-    _DEFAULT_WEIGHTS,
-    _DEFAULT_ENSEMBLE_MODELS,
-    _normalize_weights_list,
 )
 
 
@@ -576,13 +575,11 @@ class TestConvenienceFunctions:
 
     def test_create_ensemble_predictor_exists(self):
         """Test create_ensemble_predictor function exists."""
-        from video2d3d.depth.ensemble import create_ensemble_predictor
 
         assert callable(create_ensemble_predictor)
 
     def test_estimate_depth_ensemble_exists(self):
         """Test estimate_depth_ensemble function exists."""
-        from video2d3d.depth.ensemble import estimate_depth_ensemble
 
         assert callable(estimate_depth_ensemble)
 

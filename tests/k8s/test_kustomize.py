@@ -8,8 +8,6 @@ This module tests kustomization files for:
 
 from pathlib import Path
 
-import pytest
-
 
 class TestBaseKustomization:
     """Test base kustomization.yaml."""
@@ -192,9 +190,9 @@ class TestNamespaceConsistency:
 
                 # If namespace is set, it should be video2d3d
                 if namespace:
-                    assert namespace == "video2d3d", (
-                        f"{path.name}: {kind} has namespace '{namespace}', expected 'video2d3d'"
-                    )
+                    assert (
+                        namespace == "video2d3d"
+                    ), f"{path.name}: {kind} has namespace '{namespace}', expected 'video2d3d'"
 
 
 class TestLabelConsistency:
@@ -220,6 +218,6 @@ class TestLabelConsistency:
 
                 # Most resources should have app.kubernetes.io/name
                 if labels:
-                    assert "app.kubernetes.io/name" in labels, (
-                        f"{path.name}: {doc.get('kind')} missing app.kubernetes.io/name label"
-                    )
+                    assert (
+                        "app.kubernetes.io/name" in labels
+                    ), f"{path.name}: {doc.get('kind')} missing app.kubernetes.io/name label"

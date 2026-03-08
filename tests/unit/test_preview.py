@@ -1,16 +1,17 @@
 """Test preview window functionality."""
 
-import pytest
-from unittest.mock import MagicMock, patch, mock_open
-import numpy as np
 import threading
 import time
+from unittest.mock import MagicMock, patch
+
+import numpy as np
+import pytest
 
 from video2d3d.preview import (
     PreviewConfig,
+    PreviewLayout,
     PreviewWindow,
     PreviewWindowError,
-    PreviewLayout,
     create_preview_window,
 )
 

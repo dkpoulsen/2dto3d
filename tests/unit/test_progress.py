@@ -14,12 +14,11 @@ from __future__ import annotations
 
 import time
 from typing import TYPE_CHECKING
-from unittest.mock import MagicMock, patch
 
 import pytest
 
 if TYPE_CHECKING:
-    from collections.abc import Generator
+    pass
 
 from video2d3d.utils.progress import (
     ConversionStats,
@@ -464,7 +463,9 @@ class TestVideoConversionProgress:
         assert metrics.completed == 2
         progress.stop()
 
-    @pytest.mark.skip(reason="track() API needs redesign - contextmanager pattern doesn't work for iteration")
+    @pytest.mark.skip(
+        reason="track() API needs redesign - contextmanager pattern doesn't work for iteration"
+    )
     def test_track_context_manager(self) -> None:
         """Test track() context manager for iteration."""
         progress = VideoConversionProgress(
@@ -811,9 +812,7 @@ class TestProgressIntegration:
         # Don't start, no progress bar
         assert progress._progress is None
         progress._current_stage = ProgressStage.EXTRACT
-        progress._stage_metrics[ProgressStage.EXTRACT] = StageMetrics(
-            name="Extract", total=100
-        )
+        progress._stage_metrics[ProgressStage.EXTRACT] = StageMetrics(name="Extract", total=100)
         # Should be safe
         progress.update(1)
 
@@ -862,9 +861,7 @@ class TestProgressIntegration:
             config=ProgressConfig(enabled=True),
         )
         progress._current_stage = ProgressStage.EXTRACT
-        progress._stage_metrics[ProgressStage.EXTRACT] = StageMetrics(
-            name="Extract", total=100
-        )
+        progress._stage_metrics[ProgressStage.EXTRACT] = StageMetrics(name="Extract", total=100)
         # No progress bar
         assert progress._progress is None
         progress.complete_stage()
@@ -1020,9 +1017,7 @@ class TestStageMetricsEdgeCases:
     def test_eta_seconds_full_completion(self) -> None:
         """Test eta_seconds when fully complete."""
         start = time.time() - 1.0
-        metrics = StageMetrics(
-            name="test", total=100, completed=100, start_time=start
-        )
+        metrics = StageMetrics(name="test", total=100, completed=100, start_time=start)
         # No remaining items, ETA should be 0
         assert metrics.eta_seconds == 0.0
 
@@ -1077,4 +1072,3 @@ class TestConversionStatsEdgeCases:
         assert "stages" in result
         assert "extract" in result["stages"]
         assert result["stages"]["extract"]["completed"] == 50
-

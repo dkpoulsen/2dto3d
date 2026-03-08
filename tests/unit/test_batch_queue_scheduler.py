@@ -13,7 +13,7 @@ from __future__ import annotations
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import TYPE_CHECKING
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 import pytest
 
@@ -22,11 +22,10 @@ if TYPE_CHECKING:
 
 from video2d3d.batch.config import BatchQueueConfig
 from video2d3d.batch.exceptions import (
-    CircularDependencyError,
     DependencyFailedError,
     JobNotFoundError,
 )
-from video2d3d.batch.models import BatchJob, JobPriority, JobStatus
+from video2d3d.batch.models import JobPriority, JobStatus
 from video2d3d.batch.queue import BatchVideoQueue
 
 

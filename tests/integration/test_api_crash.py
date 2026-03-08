@@ -13,9 +13,10 @@ Tests cover:
 from __future__ import annotations
 
 import tempfile
+from collections.abc import Generator
 from pathlib import Path
-from typing import TYPE_CHECKING, Generator
-from unittest.mock import MagicMock, patch
+from typing import TYPE_CHECKING
+from unittest.mock import patch
 
 import pytest
 from fastapi import FastAPI, status
@@ -24,11 +25,10 @@ from fastapi.testclient import TestClient
 from video2d3d.crash import (
     CrashReporter,
     CrashReporterConfig,
-    get_crash_reporter,
     init_crash_reporting,
     shutdown_crash_reporting,
 )
-from video2d3d.crash.models import CrashSeverity, CrashType
+from video2d3d.crash.models import CrashSeverity
 from video2d3d.web.app import create_app
 
 if TYPE_CHECKING:

@@ -11,7 +11,6 @@ from __future__ import annotations
 
 import time
 from typing import TYPE_CHECKING
-from unittest.mock import patch
 
 import pytest
 
@@ -151,10 +150,7 @@ class TestAdaptiveBatchSizerIntegration:
 
     def test_oom_handling_integration(self, no_mock_dependencies: None) -> None:
         """Test OOM error handling with real components."""
-        from video2d3d.batch.adaptive_sizer import (
-            AdaptiveBatchConfig,
-            AdaptiveBatchSizer,
-        )
+        from video2d3d.batch.adaptive_sizer import AdaptiveBatchConfig, AdaptiveBatchSizer
 
         config = AdaptiveBatchConfig(
             initial_batch_size=16,
@@ -208,10 +204,7 @@ class TestHistoryIntegration:
 
     def test_history_with_stability_detection(self, no_mock_dependencies: None) -> None:
         """Test history works with stability detection."""
-        from video2d3d.batch.adaptive_sizer import (
-            AdaptiveBatchConfig,
-            AdaptiveBatchSizer,
-        )
+        from video2d3d.batch.adaptive_sizer import AdaptiveBatchConfig, AdaptiveBatchSizer
 
         config = AdaptiveBatchConfig(
             initial_batch_size=4,
@@ -267,10 +260,7 @@ class TestContextManagerIntegration:
 
     def test_context_manager_integration(self, no_mock_dependencies: None) -> None:
         """Test context manager with real components."""
-        from video2d3d.batch.adaptive_sizer import (
-            AdaptiveBatchSizer,
-            adaptive_batch_sizer_context,
-        )
+        from video2d3d.batch.adaptive_sizer import AdaptiveBatchSizer, adaptive_batch_sizer_context
 
         with adaptive_batch_sizer_context() as sizer:
             assert isinstance(sizer, AdaptiveBatchSizer)
@@ -285,10 +275,7 @@ class TestContextManagerIntegration:
 
     def test_context_manager_with_callback(self, no_mock_dependencies: None) -> None:
         """Test context manager with callback."""
-        from video2d3d.batch.adaptive_sizer import (
-            AdjustmentReason,
-            adaptive_batch_sizer_context,
-        )
+        from video2d3d.batch.adaptive_sizer import AdjustmentReason, adaptive_batch_sizer_context
 
         callback_calls: list[tuple[int, int, AdjustmentReason]] = []
 
@@ -330,11 +317,6 @@ class TestModuleExportsIntegration:
         from video2d3d.batch import (
             AdaptiveBatchConfig,
             AdaptiveBatchSizer,
-            AdjustmentReason,
-            BatchSizeCallback,
-            BatchSizeHistory,
-            adaptive_batch_sizer_context,
-            create_adaptive_sizer,
         )
 
         # Should be able to use them

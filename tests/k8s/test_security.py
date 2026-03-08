@@ -30,24 +30,24 @@ class TestSecurityContext:
     def test_pod_runs_as_non_root(self, pod_spec: dict) -> None:
         """Pod should run as non-root user."""
         security = pod_spec.get("securityContext", {})
-        assert security.get("runAsNonRoot") is True, (
-            "Pod should set runAsNonRoot: true for security"
-        )
+        assert (
+            security.get("runAsNonRoot") is True
+        ), "Pod should set runAsNonRoot: true for security"
 
     def test_pod_has_non_root_user_id(self, pod_spec: dict) -> None:
         """Pod should run with non-root UID."""
         security = pod_spec.get("securityContext", {})
         run_as_user = security.get("runAsUser")
-        assert run_as_user is not None and run_as_user > 0, (
-            "Pod should set runAsUser to a non-zero value"
-        )
+        assert (
+            run_as_user is not None and run_as_user > 0
+        ), "Pod should set runAsUser to a non-zero value"
 
     def test_container_no_privilege_escalation(self, container: dict) -> None:
         """Container should not allow privilege escalation."""
         security = container.get("securityContext", {})
-        assert security.get("allowPrivilegeEscalation") is False, (
-            "Container should set allowPrivilegeEscalation: false"
-        )
+        assert (
+            security.get("allowPrivilegeEscalation") is False
+        ), "Container should set allowPrivilegeEscalation: false"
 
     def test_container_drops_all_capabilities(self, container: dict) -> None:
         """Container should drop all Linux capabilities."""
@@ -60,9 +60,10 @@ class TestSecurityContext:
         """Pod should have seccomp profile."""
         security = pod_spec.get("securityContext", {})
         seccomp = security.get("seccompProfile", {})
-        assert seccomp.get("type") in ["RuntimeDefault", "Localhost"], (
-            "Pod should have seccompProfile for syscall filtering"
-        )
+        assert seccomp.get("type") in [
+            "RuntimeDefault",
+            "Localhost",
+        ], "Pod should have seccompProfile for syscall filtering"
 
 
 class TestNetworkPolicies:
@@ -82,9 +83,9 @@ class TestNetworkPolicies:
         for np in network_policies:
             policy_types = np["spec"].get("policyTypes", [])
             # PolicyTypes is case-sensitive ("Ingress" not "ingress")
-            assert "Ingress" in policy_types, (
-                f"NetworkPolicy {np['metadata']['name']} should include Ingress policy"
-            )
+            assert (
+                "Ingress" in policy_types
+            ), f"NetworkPolicy {np['metadata']['name']} should include Ingress policy"
 
     def test_network_policy_has_egress_rules(self, network_policies: list) -> None:
         """NetworkPolicy should have egress rules (not allow all)."""
@@ -95,16 +96,16 @@ class TestNetworkPolicies:
                 egress = np["spec"].get("egress", [])
                 # Should have specific rules, not empty (which would deny all)
                 # or [{}] which allows all
-                assert egress != [{}], (
-                    f"NetworkPolicy {np['metadata']['name']} should not allow all egress"
-                )
+                assert egress != [
+                    {}
+                ], f"NetworkPolicy {np['metadata']['name']} should not allow all egress"
 
     def test_network_policy_has_pod_selector(self, network_policies: list) -> None:
         """NetworkPolicy should have podSelector."""
         for np in network_policies:
-            assert "podSelector" in np["spec"], (
-                f"NetworkPolicy {np['metadata']['name']} should have podSelector"
-            )
+            assert (
+                "podSelector" in np["spec"]
+            ), f"NetworkPolicy {np['metadata']['name']} should have podSelector"
 
 
 class TestRbacConfiguration:
@@ -141,9 +142,9 @@ class TestRbacConfiguration:
         for binding in bindings:
             subjects = binding["subjects"]
             sa_subjects = [s for s in subjects if s.get("kind") == "ServiceAccount"]
-            assert len(sa_subjects) >= 1, (
-                f"RoleBinding {binding['metadata']['name']} should reference ServiceAccount"
-            )
+            assert (
+                len(sa_subjects) >= 1
+            ), f"RoleBinding {binding['metadata']['name']} should reference ServiceAccount"
 
 
 class TestPodDisruptionBudget:
@@ -189,9 +190,9 @@ class TestResourceQuotas:
         general_quotas = [q for q in quotas if "gpu" not in q["metadata"]["name"].lower()]
         for quota in general_quotas:
             hard = quota["spec"].get("hard", {})
-            assert "requests.cpu" in hard or "limits.cpu" in hard, (
-                f"ResourceQuota {quota['metadata']['name']} should limit CPU"
-            )
+            assert (
+                "requests.cpu" in hard or "limits.cpu" in hard
+            ), f"ResourceQuota {quota['metadata']['name']} should limit CPU"
 
     def test_resource_quota_has_memory_limits(self, resource_quota_configs: list) -> None:
         """ResourceQuota should limit memory (general quota)."""
@@ -201,9 +202,9 @@ class TestResourceQuotas:
         general_quotas = [q for q in quotas if "gpu" not in q["metadata"]["name"].lower()]
         for quota in general_quotas:
             hard = quota["spec"].get("hard", {})
-            assert "requests.memory" in hard or "limits.memory" in hard, (
-                f"ResourceQuota {quota['metadata']['name']} should limit memory"
-            )
+            assert (
+                "requests.memory" in hard or "limits.memory" in hard
+            ), f"ResourceQuota {quota['metadata']['name']} should limit memory"
 
     def test_resource_quota_limits_pods(self, resource_quota_configs: list) -> None:
         """ResourceQuota should limit pod count (general quota)."""
@@ -213,9 +214,9 @@ class TestResourceQuotas:
         general_quotas = [q for q in quotas if "gpu" not in q["metadata"]["name"].lower()]
         for quota in general_quotas:
             hard = quota["spec"].get("hard", {})
-            assert "count/pods" in hard, (
-                f"ResourceQuota {quota['metadata']['name']} should limit pod count"
-            )
+            assert (
+                "count/pods" in hard
+            ), f"ResourceQuota {quota['metadata']['name']} should limit pod count"
 
 
 class TestLimitRange:
@@ -232,9 +233,9 @@ class TestLimitRange:
         for lr in limits:
             limits_spec = lr["spec"].get("limits", [])
             container_limits = [l for l in limits_spec if l.get("type") == "Container"]
-            assert len(container_limits) >= 1, (
-                f"LimitRange {lr['metadata']['name']} should have Container limits"
-            )
+            assert (
+                len(container_limits) >= 1
+            ), f"LimitRange {lr['metadata']['name']} should have Container limits"
 
     def test_limit_range_has_default_requests(self, resource_quota_configs: list) -> None:
         """LimitRange should have default requests."""
@@ -243,9 +244,9 @@ class TestLimitRange:
             limits_spec = lr["spec"].get("limits", [])
             for limit in limits_spec:
                 if limit.get("type") == "Container":
-                    assert "defaultRequest" in limit, (
-                        f"LimitRange {lr['metadata']['name']} should have defaultRequest"
-                    )
+                    assert (
+                        "defaultRequest" in limit
+                    ), f"LimitRange {lr['metadata']['name']} should have defaultRequest"
 
 
 class TestSecretsConfiguration:
@@ -259,9 +260,9 @@ class TestSecretsConfiguration:
         """secrets.yaml should have documentation that it's a template."""
         with open(secrets_path) as f:
             content = f.read()
-        assert "template" in content.lower() or "example" in content.lower(), (
-            "secrets.yaml should indicate it's a template"
-        )
+        assert (
+            "template" in content.lower() or "example" in content.lower()
+        ), "secrets.yaml should indicate it's a template"
 
 
 class TestIngressSecurity:

@@ -46,7 +46,6 @@ from video2d3d.stereo.vr import (
     get_vr_metadata_for_format,
 )
 
-
 # ---------------------------------------------------------------------------
 # Fixtures
 # ---------------------------------------------------------------------------
@@ -701,11 +700,7 @@ class TestIntegration:
 
     def test_import_from_stereo_module(self) -> None:
         """Test that VR encoder can be imported from stereo module."""
-        from video2d3d.stereo import (
-            VREncoder,
-            VROutputFormat,
-            encode_vr_sbs,
-        )
+        from video2d3d.stereo import VREncoder, VROutputFormat, encode_vr_sbs
 
         assert VREncoder is not None
         assert VROutputFormat is not None

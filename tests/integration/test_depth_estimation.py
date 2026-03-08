@@ -10,7 +10,6 @@ These tests verify the full depth estimation workflow including:
 from __future__ import annotations
 
 import sys
-from pathlib import Path
 from typing import TYPE_CHECKING
 from unittest.mock import MagicMock, patch
 
@@ -106,10 +105,10 @@ def mock_torch_modules() -> Generator[None, None, None]:
     sys.modules["torch.nn.functional"] = mock_torch_nn.functional
     sys.modules["torchvision"] = mock_torchvision
     sys.modules["torchvision.transforms"] = mock_torchvision.transforms
-    
+
     # Mock loguru
     sys.modules["loguru"] = MagicMock()
-    
+
     # Mock video2d3d.utils modules
     sys.modules["video2d3d.utils"] = MagicMock()
     sys.modules["video2d3d.utils.logger"] = _create_mock_logger_module()
@@ -364,14 +363,13 @@ class TestBatchDepthEstimation:
 
         mock_torch.hub.load.side_effect = [mock_model, mock_transforms]
 
-        with patch("video2d3d.depth.F"):
-            with patch("torch.cat") as mock_cat:
-                mock_cat.return_value = MagicMock()
+        with patch("video2d3d.depth.F"), patch("torch.cat") as mock_cat:
+            mock_cat.return_value = MagicMock()
 
-                estimator = DepthEstimator()
+            estimator = DepthEstimator()
 
-                with pytest.raises(InferenceError, match="Batch depth estimation failed"):
-                    estimator.estimate_depth_batch(sample_rgb_images_batch)
+            with pytest.raises(InferenceError, match="Batch depth estimation failed"):
+                estimator.estimate_depth_batch(sample_rgb_images_batch)
 
 
 # ---------------------------------------------------------------------------

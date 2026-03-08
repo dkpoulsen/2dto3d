@@ -16,7 +16,7 @@ from typing import TYPE_CHECKING, Any, Optional
 
 import numpy as np
 
-from video2d3d.benchmark.config import BenchmarkConfig, BenchmarkCategory
+from video2d3d.benchmark.config import BenchmarkCategory, BenchmarkConfig
 from video2d3d.benchmark.results import (
     BenchmarkResult,
     BenchmarkResults,
@@ -24,14 +24,14 @@ from video2d3d.benchmark.results import (
     MemoryMetrics,
     TimingMetrics,
 )
-from video2d3d.utils.logger import get_logger
 from video2d3d.utils.gpu import (
-    is_cuda_available,
-    get_gpu_info,
-    get_all_gpu_info,
-    get_memory_usage,
     clear_gpu_memory,
+    get_all_gpu_info,
+    get_gpu_info,
+    get_memory_usage,
+    is_cuda_available,
 )
+from video2d3d.utils.logger import get_logger
 
 if TYPE_CHECKING:
     pass
@@ -132,7 +132,7 @@ class BenchmarkRunner:
         """Get CPU name."""
         try:
             if platform.system() == "Linux":
-                with open("/proc/cpuinfo", "r") as f:
+                with open("/proc/cpuinfo") as f:
                     for line in f:
                         if "model name" in line:
                             return line.split(":")[1].strip()
@@ -215,8 +215,8 @@ class BenchmarkRunner:
 
         try:
             from video2d3d.depth.model_selector import (
-                DepthModelSelector,
                 DepthModelConfig,
+                DepthModelSelector,
                 DepthModelType,
             )
 
@@ -374,9 +374,9 @@ class BenchmarkRunner:
                     memory_before_mb=mem_before_process,
                     memory_after_mb=mem_after_process,
                     gpu_peak_memory_mb=max(memory_samples_gpu) if memory_samples_gpu else 0,
-                    gpu_avg_memory_mb=statistics.mean(memory_samples_gpu)
-                    if memory_samples_gpu
-                    else 0,
+                    gpu_avg_memory_mb=(
+                        statistics.mean(memory_samples_gpu) if memory_samples_gpu else 0
+                    ),
                 )
 
             # Add GPU metrics if available

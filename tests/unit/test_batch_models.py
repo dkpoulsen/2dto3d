@@ -20,13 +20,7 @@ import pytest
 if TYPE_CHECKING:
     from collections.abc import Generator
 
-from video2d3d.batch.models import (
-    BatchJob,
-    BatchJobResult,
-    BatchQueueStats,
-    JobPriority,
-    JobStatus,
-)
+from video2d3d.batch.models import BatchJob, BatchJobResult, BatchQueueStats, JobPriority, JobStatus
 
 
 @pytest.fixture
@@ -140,6 +134,28 @@ class TestJobPriority:
         assert JobPriority.LOW.value < JobPriority.NORMAL.value
         assert JobPriority.NORMAL.value < JobPriority.HIGH.value
         assert JobPriority.HIGH.value < JobPriority.URGENT.value
+
+    def test_from_value_valid(self) -> None:
+        """Test from_value returns correct priority for valid values."""
+        assert JobPriority.from_value(1) == JobPriority.LOW
+        assert JobPriority.from_value(5) == JobPriority.NORMAL
+        assert JobPriority.from_value(10) == JobPriority.HIGH
+        assert JobPriority.from_value(20) == JobPriority.URGENT
+
+    def test_from_value_invalid_returns_normal(self) -> None:
+        """Test from_value returns NORMAL for invalid/unknown values."""
+        # Unknown values
+        assert JobPriority.from_value(0) == JobPriority.NORMAL
+        assert JobPriority.from_value(99) == JobPriority.NORMAL
+        assert JobPriority.from_value(-1) == JobPriority.NORMAL
+        assert JobPriority.from_value(100) == JobPriority.NORMAL
+
+    def test_from_value_between_levels(self) -> None:
+        """Test from_value returns NORMAL for values between defined levels."""
+        # Values between defined levels
+        assert JobPriority.from_value(2) == JobPriority.NORMAL
+        assert JobPriority.from_value(7) == JobPriority.NORMAL
+        assert JobPriority.from_value(15) == JobPriority.NORMAL
 
 
 class TestBatchJobResult:

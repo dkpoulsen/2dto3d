@@ -4,14 +4,12 @@ from __future__ import annotations
 
 import shutil
 import subprocess
-import tempfile
 from dataclasses import dataclass
 from pathlib import Path
 from typing import List, Optional
 
 from video2d3d.audio.config import AudioFormatConfig, SpatialAudioConfig, SpatialAudioFormat
 from video2d3d.audio.exceptions import SpatialAudioError
-from video2d3d.audio.metadata import AudioMetadata
 from video2d3d.utils.logger import get_logger
 
 
@@ -136,7 +134,7 @@ class SpatialAudioProcessor:
         if self.config.room_size != "small":
             # Add slight room reverb for larger spaces
             reverb_amount = int(self.config.reverb_amount * 100)
-            filters.append(f"aecho=1.0:0.6:20:0.3")
+            filters.append("aecho=1.0:0.6:20:0.3")
 
         return filters
 

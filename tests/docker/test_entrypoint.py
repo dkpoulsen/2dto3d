@@ -15,8 +15,6 @@ import stat
 import subprocess
 from pathlib import Path
 
-import pytest
-
 
 class TestEntrypointExists:
     """Test entrypoint script existence."""

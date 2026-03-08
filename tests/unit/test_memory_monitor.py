@@ -11,7 +11,6 @@ Tests cover:
 
 from __future__ import annotations
 
-import gc
 import sys
 import time
 from typing import TYPE_CHECKING
@@ -437,10 +436,7 @@ class TestMemoryMonitor:
 
     def test_start_stop_monitoring(self, mock_psutil: MagicMock, mock_logger: MagicMock) -> None:
         """Test starting and stopping monitoring."""
-        from video2d3d.utils.memory_monitor import (
-            MemoryMonitor,
-            MemoryMonitorConfig,
-        )
+        from video2d3d.utils.memory_monitor import MemoryMonitor, MemoryMonitorConfig
 
         config = MemoryMonitorConfig(monitor_interval=0.1)
         monitor = MemoryMonitor(config)
@@ -459,10 +455,7 @@ class TestMemoryMonitor:
         self, mock_psutil: MagicMock, mock_logger: MagicMock
     ) -> None:
         """Test callback is invoked when memory warning occurs."""
-        from video2d3d.utils.memory_monitor import (
-            MemoryMonitor,
-            MemoryMonitorConfig,
-        )
+        from video2d3d.utils.memory_monitor import MemoryMonitor, MemoryMonitorConfig
 
         # Set up high memory usage
         mock_mem = MagicMock()
@@ -490,10 +483,7 @@ class TestMemoryMonitor:
 
     def test_config_setter(self, mock_psutil: MagicMock, mock_logger: MagicMock) -> None:
         """Test config can be updated."""
-        from video2d3d.utils.memory_monitor import (
-            MemoryMonitor,
-            MemoryMonitorConfig,
-        )
+        from video2d3d.utils.memory_monitor import MemoryMonitor, MemoryMonitorConfig
 
         monitor = MemoryMonitor()
         new_config = MemoryMonitorConfig(warning_threshold=0.5)
@@ -516,10 +506,7 @@ class TestContextManager:
 
     def test_context_manager_basic(self, mock_psutil: MagicMock, mock_logger: MagicMock) -> None:
         """Test basic context manager usage."""
-        from video2d3d.utils.memory_monitor import (
-            MemoryMonitor,
-            memory_monitor_context,
-        )
+        from video2d3d.utils.memory_monitor import MemoryMonitor, memory_monitor_context
 
         with memory_monitor_context() as monitor:
             assert isinstance(monitor, MemoryMonitor)
@@ -553,10 +540,7 @@ class TestHelperFunctions:
 
     def test_get_memory_monitor(self, mock_psutil: MagicMock, mock_logger: MagicMock) -> None:
         """Test get_memory_monitor returns singleton."""
-        from video2d3d.utils.memory_monitor import (
-            MemoryMonitor,
-            get_memory_monitor,
-        )
+        from video2d3d.utils.memory_monitor import MemoryMonitor, get_memory_monitor
 
         monitor1 = get_memory_monitor()
         monitor2 = get_memory_monitor()
@@ -566,10 +550,7 @@ class TestHelperFunctions:
 
     def test_get_current_memory_info(self, mock_psutil: MagicMock, mock_logger: MagicMock) -> None:
         """Test get_current_memory_info returns info."""
-        from video2d3d.utils.memory_monitor import (
-            MemoryInfo,
-            get_current_memory_info,
-        )
+        from video2d3d.utils.memory_monitor import MemoryInfo, get_current_memory_info
 
         info = get_current_memory_info()
 
@@ -694,10 +675,7 @@ class TestIntegration:
         self, mock_psutil: MagicMock, mock_logger: MagicMock
     ) -> None:
         """Test check_and_collect triggers GC at threshold."""
-        from video2d3d.utils.memory_monitor import (
-            MemoryMonitor,
-            MemoryMonitorConfig,
-        )
+        from video2d3d.utils.memory_monitor import MemoryMonitor, MemoryMonitorConfig
 
         config = MemoryMonitorConfig(
             gc_warning_threshold=0.7,

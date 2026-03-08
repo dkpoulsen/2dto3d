@@ -14,26 +14,21 @@ import uuid
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Callable, Optional
+from typing import TYPE_CHECKING, Any
 
 from video2d3d.utils.logger import get_logger, log_exception
 
 from .notification_models import (
-    DismissRequest,
-    DismissResponse,
     EmailConfig,
-    MarkReadRequest,
-    MarkReadResponse,
     Notification,
     NotificationPriority,
-    NotificationResponse,
     NotificationType,
     WebhookConfig,
     WebhookPayload,
 )
 
 if TYPE_CHECKING:
-    from video2d3d.batch.models import BatchJob, BatchJobResult, JobStatus
+    from video2d3d.batch.models import BatchJob
 
 logger = get_logger("notification_manager")
 
@@ -298,7 +293,7 @@ class NotificationManager:
     # Job Event Handlers
     # =========================================================================
 
-    def on_job_started(self, job: "BatchJob") -> None:
+    def on_job_started(self, job: BatchJob) -> None:
         """Handle job started event."""
         self.create_notification(
             notification_type=NotificationType.JOB_STARTED,
@@ -312,7 +307,7 @@ class NotificationManager:
             },
         )
 
-    def on_job_progress(self, job: "BatchJob") -> None:
+    def on_job_progress(self, job: BatchJob) -> None:
         """Handle job progress event (only for significant milestones)."""
         # Only create progress notifications at 25%, 50%, 75%
         progress_percent = int(job.progress * 100)
@@ -333,7 +328,7 @@ class NotificationManager:
                 expires_in_hours=1,  # Progress notifications expire quickly
             )
 
-    def on_job_completed(self, job: "BatchJob") -> None:
+    def on_job_completed(self, job: BatchJob) -> None:
         """Handle job completed event."""
         result = job.result
         output_file = str(result.output_path) if result and result.output_path else "unknown"
@@ -363,7 +358,7 @@ class NotificationManager:
             },
         )
 
-    def on_job_failed(self, job: "BatchJob", error: Exception | None = None) -> None:
+    def on_job_failed(self, job: BatchJob, error: Exception | None = None) -> None:
         """Handle job failed event."""
         error_message = (
             str(error) if error else (job.result.error_message if job.result else "Unknown error")
@@ -395,7 +390,7 @@ class NotificationManager:
             },
         )
 
-    def on_job_cancelled(self, job: "BatchJob") -> None:
+    def on_job_cancelled(self, job: BatchJob) -> None:
         """Handle job cancelled event."""
         self.create_notification(
             notification_type=NotificationType.JOB_CANCELLED,
@@ -408,7 +403,7 @@ class NotificationManager:
             },
         )
 
-    def on_job_retrying(self, job: "BatchJob") -> None:
+    def on_job_retrying(self, job: BatchJob) -> None:
         """Handle job retrying event."""
         self.create_notification(
             notification_type=NotificationType.JOB_RETRYING,
@@ -545,8 +540,7 @@ class NotificationManager:
 
     def _save_to_storage(self) -> None:
         """Save notifications to storage file using atomic write."""
-        import tempfile
-        
+
         if not self._storage_path:
             return
 
@@ -567,7 +561,7 @@ class NotificationManager:
             temp_path = self._storage_path.with_suffix(".tmp")
             with open(temp_path, "w") as f:
                 json.dump(data, f, indent=2)
-            
+
             # Atomic rename
             temp_path.replace(self._storage_path)
 

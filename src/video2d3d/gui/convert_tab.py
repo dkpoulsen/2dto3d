@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from PyQt6.QtCore import Qt, pyqtSignal
+from PyQt6.QtCore import pyqtSignal
 from PyQt6.QtWidgets import (
     QCheckBox,
     QComboBox,
@@ -23,10 +23,10 @@ from PyQt6.QtWidgets import (
 from video2d3d.cli import DEPTH_MODELS, OUTPUT_FORMATS
 from video2d3d.gui.widgets import FileSelector
 from video2d3d.gui.workers import ConversionWorker
-from video2d3d.gui.workers import ConversionWorker
 
 if TYPE_CHECKING:
     pass
+
 
 class ConvertTab(QWidget):
     """Tab for single video conversion."""

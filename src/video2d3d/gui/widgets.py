@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from PyQt6.QtCore import Qt, pyqtSignal
+from PyQt6.QtCore import pyqtSignal
 from PyQt6.QtWidgets import (
     QFileDialog,
     QGroupBox,
@@ -13,12 +13,12 @@ from PyQt6.QtWidgets import (
     QLabel,
     QLineEdit,
     QPushButton,
-    QVBoxLayout,
     QWidget,
 )
 
 if TYPE_CHECKING:
     pass
+
 
 class FileSelector(QWidget):
     """A widget for selecting a file with a browse button."""

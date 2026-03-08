@@ -10,8 +10,8 @@ Tests cover:
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Generator
-from unittest.mock import MagicMock, patch
+from collections.abc import Generator
+from typing import TYPE_CHECKING
 
 import pytest
 
@@ -29,7 +29,7 @@ except ImportError:
     pytestmark = pytest.mark.skip(reason="PyQt6 not available")
 
 if _pyqt6_available:
-    from video2d3d.gui.main_window import MainWindow, run_gui
+    from video2d3d.gui.main_window import MainWindow
 
 
 @pytest.fixture(scope="module")

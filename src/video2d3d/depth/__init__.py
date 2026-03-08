@@ -28,11 +28,6 @@ if TYPE_CHECKING:
     from torch import nn
     from torchvision.transforms import Compose
 
-from video2d3d.utils.logger import (
-    get_logger,
-    log_exception,
-    log_model_inference,
-)
 from video2d3d.utils.gpu import (
     GPUConfig,
     GPUError,
@@ -44,7 +39,7 @@ from video2d3d.utils.gpu import (
     setup_device,
     with_oom_retry,
 )
-
+from video2d3d.utils.logger import get_logger, log_exception, log_model_inference
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -66,7 +61,7 @@ class MiDaSModelType(Enum):
     DPT_HYBRID = "DPT_Hybrid"
 
     @classmethod
-    def from_string(cls, name: str) -> "MiDaSModelType":
+    def from_string(cls, name: str) -> MiDaSModelType:
         """Get model type from string name.
 
         Args:
@@ -139,7 +134,7 @@ class MiDaSConfig:
     output_resolution: Optional[int] = None
     use_fp16: bool = False
     optimize: bool = True
-    
+
     # GPU acceleration settings
     gpu_config: Optional[GPUConfig] = None
     auto_batch_size: bool = True
@@ -222,7 +217,7 @@ class InferenceError(DepthEstimationError):
     pass
 
 
-def _get_depth_logger() -> "Logger":
+def _get_depth_logger() -> Logger:
     """Get the depth module logger (lazy initialization)."""
     return get_logger("depth")
 
@@ -282,10 +277,10 @@ class DepthEstimator:
             self.config = MiDaSConfig(model_type=model_type, device=device)
 
         # Model components (lazy loaded)
-        self._model: Optional["nn.Module"] = None
-        self._transform: Optional["Compose"] = None
+        self._model: Optional[nn.Module] = None
+        self._transform: Optional[Compose] = None
         self._is_loaded: bool = False
-        
+
         # Temporal smoothing (lazy initialized)
         self._temporal_smoother: Optional[TemporalSmoother] = None
         self._temporal_config: Optional[TemporalSmoothingConfig] = None
@@ -297,14 +292,14 @@ class DepthEstimator:
         )
 
     @property
-    def model(self) -> Optional["nn.Module"]:
+    def model(self) -> Optional[nn.Module]:
         """Get the loaded model (loads if not already loaded)."""
         if not self._is_loaded:
             self.load_model()
         return self._model
 
     @property
-    def transform(self) -> Optional["Compose"]:
+    def transform(self) -> Optional[Compose]:
         """Get the preprocessing transform (loads model if not already loaded)."""
         if not self._is_loaded:
             self.load_model()
@@ -485,7 +480,6 @@ class DepthEstimator:
         )
         depth_map: np.ndarray = depth_tensor.squeeze().numpy()
 
-
         depth_min = depth_map.min()
         depth_max = depth_map.max()
         if depth_max - depth_min > 0:
@@ -550,7 +544,7 @@ class DepthEstimator:
                     self._temporal_config = TemporalSmoothingConfig()
                 self._temporal_smoother = TemporalSmoother(config=self._temporal_config)
                 logger.info("Temporal smoothing enabled")
-        
+
         # Ensure model is loaded
         if not self._is_loaded:
             self.load_model()
@@ -577,7 +571,7 @@ class DepthEstimator:
 
             # Postprocess
             depth_map = self._postprocess_depth(prediction, original_shape)
-            
+
             # Apply temporal smoothing if enabled
             if temporal_smoothing and self._temporal_smoother is not None:
                 depth_map = self._temporal_smoother.smooth(depth_map, frame)
@@ -617,26 +611,27 @@ class DepthEstimator:
 
     def _fallback_to_cpu(self) -> None:
         """Fall back to CPU processing when GPU fails.
-        
+
         This method moves the model to CPU and updates the config.
         It's safe to call multiple times - subsequent calls are no-ops.
         """
         logger = _get_depth_logger()
-        
+
         # Check if already on CPU
         if self.config.device == "cpu":
             logger.debug("Already on CPU, skipping fallback")
             return
-            
+
         logger.warning("Falling back to CPU processing")
-        
+
         # Move model to CPU
         if self._model is not None:
             self._model = self._model.to("cpu")
             self.config.device = "cpu"
-            
+
             # Clear GPU memory
             clear_gpu_memory()
+
     def estimate_depth_batch(
         self,
         frames: list[np.ndarray],
@@ -694,8 +689,7 @@ class DepthEstimator:
                 use_fp16=self.config.use_fp16,
             )
             logger.info(
-                f"Auto-adjusted batch size: {effective_batch_size} "
-                f"(requested: {batch_size})"
+                f"Auto-adjusted batch size: {effective_batch_size} " f"(requested: {batch_size})"
             )
         else:
             effective_batch_size = min(
@@ -739,7 +733,7 @@ class DepthEstimator:
 
                     # Move to next batch
                     i += current_batch_size
-                    
+
                     # Reset batch size after successful processing (in case of previous OOM)
                     if current_batch_size < effective_batch_size:
                         current_batch_size = min(current_batch_size * 2, effective_batch_size)
@@ -752,16 +746,16 @@ class DepthEstimator:
                             f"GPU OOM with batch_size={current_batch_size}, "
                             f"reducing to {current_batch_size // 2}"
                         )
-                        
+
                         # Clear GPU memory
                         clear_gpu_memory(self.config.device)
-                        
+
                         # Reduce batch size
                         new_batch_size = max(current_batch_size // 2, 1)
                         if new_batch_size < current_batch_size:
                             current_batch_size = new_batch_size
                             continue  # Retry same batch with smaller size
-                        
+
                         # If we can't reduce further, try CPU fallback
                         if self.config.fallback_to_cpu:
                             self._fallback_to_cpu()
@@ -769,9 +763,9 @@ class DepthEstimator:
                             # This avoids recursive call and potential stack overflow
                             current_batch_size = min(batch_size, 4)
                             continue  # Retry same batch on CPU
-                        
+
                         raise InferenceError(
-                            f"GPU out of memory and CPU fallback disabled",
+                            "GPU out of memory and CPU fallback disabled",
                             model_type=self.config.model_type.value,
                             device=self.config.device,
                             original_exception=e,
@@ -790,9 +784,7 @@ class DepthEstimator:
 
         except Exception as e:
             log_exception(
-                "Batch depth estimation failed", 
-                exception=e, 
-                batch_size=effective_batch_size
+                "Batch depth estimation failed", exception=e, batch_size=effective_batch_size
             )
             raise InferenceError(
                 f"Batch depth estimation failed: {e}",
@@ -812,7 +804,7 @@ class DepthEstimator:
         """
         return self.estimate_depth(frame)
 
-    def __enter__(self) -> "DepthEstimator":
+    def __enter__(self) -> DepthEstimator:
         """Context manager entry."""
         return self
 
@@ -823,7 +815,7 @@ class DepthEstimator:
         exc_tb: object,  # types.TracebackType not available for runtime annotation
     ) -> None:
         """Context manager exit - cleanup resources.
-        
+
         Args:
             exc_type: Exception type if an exception was raised.
             exc_val: Exception value if an exception was raised.
@@ -833,7 +825,7 @@ class DepthEstimator:
 
     def reset_temporal(self) -> None:
         """Reset temporal smoothing state for a new video sequence.
-        
+
         This should be called when starting a new video or when
         temporal consistency should be reset.
         """
@@ -851,7 +843,7 @@ class DepthEstimator:
             del self._transform
             self._transform = None
         self._is_loaded = False
-        
+
         # Clear temporal smoothing state
         if self._temporal_smoother is not None:
             self._temporal_smoother.reset()
@@ -907,83 +899,84 @@ def estimate_depth_single(
         return estimator.estimate_depth(image)
 
 
-# Import depth processor components
-from video2d3d.depth.processor import (
-    DepthMapProcessor,
-    DepthProcessorConfig,
-    DepthProcessingError,
-    NormalizationMethod,
-    HoleFillingMethod,
-    ColorMapType,
-    EdgeAwareFilterType,
-    create_processor,
-    process_depth_map,
-    _DEFAULT_GUIDED_FILTER_RADIUS,
-    _DEFAULT_GUIDED_FILTER_EPS,
-)
-
-
-# Import temporal smoothing components
-from video2d3d.depth.temporal import (
-    TemporalSmoother,
-    TemporalSmoothingConfig,
-    TemporalState,
-    TemporalSmoothingError,
-    TemporalSmoothingMethod,
-    create_temporal_smoother,
-    smooth_depth_temporal,
-    # Motion-compensated smoothing
-    MotionCompensatedSmoother,
-    MotionCompensatedConfig,
-    create_motion_compensated_smoother,
-    smooth_depth_motion_compensated,
-)
-
 # Import AdaBins (AdaDepth) components
 from video2d3d.depth.adadepth import (
-    AdaBinsEstimator,
     AdaBinsConfig,
-    AdaBinsModelType,
-    AdaBinsLoadError,
+    AdaBinsEstimator,
     AdaBinsInferenceError,
+    AdaBinsLoadError,
+    AdaBinsModelType,
     create_adabins_estimator,
     estimate_depth_adabins,
 )
 
-# Import ZoeDepth components
-from video2d3d.depth.zoedepth import (
-    ZoeDepthEstimator,
-    ZoeDepthConfig,
-    ZoeDepthModelVariant,
-    DepthMode,
-    ZoeDepthLoadError,
-    ZoeDepthInferenceError,
-    create_zoedepth_estimator,
-    estimate_depth_zoedepth,
+# Import ensemble components
+from video2d3d.depth.ensemble import (
+    EnsembleConfig,
+    EnsembleError,
+    EnsembleMethod,
+    EnsemblePredictor,
+    WeightStrategy,
+    create_ensemble_predictor,
+    estimate_depth_ensemble,
 )
 
 # Import model selector components
 from video2d3d.depth.model_selector import (
-    DepthModelSelector,
     DepthModelConfig,
-    DepthModelType as UnifiedDepthModelType,
+    DepthModelSelector,
+)
+from video2d3d.depth.model_selector import DepthModelType as UnifiedDepthModelType
+from video2d3d.depth.model_selector import ModelInferenceError as SelectorInferenceError
+from video2d3d.depth.model_selector import ModelLoadError as SelectorLoadError
+from video2d3d.depth.model_selector import (
     SceneType,
-    ModelLoadError as SelectorLoadError,
-    ModelInferenceError as SelectorInferenceError,
     create_model_selector,
     estimate_depth_auto,
 )
 
-# Import ensemble components
-from video2d3d.depth.ensemble import (
-    EnsemblePredictor,
-    EnsembleConfig,
-    EnsembleMethod,
-    WeightStrategy,
-    EnsembleError,
-    create_ensemble_predictor,
-    estimate_depth_ensemble,
+# Import depth processor components
+from video2d3d.depth.processor import (
+    _DEFAULT_GUIDED_FILTER_EPS,
+    _DEFAULT_GUIDED_FILTER_RADIUS,
+    ColorMapType,
+    DepthMapProcessor,
+    DepthProcessingError,
+    DepthProcessorConfig,
+    EdgeAwareFilterType,
+    HoleFillingMethod,
+    NormalizationMethod,
+    create_processor,
+    process_depth_map,
 )
+
+# Import temporal smoothing components
+from video2d3d.depth.temporal import (  # Motion-compensated smoothing
+    MotionCompensatedConfig,
+    MotionCompensatedSmoother,
+    TemporalSmoother,
+    TemporalSmoothingConfig,
+    TemporalSmoothingError,
+    TemporalSmoothingMethod,
+    TemporalState,
+    create_motion_compensated_smoother,
+    create_temporal_smoother,
+    smooth_depth_motion_compensated,
+    smooth_depth_temporal,
+)
+
+# Import ZoeDepth components
+from video2d3d.depth.zoedepth import (
+    DepthMode,
+    ZoeDepthConfig,
+    ZoeDepthEstimator,
+    ZoeDepthInferenceError,
+    ZoeDepthLoadError,
+    ZoeDepthModelVariant,
+    create_zoedepth_estimator,
+    estimate_depth_zoedepth,
+)
+
 logger = _get_depth_logger()
 
 __all__ = [

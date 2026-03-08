@@ -42,7 +42,6 @@ if TYPE_CHECKING:
 
 from video2d3d.utils.logger import get_logger
 
-
 # ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------
@@ -51,7 +50,7 @@ from video2d3d.utils.logger import get_logger
 MIN_IMAGE_DIMENSION: Final[int] = 1
 
 
-def _get_checkerboard_logger() -> "Logger":
+def _get_checkerboard_logger() -> Logger:
     """Get the checkerboard module logger (lazy initialization)."""
     return get_logger("stereo.checkerboard")
 
@@ -170,8 +169,7 @@ class CheckerboardEncoder:
         h, w = left.shape[:2]
         if h <= 0 or w <= 0:
             raise ValueError(
-                f"Image dimensions must be positive integers. "
-                f"Got height={h}, width={w}"
+                f"Image dimensions must be positive integers. " f"Got height={h}, width={w}"
             )
         if h < MIN_IMAGE_DIMENSION or w < MIN_IMAGE_DIMENSION:
             raise ValueError(

@@ -29,6 +29,7 @@ try:
     from slowapi.errors import RateLimitExceeded
     from slowapi.middleware import SlowAPIMiddleware
     from slowapi.util import get_remote_address
+
     SLOWAPI_AVAILABLE = True
 except ImportError:
     SLOWAPI_AVAILABLE = False
@@ -40,11 +41,12 @@ except ImportError:
         """Fallback function when slowapi is not available."""
         return UNKNOWN_IP
 
+
 from video2d3d.utils.config import get_config
 from video2d3d.utils.logger import get_logger
-from video2d3d.web.exceptions import RateLimitExceededError
 
 logger = get_logger("web.rate_limit")
+
 
 def get_client_ip(request: Request) -> str:
     """Get client IP address from request.
@@ -169,8 +171,8 @@ def rate_limit_exceeded_handler(request: Request, exc: RateLimitExceeded) -> Res
         request_id=getattr(request.state, "request_id", None),
     )
 
-    from fastapi.responses import JSONResponse
     from fastapi import status
+    from fastapi.responses import JSONResponse
 
     response = JSONResponse(
         status_code=status.HTTP_429_TOO_MANY_REQUESTS,
@@ -281,7 +283,7 @@ def limit_api(limiter: Optional[Limiter] = None):
 
 def limit_auth(limiter: Optional[Limiter] = None):
     """Decorator for authentication endpoints with very strict rate limits.
-    
+
     Auth endpoints need stricter limits to prevent brute force attacks.
     Default: 5 requests per minute, 20 per hour.
 

@@ -7,10 +7,11 @@ and database initialization functions.
 from __future__ import annotations
 
 import uuid
+from collections.abc import Generator
 from contextlib import contextmanager
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Generator, Optional
+from typing import Optional
 
 from sqlalchemy import Boolean, DateTime, String, create_engine
 from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column, sessionmaker
@@ -137,7 +138,7 @@ def get_session() -> Session:
 @contextmanager
 def session_scope() -> Generator[Session, None, None]:
     """Provide a transactional scope around a series of operations.
-    
+
     This context manager ensures proper session handling with automatic
     commit on success and rollback on error.
 
@@ -179,13 +180,6 @@ __all__ = [
     "init_database",
     "get_session",
     "session_scope",
-    "get_engine",
-    "get_database_path",
-]
-    "Base",
-    "UserModel",
-    "init_database",
-    "get_session",
     "get_engine",
     "get_database_path",
 ]

@@ -30,17 +30,8 @@ import numpy as np
 if TYPE_CHECKING:
     from loguru import Logger
 
-from video2d3d.utils.logger import (
-    get_logger,
-    log_exception,
-    log_model_inference,
-)
-from video2d3d.utils.gpu import (
-    GPUConfig,
-    clear_gpu_memory,
-    select_device,
-)
-
+from video2d3d.utils.gpu import GPUConfig, clear_gpu_memory, select_device
+from video2d3d.utils.logger import get_logger, log_exception, log_model_inference
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -65,7 +56,7 @@ class SAMModelType(Enum):
     VIT_B = "vit_b"  # ViT-Base (fastest)
 
     @classmethod
-    def from_string(cls, name: str) -> "SAMModelType":
+    def from_string(cls, name: str) -> SAMModelType:
         """Get model type from string name.
 
         Args:
@@ -201,7 +192,7 @@ class InferenceError(SegmentationError):
     pass
 
 
-def _get_segmentation_logger() -> "Logger":
+def _get_segmentation_logger() -> Logger:
     """Get the segmentation module logger (lazy initialization)."""
     return get_logger("segmentation")
 
@@ -321,7 +312,7 @@ class SemanticSegmenter:
 
         try:
             import torch
-            from segment_anything import sam_model_registry, SamAutomaticMaskGenerator
+            from segment_anything import SamAutomaticMaskGenerator, sam_model_registry
 
             start_time = time.time()
 
@@ -649,7 +640,7 @@ class SemanticSegmenter:
             clear_gpu_memory(self.config.device)
         logger.debug("SemanticSegmenter resources released")
 
-    def __enter__(self) -> "SemanticSegmenter":
+    def __enter__(self) -> SemanticSegmenter:
         """Context manager entry."""
         return self
 
@@ -710,22 +701,22 @@ def segment_image(
         return segmenter.segment(image)
 
 
-# Import processor and integrator components
-from video2d3d.segmentation.processor import (
-    SegmentationProcessor,
-    SegmentationProcessorConfig,
-    MaskRefinementMethod,
-    create_segmentation_processor,
-    process_segmentation_masks,
-)
 from video2d3d.segmentation.integrator import (
+    BoundaryPreservationMethod,
     DepthSegmentationIntegrator,
     IntegrationConfig,
-    BoundaryPreservationMethod,
     create_integrator,
     refine_depth_with_segmentation,
 )
 
+# Import processor and integrator components
+from video2d3d.segmentation.processor import (
+    MaskRefinementMethod,
+    SegmentationProcessor,
+    SegmentationProcessorConfig,
+    create_segmentation_processor,
+    process_segmentation_masks,
+)
 
 # Module-level logger for backward compatibility
 logger = _get_segmentation_logger()

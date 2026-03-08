@@ -11,10 +11,8 @@ Modules:
     - stereo: Stereoscopic video generation
 """
 
-from video2d3d._version import __version__, __author__
-
 # Expose submodules for convenience
-from video2d3d import depth
-from video2d3d import opticalflow
+from video2d3d import depth, opticalflow
+from video2d3d._version import __author__, __version__
 
 __all__ = ["__version__", "__author__", "depth", "opticalflow"]

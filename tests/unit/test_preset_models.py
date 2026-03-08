@@ -7,7 +7,6 @@ This module tests all preset data models including:
 """
 
 import json
-from datetime import datetime
 
 import pytest
 

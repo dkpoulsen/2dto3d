@@ -10,6 +10,7 @@ from PyQt6.QtCore import QThread, pyqtSignal
 if TYPE_CHECKING:
     pass
 
+
 class ConversionWorker(QThread):
     """Worker thread for video conversion operations.
 
@@ -101,7 +102,6 @@ class ConversionWorker(QThread):
     def _run_conversion(self) -> None:
         """Run the actual video conversion."""
         import time
-        from pathlib import Path
 
         self.stage_changed.emit("Extracting Frames")
         self.log_message.emit("Extracting frames from video...", "info")

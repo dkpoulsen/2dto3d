@@ -178,8 +178,7 @@ def configure_logging(
     logger.debug(f"Logging configured: level={level}, file={file_path}")
 
 
-def get_logger(name: Optional[str] = None) -> "Logger":
-
+def get_logger(name: Optional[str] = None) -> Logger:
     """Get a logger instance with optional name binding.
 
     Args:
@@ -197,7 +196,7 @@ def get_logger(name: Optional[str] = None) -> "Logger":
     return logger
 
 
-def log_context(**kwargs: Any) -> "Logger":
+def log_context(**kwargs: Any) -> Logger:
     """Create a logging context with extra fields.
 
     All logged messages within this context will include the extra fields.

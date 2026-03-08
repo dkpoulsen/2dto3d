@@ -13,7 +13,7 @@ from typing import TYPE_CHECKING
 from unittest.mock import MagicMock, patch
 
 import pytest
-from fastapi import FastAPI, status
+from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
 if TYPE_CHECKING:
@@ -22,8 +22,8 @@ if TYPE_CHECKING:
 from video2d3d.web.rate_limit import (
     SLOWAPI_AVAILABLE,
     create_limiter,
-    setup_rate_limiting,
     rate_limit_exceeded_handler,
+    setup_rate_limiting,
 )
 
 

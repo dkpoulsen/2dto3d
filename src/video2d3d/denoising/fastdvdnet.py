@@ -15,22 +15,21 @@ from __future__ import annotations
 
 import time
 from pathlib import Path
-from typing import TYPE_CHECKING, List, Optional, Union
+from typing import TYPE_CHECKING, List, Optional
 
 import numpy as np
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 
 from video2d3d.utils.gpu import clear_gpu_memory
-from video2d3d.utils.logger import get_logger, log_exception
+from video2d3d.utils.logger import log_exception
 
 from .base import VideoDenoiserBase
 from .config import FastDVDNetConfig
 from .exceptions import InferenceError, ModelLoadError, PretrainedModelError
 
 if TYPE_CHECKING:
-    from loguru import Logger
+    pass
 
 
 # Default model URL

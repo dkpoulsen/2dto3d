@@ -23,14 +23,14 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 from video2d3d.utils.gpu import clear_gpu_memory
-from video2d3d.utils.logger import get_logger, log_exception
+from video2d3d.utils.logger import log_exception
 
 from .base import VideoDenoiserBase
 from .config import BasicVSRPlusPlusConfig
 from .exceptions import InferenceError, ModelLoadError, PretrainedModelError
 
 if TYPE_CHECKING:
-    from loguru import Logger
+    pass
 
 
 # Model configuration

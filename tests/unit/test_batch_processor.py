@@ -31,7 +31,6 @@ from video2d3d.core.batch_processor import (
     WorkerInitializationError,
     WorkerTimeoutError,
     create_processor,
-    process_in_parallel,
 )
 
 
@@ -46,7 +45,6 @@ def _fail_on_three(x: int) -> int:
     if x == 3:
         raise ValueError("test error")
     return x * 2
-
 
 
 def sample_items() -> list[int]:
@@ -509,9 +507,7 @@ class TestMultiprocessingMode:
         assert result.outputs == [2, 4, 6, 8, 10]
 
     @pytest.mark.skip(reason="Multiprocessing requires picklable functions")
-    def test_process_multiprocessing_with_error(
-        self, mock_logger: MagicMock
-    ) -> None:
+    def test_process_multiprocessing_with_error(self, mock_logger: MagicMock) -> None:
         """Test multiprocessing with processing errors."""
         error_calls = []
 
@@ -534,11 +530,8 @@ class TestMultiprocessingMode:
         assert result.errors[0][0] == 2
 
     @pytest.mark.skip(reason="Multiprocessing requires picklable functions")
-    def test_process_multiprocessing_with_timeout(
-        self, mock_logger: MagicMock
-    ) -> None:
+    def test_process_multiprocessing_with_timeout(self, mock_logger: MagicMock) -> None:
         """Test multiprocessing timeout handling."""
-        import time
 
         config = BatchProcessorConfig(
             num_workers=1,
@@ -582,7 +575,6 @@ class TestMapMethod:
 
         assert result == [2, 4, 6, 8, 10]
 
-
     def test_map_raises_on_error(self, mock_logger: MagicMock) -> None:
         """Test map() raises error on processing failure."""
         processor = FrameBatchProcessor(mode=ProcessingMode.SEQUENTIAL)
@@ -609,9 +601,7 @@ class TestProcessInBatches:
         processor = FrameBatchProcessor(config=config)
         items = [1, 2, 3, 4, 5, 6, 7]
 
-        batch_results = list(
-            processor.process_in_batches(items, lambda b: [x * 2 for x in b])
-        )
+        batch_results = list(processor.process_in_batches(items, lambda b: [x * 2 for x in b]))
 
         assert len(batch_results) == 3
         assert batch_results[0] == [2, 4, 6]
@@ -646,9 +636,7 @@ class TestThreadedWithRetry:
         assert result.outputs == [0, 2, 4]
         assert call_counts[1] >= 2
 
-    def test_threaded_max_retries_exceeded(
-        self, mock_logger: MagicMock
-    ) -> None:
+    def test_threaded_max_retries_exceeded(self, mock_logger: MagicMock) -> None:
         """Test that error is raised after max retries exceeded."""
 
         def always_fails(x: int) -> int:

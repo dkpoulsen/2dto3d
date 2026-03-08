@@ -178,7 +178,9 @@ class QuickBenchmarkConfig:
     # Override defaults with quick benchmark values
     models: list[str] = field(default_factory=lambda: ["midas_small"])
     resolutions: list[tuple[int, int]] = field(default_factory=lambda: [(640, 480)])
-    resolution_presets: list[ResolutionPreset] = field(default_factory=lambda: [ResolutionPreset.SD_480P])
+    resolution_presets: list[ResolutionPreset] = field(
+        default_factory=lambda: [ResolutionPreset.SD_480P]
+    )
     devices: list[str] = field(default_factory=lambda: ["auto"])
     warmup_iterations: int = 1
     test_iterations: int = 3
@@ -224,9 +226,7 @@ class FullBenchmarkConfig:
             "dpt_hybrid",
         ]
     )
-    resolutions: list[tuple[int, int]] = field(
-        default_factory=lambda: []
-    )
+    resolutions: list[tuple[int, int]] = field(default_factory=lambda: [])
     resolution_presets: list[ResolutionPreset] = field(
         default_factory=lambda: list(ResolutionPreset)
     )
@@ -241,9 +241,7 @@ class FullBenchmarkConfig:
     include_memory: bool = True
     include_gpu_metrics: bool = True
     timeout_seconds: float = 600.0
-    categories: list[BenchmarkCategory] = field(
-        default_factory=lambda: list(BenchmarkCategory)
-    )
+    categories: list[BenchmarkCategory] = field(default_factory=lambda: list(BenchmarkCategory))
     custom_test_images: Optional[list[Path]] = None
     seed: int = 42
 
@@ -254,6 +252,7 @@ class FullBenchmarkConfig:
         for preset in self.resolution_presets:
             resolution_set.add(preset.value)
         return sorted(resolution_set, key=lambda r: r[0] * r[1])
+
 
 __all__ = [
     "BenchmarkConfig",

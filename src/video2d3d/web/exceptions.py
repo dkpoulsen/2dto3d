@@ -241,7 +241,6 @@ class RateLimitExceededError(APIError):
 # ============================================================================
 
 
-
 async def api_error_handler(
     request: Request,
     exc: APIError,
@@ -309,10 +308,10 @@ async def generic_exception_handler(
     exc: Exception,
 ) -> JSONResponse:
     """Handle unexpected exceptions."""
-    from video2d3d.web.schemas import ErrorResponse
-
     # Log the actual exception for debugging
     import traceback
+
+    from video2d3d.web.schemas import ErrorResponse
 
     traceback.print_exc()
 

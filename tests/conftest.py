@@ -115,19 +115,19 @@ def _create_mock_cv2() -> MagicMock:
     def mock_resize(img, dsize, interpolation=1):
         target_h, target_w = dsize[1], dsize[0]
         src_h, src_w = img.shape[:2]
-        
+
         # Calculate scale factors
         scale_y = src_h / target_h
         scale_x = src_w / target_w
-        
+
         # Simple nearest-neighbor interpolation
         y_indices = (np.arange(target_h) * scale_y).astype(int)
         x_indices = (np.arange(target_w) * scale_x).astype(int)
-        
+
         # Clip to valid range
         y_indices = np.clip(y_indices, 0, src_h - 1)
         x_indices = np.clip(x_indices, 0, src_w - 1)
-        
+
         if len(img.shape) == 3:
             result = img[y_indices][:, x_indices]
             return result

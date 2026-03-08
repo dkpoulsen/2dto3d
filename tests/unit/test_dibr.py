@@ -28,14 +28,11 @@ from video2d3d.stereo import (
     DIBRConfig,
     DIBREngine,
     DIBRError,
-    DepthInterpretation,
-    HoleFillingMethod,
     SideBySideGenerator,
     StereoGenerator,
     create_dibr_engine,
     render_stereo_pair,
 )
-
 
 # ---------------------------------------------------------------------------
 # Fixtures
@@ -174,6 +171,7 @@ class TestDIBRConfig:
 
         with pytest.raises(ValueError, match="depth_scale must be positive"):
             DIBRConfig(depth_scale=-0.5)
+
 
 # ---------------------------------------------------------------------------
 # DIBREngine Tests
@@ -744,10 +742,7 @@ class TestAdditionalCoverage:
         sample_image: np.ndarray,
     ) -> None:
         """Test side-by-side generator with half-width mode."""
-        generator = SideBySideGenerator(
-            half_width=True,
-            layout="horizontal"
-        )
+        generator = SideBySideGenerator(half_width=True, layout="horizontal")
 
         left = sample_image.copy()
         right = sample_image.copy()
@@ -764,10 +759,7 @@ class TestAdditionalCoverage:
         sample_image: np.ndarray,
     ) -> None:
         """Test side-by-side generator with half-width and vertical layout."""
-        generator = SideBySideGenerator(
-            half_width=True,
-            layout="vertical"
-        )
+        generator = SideBySideGenerator(half_width=True, layout="vertical")
 
         left = sample_image.copy()
         right = sample_image.copy()
@@ -800,11 +792,7 @@ class TestAdditionalCoverage:
     ) -> None:
         """Test DIBRError with operation and original_exception attributes."""
         original = ValueError("Original error")
-        error = DIBRError(
-            "Test error",
-            operation="test_op",
-            original_exception=original
-        )
+        error = DIBRError("Test error", operation="test_op", original_exception=original)
 
         assert str(error) == "Test error"
         assert error.operation == "test_op"
@@ -817,11 +805,7 @@ class TestAdditionalCoverage:
         sample_depth_map: np.ndarray,
     ) -> None:
         """Test StereoGenerator initialization with DIBRConfig."""
-        config = DIBRConfig(
-            baseline=0.08,
-            convergence=0.4,
-            hole_filling="linear"
-        )
+        config = DIBRConfig(baseline=0.08, convergence=0.4, hole_filling="linear")
         generator = StereoGenerator(dibr_config=config)
 
         # DIBRConfig overrides individual parameters
@@ -871,10 +855,7 @@ class TestAdditionalCoverage:
         sample_depth_map: np.ndarray,
     ) -> None:
         """Test that custom max_disparity limits disparity values."""
-        config = DIBRConfig(
-            baseline=0.1,
-            max_disparity=10
-        )
+        config = DIBRConfig(baseline=0.1, max_disparity=10)
         engine = DIBREngine(config=config)
 
         disparity = engine.compute_disparity(sample_depth_map, image_width=100)

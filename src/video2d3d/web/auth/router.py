@@ -9,7 +9,6 @@ This module provides endpoints for:
 
 from __future__ import annotations
 
-from datetime import timedelta
 from typing import Annotated, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
@@ -34,8 +33,8 @@ from video2d3d.web.auth.schemas import (
     UserResponse,
     UserRole,
 )
-from video2d3d.web.schemas import ErrorResponse
 from video2d3d.web.rate_limit import limit_auth
+from video2d3d.web.schemas import ErrorResponse
 
 logger = get_logger("web.auth.router")
 
@@ -264,6 +263,7 @@ async def register(request: Request, user_data: UserCreate) -> TokenResponse:
 
     return create_token_response(user)
 
+
 @router.post(
     "/login",
     response_model=TokenResponse,
@@ -273,7 +273,7 @@ async def register(request: Request, user_data: UserCreate) -> TokenResponse:
         200: {"description": "Login successful"},
         401: {"model": ErrorResponse, "description": "Invalid credentials"},
     },
-    )
+)
 @limit_auth()
 async def login(request: Request, credentials: UserLogin) -> TokenResponse:
     """Authenticate a user and return tokens.

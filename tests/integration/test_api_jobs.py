@@ -11,7 +11,6 @@ Tests cover:
 
 from __future__ import annotations
 
-from io import BytesIO
 from pathlib import Path
 from typing import TYPE_CHECKING
 from unittest.mock import MagicMock, patch
@@ -559,9 +558,7 @@ class TestSubmitJobWithDepthFocus:
         )
         assert response.status_code == status.HTTP_201_CREATED
 
-    def test_submit_job_with_invalid_depth_focus_depth(
-        self, client: TestClient
-    ) -> None:
+    def test_submit_job_with_invalid_depth_focus_depth(self, client: TestClient) -> None:
         """Test job submission with invalid focus_depth value."""
         response = client.post(
             "/api/v1/jobs/",
@@ -579,9 +576,7 @@ class TestSubmitJobWithDepthFocus:
 
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
 
-    def test_submit_job_with_invalid_depth_focus_range(
-        self, client: TestClient
-    ) -> None:
+    def test_submit_job_with_invalid_depth_focus_range(self, client: TestClient) -> None:
         """Test job submission with invalid focus_range value."""
         response = client.post(
             "/api/v1/jobs/",

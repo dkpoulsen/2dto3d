@@ -15,6 +15,7 @@ from video2d3d.batch import BatchVideoQueue
 if TYPE_CHECKING:
     from slowapi import Limiter
 
+
 class AppState:
     """Application state container."""
 

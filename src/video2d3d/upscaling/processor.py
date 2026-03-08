@@ -7,15 +7,16 @@ efficiently, with support for progress tracking and memory management.
 from __future__ import annotations
 
 import gc
-from dataclasses import dataclass, field
+from collections.abc import Generator
+from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Callable, Dict, Generator, List, Optional, Tuple, Union
+from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 import numpy as np
 
 from video2d3d.upscaling.base import BaseUpscaler, UpscaleResult
 from video2d3d.upscaling.config import UpscalerConfig
-from video2d3d.upscaling.esrgan import RealESRGANUpscaler, DummyUpscaler, create_upscaler
+from video2d3d.upscaling.esrgan import create_upscaler
 from video2d3d.utils.logger import get_logger
 
 
@@ -326,7 +327,7 @@ class VideoUpscaler:
             gc.collect()
             self._logger.info("Video upscaler resources released")
 
-    def __enter__(self) -> "VideoUpscaler":
+    def __enter__(self) -> VideoUpscaler:
         """Context manager entry."""
         self.initialize()
         return self

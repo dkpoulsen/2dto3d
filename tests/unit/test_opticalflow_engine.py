@@ -185,12 +185,12 @@ class TestOpticalFlowConfig:
     ) -> None:
         """Test default configuration values."""
         from video2d3d.opticalflow.engine import (
-            OpticalFlowConfig,
-            OpticalFlowModelType,
-            _DEFAULT_FARNEBACK_LEVELS,
             _DEFAULT_FARNEBACK_ITERATIONS,
+            _DEFAULT_FARNEBACK_LEVELS,
             _DEFAULT_FARNEBACK_PYR_SCALE,
             _DEFAULT_FARNEBACK_WINDOW,
+            OpticalFlowConfig,
+            OpticalFlowModelType,
         )
 
         config = OpticalFlowConfig()
@@ -684,12 +684,12 @@ class TestConstants:
     def test_default_constants_exist(self, mock_cv2_calc_optical_flow: MagicMock) -> None:
         """Test that default constants are defined."""
         from video2d3d.opticalflow.engine import (
-            _DEFAULT_RAFT_RESOLUTION,
-            _DEFAULT_PWC_RESOLUTION,
-            _DEFAULT_FARNEBACK_PYR_SCALE,
-            _DEFAULT_FARNEBACK_LEVELS,
-            _DEFAULT_FARNEBACK_WINDOW,
             _DEFAULT_FARNEBACK_ITERATIONS,
+            _DEFAULT_FARNEBACK_LEVELS,
+            _DEFAULT_FARNEBACK_PYR_SCALE,
+            _DEFAULT_FARNEBACK_WINDOW,
+            _DEFAULT_PWC_RESOLUTION,
+            _DEFAULT_RAFT_RESOLUTION,
         )
 
         assert _DEFAULT_RAFT_RESOLUTION > 0
@@ -738,7 +738,6 @@ class TestFlowVisualization:
                 assert vis.shape == (frame1.shape[0], frame1.shape[1], 3)
 
 
-
 # ---------------------------------------------------------------------------
 # Additional Edge Cases and Missing Coverage Tests
 # ---------------------------------------------------------------------------
@@ -784,6 +783,7 @@ class TestAdditionalEdgeCases:
     ) -> None:
         """Test that cache_dir is normalized to Path."""
         from pathlib import Path
+
         from video2d3d.opticalflow.engine import OpticalFlowConfig
 
         # String path should be converted to Path
@@ -852,10 +852,7 @@ class TestAdditionalEdgeCases:
         mock_cv2_calc_optical_flow: MagicMock,
     ) -> None:
         """Test that model property returns None for Farneback (no DL model)."""
-        from video2d3d.opticalflow.engine import (
-            OpticalFlowConfig,
-            OpticalFlowEngine,
-        )
+        from video2d3d.opticalflow.engine import OpticalFlowConfig, OpticalFlowEngine
 
         # For Farneback, model property should return None
         config = OpticalFlowConfig(model_type="farneback")
@@ -1025,7 +1022,7 @@ class TestAdditionalEdgeCases:
         mock_cv2_calc_optical_flow: MagicMock,
     ) -> None:
         """Test that Farneback has 0 default resolution (native)."""
-        from video2d3d.opticalflow.engine import OpticalFlowConfig, OpticalFlowModelType
+        from video2d3d.opticalflow.engine import OpticalFlowConfig
 
         config = OpticalFlowConfig(model_type="farneback")
 
@@ -1055,6 +1052,7 @@ class TestAdditionalEdgeCases:
             flow = engine.compute_flow(frame1, frame2)
 
             assert flow.shape == (480, 640, 2)
+
 
 # ---------------------------------------------------------------------------
 # Edge Cases Tests

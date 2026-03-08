@@ -1,7 +1,6 @@
 """Pytest fixtures for Docker tests."""
 
 from pathlib import Path
-from typing import Generator
 
 import pytest
 import yaml

@@ -16,7 +16,7 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 from typing import TYPE_CHECKING
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 import numpy as np
 import pytest
@@ -404,11 +404,7 @@ class TestZoeDepthEstimatorInit:
 
     def test_init_with_config(self, mock_torch: MagicMock) -> None:
         """Test initialization with ZoeDepthConfig."""
-        from video2d3d.depth.zoedepth import (
-            ZoeDepthEstimator,
-            ZoeDepthConfig,
-            ZoeDepthModelVariant,
-        )
+        from video2d3d.depth.zoedepth import ZoeDepthConfig, ZoeDepthEstimator, ZoeDepthModelVariant
 
         config = ZoeDepthConfig(
             model_variant=ZoeDepthModelVariant.ZOE_K,
@@ -553,10 +549,7 @@ class TestZoeDepthEstimatorModelLoading:
 
     def test_load_model_raises_on_failure(self, mock_torch: MagicMock) -> None:
         """Test load_model raises ZoeDepthLoadError on torch.hub.load failure."""
-        from video2d3d.depth.zoedepth import (
-            ZoeDepthEstimator,
-            ZoeDepthLoadError,
-        )
+        from video2d3d.depth.zoedepth import ZoeDepthEstimator, ZoeDepthLoadError
 
         mock_torch.hub.load.side_effect = RuntimeError("Download failed")
 
@@ -601,7 +594,9 @@ class TestZoeDepthEstimatorTransforms:
 
         assert estimator._transform is None
 
-    def test_preprocess_image_creates_tensor(self, mock_torch: MagicMock, sample_rgb_image: np.ndarray) -> None:
+    def test_preprocess_image_creates_tensor(
+        self, mock_torch: MagicMock, sample_rgb_image: np.ndarray
+    ) -> None:
         """Test _preprocess_image returns a tensor."""
         from video2d3d.depth.zoedepth import ZoeDepthEstimator
 
@@ -625,8 +620,9 @@ class TestZoeDepthEstimatorPostprocessing:
 
     def test_postprocess_accepts_depth_mode_override(self, mock_torch: MagicMock) -> None:
         """Test _postprocess_depth accepts depth_mode parameter."""
-        from video2d3d.depth.zoedepth import ZoeDepthEstimator
         import inspect
+
+        from video2d3d.depth.zoedepth import ZoeDepthEstimator
 
         estimator = ZoeDepthEstimator(depth_mode="relative")
         sig = inspect.signature(estimator._postprocess_depth)
@@ -657,8 +653,9 @@ class TestZoeDepthEstimatorBatchProcessing:
 
     def test_estimate_depth_batch_accepts_batch_size_param(self, mock_torch: MagicMock) -> None:
         """Test estimate_depth_batch accepts batch_size parameter."""
-        from video2d3d.depth.zoedepth import ZoeDepthEstimator
         import inspect
+
+        from video2d3d.depth.zoedepth import ZoeDepthEstimator
 
         estimator = ZoeDepthEstimator()
         sig = inspect.signature(estimator.estimate_depth_batch)
@@ -666,7 +663,6 @@ class TestZoeDepthEstimatorBatchProcessing:
 
         assert "batch_size" in params
         assert "depth_mode" in params
-
 
 
 class TestZoeDepthEstimatorBatchProcessing:
@@ -689,11 +685,11 @@ class TestZoeDepthEstimatorBatchProcessing:
 
     def test_estimate_depth_batch_returns_correct_count(self, mock_torch: MagicMock) -> None:
         """Test estimate_depth_batch returns correct number of depth maps."""
-        from video2d3d.depth.zoedepth import ZoeDepthEstimator, ZoeDepthConfig
+        from video2d3d.depth.zoedepth import ZoeDepthConfig, ZoeDepthEstimator
 
         config = ZoeDepthConfig(auto_batch_size=False)
         estimator = ZoeDepthEstimator(config=config)
-        
+
         # Create mock model
         mock_model = MagicMock()
         mock_prediction = MagicMock()
@@ -708,10 +704,7 @@ class TestZoeDepthEstimatorBatchProcessing:
         estimator._model = mock_model
         estimator._is_loaded = True
 
-        frames = [
-            np.random.randint(0, 255, (100, 100, 3), dtype=np.uint8)
-            for _ in range(3)
-        ]
+        frames = [np.random.randint(0, 255, (100, 100, 3), dtype=np.uint8) for _ in range(3)]
 
 
 class TestZoeDepthEstimatorGPUFallback:
@@ -793,7 +786,6 @@ class TestZoeDepthConvenienceFunctionAdvanced:
         assert callable(estimate_depth_zoedepth)
 
 
-
 # ---------------------------------------------------------------------------
 # Convenience Functions Tests
 # ---------------------------------------------------------------------------
@@ -804,20 +796,14 @@ class TestZoeDepthConvenienceFunctions:
 
     def test_create_zoedepth_estimator_defaults(self, mock_torch: MagicMock) -> None:
         """Test create_zoedepth_estimator with default values."""
-        from video2d3d.depth.zoedepth import (
-            create_zoedepth_estimator,
-            ZoeDepthModelVariant,
-        )
+        from video2d3d.depth.zoedepth import ZoeDepthModelVariant, create_zoedepth_estimator
 
         estimator = create_zoedepth_estimator()
         assert estimator.config.model_variant == ZoeDepthModelVariant.ZOE_NK
 
     def test_create_zoedepth_estimator_custom_values(self, mock_torch: MagicMock) -> None:
         """Test create_zoedepth_estimator with custom values."""
-        from video2d3d.depth.zoedepth import (
-            create_zoedepth_estimator,
-            ZoeDepthModelVariant,
-        )
+        from video2d3d.depth.zoedepth import ZoeDepthModelVariant, create_zoedepth_estimator
 
         estimator = create_zoedepth_estimator(
             model_variant="zoedepth_k",

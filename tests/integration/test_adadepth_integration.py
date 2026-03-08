@@ -14,7 +14,7 @@ from __future__ import annotations
 
 import sys
 from typing import TYPE_CHECKING
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 import numpy as np
 import pytest
@@ -146,10 +146,7 @@ class TestModelFallbackChain:
     """Integration tests for model fallback chain behavior."""
 
     def test_fallback_chain_order(self, mock_torch_modules: None) -> None:
-        from video2d3d.depth.model_selector import (
-            DepthModelConfig,
-            DepthModelType,
-        )
+        from video2d3d.depth.model_selector import DepthModelConfig, DepthModelType
 
         config = DepthModelConfig(
             primary_model=DepthModelType.ADABINS_NYU,
@@ -171,7 +168,6 @@ class TestModelFallbackChain:
         from video2d3d.depth.model_selector import (
             DepthModelSelector,
             DepthModelType,
-            ModelInferenceError,
         )
 
         selector = DepthModelSelector(
@@ -201,10 +197,7 @@ class TestModelFallbackChain:
     def test_all_models_failure_raises_error(
         self, mock_torch_modules: None, sample_rgb_image: np.ndarray
     ) -> None:
-        from video2d3d.depth.model_selector import (
-            DepthModelSelector,
-            ModelInferenceError,
-        )
+        from video2d3d.depth.model_selector import DepthModelSelector, ModelInferenceError
 
         selector = DepthModelSelector()
 
@@ -223,11 +216,7 @@ class TestSceneAdaptiveSelection:
     """Integration tests for scene-adaptive model selection."""
 
     def test_scene_adaptation_enabled_selects_correct_model(self, mock_torch_modules: None) -> None:
-        from video2d3d.depth.model_selector import (
-            DepthModelConfig,
-            DepthModelType,
-            SceneType,
-        )
+        from video2d3d.depth.model_selector import DepthModelConfig, DepthModelType
 
         config = DepthModelConfig(
             enable_scene_adaptation=True,
@@ -237,10 +226,7 @@ class TestSceneAdaptiveSelection:
         assert config.enable_scene_adaptation is True
 
     def test_scene_adaptation_disabled_uses_primary(self, mock_torch_modules: None) -> None:
-        from video2d3d.depth.model_selector import (
-            DepthModelConfig,
-            DepthModelType,
-        )
+        from video2d3d.depth.model_selector import DepthModelConfig, DepthModelType
 
         config = DepthModelConfig(
             enable_scene_adaptation=False,
@@ -255,10 +241,7 @@ class TestConfigurationLoading:
     """Integration tests for configuration loading."""
 
     def test_config_from_string_model_types(self, mock_torch_modules: None) -> None:
-        from video2d3d.depth.model_selector import (
-            DepthModelConfig,
-            DepthModelType,
-        )
+        from video2d3d.depth.model_selector import DepthModelConfig, DepthModelType
 
         config = DepthModelConfig(
             primary_model="adabins_nyu",
@@ -269,10 +252,7 @@ class TestConfigurationLoading:
         assert isinstance(config.fallback_model, DepthModelType)
 
     def test_config_fallback_chain_from_strings(self, mock_torch_modules: None) -> None:
-        from video2d3d.depth.model_selector import (
-            DepthModelConfig,
-            DepthModelType,
-        )
+        from video2d3d.depth.model_selector import DepthModelConfig, DepthModelType
 
         config = DepthModelConfig(fallback_chain=["adabins_nyu", "midas_small", "dpt_hybrid"])
 
@@ -286,10 +266,7 @@ class TestModelSelectorWithMockedEstimators:
     def test_successful_estimation_with_adabins(
         self, mock_torch_modules: None, sample_rgb_image: np.ndarray
     ) -> None:
-        from video2d3d.depth.model_selector import (
-            DepthModelSelector,
-            DepthModelType,
-        )
+        from video2d3d.depth.model_selector import DepthModelSelector, DepthModelType
 
         selector = DepthModelSelector(
             primary_model="adabins_nyu",
@@ -354,10 +331,7 @@ class TestErrorHandlingIntegration:
     """Integration tests for error handling across components."""
 
     def test_estimator_close_on_selector_close(self, mock_torch_modules: None) -> None:
-        from video2d3d.depth.model_selector import (
-            DepthModelSelector,
-            DepthModelType,
-        )
+        from video2d3d.depth.model_selector import DepthModelSelector, DepthModelType
 
         selector = DepthModelSelector()
 

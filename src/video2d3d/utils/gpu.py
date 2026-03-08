@@ -10,8 +10,7 @@ This module provides comprehensive GPU support including:
 from __future__ import annotations
 
 import gc
-import os
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from enum import Enum
 from typing import TYPE_CHECKING, Any, Callable, Optional, TypeVar
 
@@ -190,20 +189,20 @@ class OutOfMemoryError(GPUError):
     pass
 
 
-def _get_gpu_logger() -> "Logger":
+def _get_gpu_logger() -> Logger:
     """Get the GPU module logger (lazy initialization)."""
     return get_logger("gpu")
 
 
 def _parse_device_id(device: str) -> int:
     """Parse device ID from device string.
-    
+
     Args:
         device: Device string like 'cuda:0', 'cuda', or 'cpu'.
-        
+
     Returns:
         Device ID integer, or 0 if not specified.
-        
+
     Examples:
         >>> _parse_device_id("cuda:0")
         0
@@ -225,11 +224,11 @@ def _create_cpu_selection(
     fallback_used: bool = False,
 ) -> DeviceSelection:
     """Create a DeviceSelection for CPU.
-    
+
     Args:
         reason: Reason for CPU selection.
         fallback_used: Whether this is a fallback from GPU.
-        
+
     Returns:
         DeviceSelection configured for CPU.
     """
@@ -621,7 +620,9 @@ def compute_optimal_batch_size(
     logger = _get_gpu_logger()
 
     if not config.batch_size_auto:
-        return max(config.min_batch_size, min(config.max_batch_size, DEFAULT_BATCH_SIZE_WHEN_DISABLED))
+        return max(
+            config.min_batch_size, min(config.max_batch_size, DEFAULT_BATCH_SIZE_WHEN_DISABLED)
+        )
 
     if not is_cuda_available():
         return config.min_batch_size
@@ -666,9 +667,8 @@ def compute_optimal_batch_size(
 
 def create_pinned_tensor(
     shape: tuple[int, ...],
-    dtype: Optional["torch.dtype"] = None,
-) -> Optional["torch.Tensor"]:
-
+    dtype: Optional[torch.dtype] = None,
+) -> Optional[torch.Tensor]:
     """Create a pinned memory tensor for faster CPU-GPU transfers.
 
     Args:
@@ -695,7 +695,7 @@ def transfer_to_gpu(
     pinned: bool = True,
     async_transfer: bool = True,
     fp16: bool = False,
-) -> "torch.Tensor":
+) -> torch.Tensor:
     """Transfer numpy array to GPU with optimizations.
 
     Args:
@@ -730,7 +730,7 @@ def transfer_to_gpu(
 
 
 def transfer_to_cpu(
-    tensor: "torch.Tensor",
+    tensor: torch.Tensor,
     async_transfer: bool = True,
 ) -> np.ndarray:
     """Transfer tensor from GPU to CPU with optimizations.

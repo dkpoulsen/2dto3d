@@ -14,30 +14,22 @@ from collections import deque
 from concurrent.futures import Future, ThreadPoolExecutor
 from datetime import datetime
 from pathlib import Path
-from typing import TYPE_CHECKING, Callable, Optional
+from typing import TYPE_CHECKING, Callable
 
-from video2d3d.batch.config import BatchQueueConfig, FileDiscoveryConfig, FolderWatcherConfig
+from video2d3d.batch.config import BatchQueueConfig, FileDiscoveryConfig
 from video2d3d.batch.exceptions import (
     CircularDependencyError,
     DependencyFailedError,
-    JobAlreadyExistsError,
     JobNotFoundError,
-    QueueNotRunningError,
     StatePersistenceError,
 )
 from video2d3d.batch.file_discovery import FileDiscovery
 from video2d3d.batch.folder_watcher import FolderWatcher
-from video2d3d.batch.models import (
-    BatchJob,
-    BatchJobResult,
-    BatchQueueStats,
-    JobPriority,
-    JobStatus,
-)
+from video2d3d.batch.models import BatchJob, BatchJobResult, BatchQueueStats, JobPriority, JobStatus
 from video2d3d.utils.logger import get_logger, log_exception
 
 if TYPE_CHECKING:
-    from video2d3d.utils.config import Config
+    pass
 
 
 class BatchVideoQueue:
@@ -79,7 +71,9 @@ class BatchVideoQueue:
         self._progress_callbacks: list[Callable[[BatchJob], None]] = []
         self._completion_callbacks: list[Callable[[BatchJob], None]] = []
         self._error_callbacks: list[Callable[[BatchJob, Exception], None]] = []
-        self._dependency_callbacks: list[Callable[[BatchJob, str], None]] = []  # job, dependency_status
+        self._dependency_callbacks: list[Callable[[BatchJob, str], None]] = (
+            []
+        )  # job, dependency_status
 
         self._completed_jobs: set[str] = set()  # Job IDs that completed successfully
         self._state_dirty = False
@@ -178,6 +172,7 @@ class BatchVideoQueue:
                 to_check.extend(current_job.depends_on)
 
         return False
+
     def add_job(
         self,
         input_path: Path,
@@ -274,6 +269,7 @@ class BatchVideoQueue:
             self.start()
 
         return job
+
     def add_jobs_from_pattern(
         self,
         pattern: str,
@@ -437,9 +433,9 @@ class BatchVideoQueue:
                 skipped_jobs=sum(1 for j in jobs if j.status == JobStatus.SKIPPED),
                 total_frames_processed=total_frames,
                 total_processing_time=total_time,
-                average_processing_time=total_time / completed_count
-                if completed_count > 0
-                else 0.0,
+                average_processing_time=(
+                    total_time / completed_count if completed_count > 0 else 0.0
+                ),
             )
 
     def start(self) -> None:
@@ -526,6 +522,7 @@ class BatchVideoQueue:
         - "dependency_cancelled": A dependency was cancelled
         """
         self._dependency_callbacks.append(callback)
+
     def set_processor(self, processor: Callable[[Path, Path], BatchJobResult]) -> None:
         """Set the video processor function."""
         self._processor = processor
@@ -568,9 +565,7 @@ class BatchVideoQueue:
                     # Dependencies not met, skip for now
                     skipped_jobs.append(job_id)
                     pending_deps = job.get_pending_dependencies(self._completed_jobs)
-                    self._logger.debug(
-                        f"Job {job_id} waiting for dependencies: {pending_deps}"
-                    )
+                    self._logger.debug(f"Job {job_id} waiting for dependencies: {pending_deps}")
                     continue
 
                 # Job is ready to run
@@ -721,9 +716,7 @@ class BatchVideoQueue:
                         self._logger.error(f"Dependency callback error: {e}")
             else:
                 pending = dep_job.get_pending_dependencies(self._completed_jobs)
-                self._logger.debug(
-                    f"Job {dep_job_id} still waiting for dependencies: {pending}"
-                )
+                self._logger.debug(f"Job {dep_job_id} still waiting for dependencies: {pending}")
 
     def _start_folder_watcher(self) -> None:
         """Start folder monitoring."""

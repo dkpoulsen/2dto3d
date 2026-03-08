@@ -14,36 +14,34 @@ import time
 import uuid
 from contextlib import asynccontextmanager
 from pathlib import Path
-from typing import Optional
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.openapi.utils import get_openapi
 from fastapi.responses import FileResponse, Response
 from fastapi.staticfiles import StaticFiles
+
 from video2d3d import __version__
 from video2d3d.batch import BatchQueueConfig, BatchVideoQueue
 from video2d3d.crash import init_crash_reporting, set_crash_reporter_queue, shutdown_crash_reporting
 from video2d3d.utils.config import get_config
 from video2d3d.utils.logger import get_logger
+from video2d3d.web.exceptions import register_exception_handlers
+
+# Import health monitoring utilities
+from video2d3d.web.health import get_comprehensive_health, get_gpu_status
+from video2d3d.web.rate_limit import setup_rate_limiting
+
+# Import routers (will be created)
+from video2d3d.web.routers import auth, crash, downloads, jobs, notifications, uploads
 
 # Import schemas and exceptions
 from video2d3d.web.schemas import (
     APIInfoResponse,
     ComprehensiveHealthResponse,
-    ErrorResponse,
     HealthCheckResponse,
 )
-
-# Import health monitoring utilities
-from video2d3d.web.health import get_comprehensive_health, get_gpu_status
-
-# Import routers (will be created)
-from video2d3d.web.routers import auth, crash, downloads, jobs, notifications, uploads
-
-from video2d3d.web.state import AppState, app_state
-from video2d3d.web.exceptions import register_exception_handlers
-from video2d3d.web.rate_limit import setup_rate_limiting
+from video2d3d.web.state import app_state
 
 logger = get_logger("web.api")
 
@@ -84,25 +82,27 @@ def initialize_queue() -> BatchVideoQueue:
         )
 
     queue = BatchVideoQueue(config=batch_config, processor=placeholder_processor)
-    
+
     # Hook up notification callbacks
     from video2d3d.web.notification_manager import get_notification_manager
+
     notification_manager = get_notification_manager()
-    
+
     def on_job_completed(job):
         notification_manager.on_job_completed(job)
-    
+
     def on_job_error(job, error):
         notification_manager.on_job_failed(job, error)
-    
+
     queue.on_completion(on_job_completed)
     queue.on_error(on_job_error)
-    
+
     queue.start()
 
     logger.info(f"Batch queue initialized with {batch_config.max_concurrent_jobs} workers")
 
     return queue
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -142,6 +142,7 @@ async def lifespan(app: FastAPI):
     if app_state.queue:
         app_state.queue.stop(wait=True)
         logger.info("Batch queue stopped")
+
 
 def create_app(
     title: str = "2Dto3D Video Converter API",
@@ -212,11 +213,11 @@ This API uses JWT-based authentication. Most endpoints require a valid access to
         {
             "name": "Info",
             "description": "API information and service metadata.",
+        },
         {
             "name": "Authentication",
             "description": "User authentication endpoints. Register, login, and manage JWT tokens. "
             "Includes role-based access control for protected resources.",
-        },
         },
         {
             "name": "Health",
@@ -355,7 +356,6 @@ This API uses JWT-based authentication. Most endpoints require a valid access to
         tags=["Authentication"],
     )
 
-
     # Health check endpoint (basic)
     @app.get(
         "/health",
@@ -383,6 +383,7 @@ This API uses JWT-based authentication. Most endpoints require a valid access to
             queue_running=queue_running,
             gpu_available=gpu_status.available,
         )
+
     # Comprehensive health check endpoint
     @app.get(
         "/health/detailed",
@@ -409,13 +410,14 @@ This API uses JWT-based authentication. Most endpoints require a valid access to
     # Root endpoint - serve frontend or API info
     frontend_dist = Path(__file__).parent.parent.parent.parent / "frontend" / "dist"
     frontend_index = frontend_dist / "index.html"
-    
+
     if frontend_index.exists():
         # Serve frontend
         @app.get("/", include_in_schema=False)
         async def root():
             """Serve the web dashboard."""
             return FileResponse(str(frontend_index))
+
     else:
         # Serve API info when frontend not built
         @app.get(
@@ -444,6 +446,7 @@ This API uses JWT-based authentication. Most endpoints require a valid access to
 
         stats = app_state.queue.get_stats()
         return stats.to_dict()
+
     # OpenAPI YAML export endpoint (for external tools like Postman, Insomnia)
     @app.get(
         "/openapi.yaml",
@@ -490,7 +493,7 @@ This API uses JWT-based authentication. Most endpoints require a valid access to
         assets_dir = frontend_dist / "assets"
         if assets_dir.exists():
             app.mount("/assets", StaticFiles(directory=str(assets_dir)), name="assets")
-        
+
         logger.info(f"Serving frontend from {frontend_dist}")
 
         # Serve index.html for all non-API routes (SPA routing)
@@ -501,12 +504,12 @@ This API uses JWT-based authentication. Most endpoints require a valid access to
             file_path = frontend_dist / full_path
             if file_path.exists() and file_path.is_file():
                 return FileResponse(str(file_path))
-            
+
             # For all other routes, serve index.html (SPA routing)
             index_path = frontend_dist / "index.html"
             if index_path.exists():
                 return FileResponse(str(index_path))
-            
+
             return {"error": "Frontend not built. Run 'npm run build' in frontend/"}
 
     logger.info(f"FastAPI app created with prefix: {api_prefix}")

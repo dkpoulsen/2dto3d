@@ -12,11 +12,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import TYPE_CHECKING, Optional
 
-from video2d3d.utils.gpu import (
-    get_all_gpu_info,
-    get_device_count,
-    is_cuda_available,
-)
+from video2d3d.utils.gpu import get_all_gpu_info, get_device_count, is_cuda_available
 from video2d3d.utils.logger import get_logger
 from video2d3d.web.schemas import (
     ComprehensiveHealthResponse,
@@ -41,6 +37,7 @@ GPU_MEMORY_CRITICAL_THRESHOLD = 98.0  # Percent
 
 # Conversion constant
 BYTES_TO_MB = 1024 * 1024
+
 
 def get_system_memory() -> SystemMemoryResponse:
     """Get current system memory usage.

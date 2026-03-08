@@ -30,7 +30,6 @@ if TYPE_CHECKING:
 
 from video2d3d.utils.logger import get_logger
 
-
 # ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------
@@ -44,7 +43,7 @@ LUMINANCE_B: Final[float] = 0.114
 MIN_IMAGE_DIMENSION: Final[int] = 1
 
 
-def _get_anaglyph_logger() -> "Logger":
+def _get_anaglyph_logger() -> Logger:
     """Get the anaglyph module logger (lazy initialization)."""
     return get_logger("stereo.anaglyph")
 

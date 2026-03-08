@@ -35,7 +35,6 @@ from video2d3d.depth.processor import (
     process_depth_map,
 )
 
-
 # ---------------------------------------------------------------------------
 # Fixtures
 # ---------------------------------------------------------------------------
@@ -485,7 +484,6 @@ class TestGuidedFilter:
         assert result.shape == tiny_depth.shape
 
 
-
 # ---------------------------------------------------------------------------
 # Hole Filling Tests
 # ---------------------------------------------------------------------------
@@ -758,7 +756,6 @@ class TestFullPipeline:
 
         assert result.dtype == np.float32
         assert result.shape == sample_depth_map.shape
-
 
 
 # ---------------------------------------------------------------------------

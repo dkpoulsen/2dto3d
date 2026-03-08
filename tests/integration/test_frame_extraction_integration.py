@@ -5,9 +5,8 @@ These tests verify frame extraction with actual video processing.
 
 from __future__ import annotations
 
-import tempfile
+from collections.abc import Generator
 from pathlib import Path
-from typing import Generator
 
 import cv2
 import numpy as np

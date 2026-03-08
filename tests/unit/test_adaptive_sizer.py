@@ -333,7 +333,7 @@ class TestAdaptiveBatchSizer:
         self, mock_memory_monitor: MagicMock, mock_gpu_utils: dict[str, MagicMock]
     ) -> None:
         """Test initialization with default config."""
-        from video2d3d.batch.adaptive_sizer import AdaptiveBatchSizer, AdjustmentReason
+        from video2d3d.batch.adaptive_sizer import AdaptiveBatchSizer
 
         sizer = AdaptiveBatchSizer()
 
@@ -357,7 +357,7 @@ class TestAdaptiveBatchSizer:
         self, mock_memory_monitor: MagicMock, mock_gpu_utils: dict[str, MagicMock]
     ) -> None:
         """Test get_batch_size returns current batch size."""
-        from video2d3d.batch.adaptive_sizer import AdaptiveBatchSizer, AdjustmentReason
+        from video2d3d.batch.adaptive_sizer import AdaptiveBatchSizer
 
         sizer = AdaptiveBatchSizer()
         assert sizer.get_batch_size() == 4
@@ -399,7 +399,7 @@ class TestAdaptiveBatchSizer:
         self, mock_memory_monitor: MagicMock, mock_gpu_utils: dict[str, MagicMock]
     ) -> None:
         """Test adding callbacks."""
-        from video2d3d.batch.adaptive_sizer import AdaptiveBatchSizer, AdjustmentReason
+        from video2d3d.batch.adaptive_sizer import AdaptiveBatchSizer
 
         sizer = AdaptiveBatchSizer()
         callback = MagicMock()
@@ -411,7 +411,7 @@ class TestAdaptiveBatchSizer:
         self, mock_memory_monitor: MagicMock, mock_gpu_utils: dict[str, MagicMock]
     ) -> None:
         """Test removing callbacks."""
-        from video2d3d.batch.adaptive_sizer import AdaptiveBatchSizer, AdjustmentReason
+        from video2d3d.batch.adaptive_sizer import AdaptiveBatchSizer
 
         sizer = AdaptiveBatchSizer()
         callback = MagicMock()
@@ -426,7 +426,7 @@ class TestAdaptiveBatchSizer:
         self, mock_memory_monitor: MagicMock, mock_gpu_utils: dict[str, MagicMock]
     ) -> None:
         """Test removing a callback that doesn't exist."""
-        from video2d3d.batch.adaptive_sizer import AdaptiveBatchSizer, AdjustmentReason
+        from video2d3d.batch.adaptive_sizer import AdaptiveBatchSizer
 
         sizer = AdaptiveBatchSizer()
         callback = MagicMock()
@@ -438,7 +438,7 @@ class TestAdaptiveBatchSizer:
         self, mock_memory_monitor: MagicMock, mock_gpu_utils: dict[str, MagicMock]
     ) -> None:
         """Test clearing all callbacks."""
-        from video2d3d.batch.adaptive_sizer import AdaptiveBatchSizer, AdjustmentReason
+        from video2d3d.batch.adaptive_sizer import AdaptiveBatchSizer
 
         sizer = AdaptiveBatchSizer()
         sizer.add_callback(MagicMock())
@@ -447,33 +447,30 @@ class TestAdaptiveBatchSizer:
         sizer.clear_callbacks()
         assert len(sizer._callbacks) == 0
 
-    #MS|    def test_callback_invoked_on_change(
-#MR|        self, mock_memory_monitor: MagicMock, mock_gpu_utils: dict[str, MagicMock]
-#BJ|    ) -> None:
-#PH|        """Test callback is invoked when batch size changes."""
-#ZM|        from video2d3d.batch.adaptive_sizer import AdaptiveBatchSizer, AdjustmentReason
-#HP|
-#YJ|        sizer = AdaptiveBatchSizer()
-#NP|        callback = MagicMock()
-#NZ|        sizer.add_callback(callback)
-#SZ|
-#KW|        sizer.set_batch_size(8, AdjustmentReason.MANUAL)
-#PM|
-#SW|        callback.assert_called_once()
-#MB|        args = callback.call_args[0]
-#QQ|        # Callback signature is (old_size, new_size, reason)
-#MR|        assert args[0] == 4  # old size
-#VV|        assert args[1] == 8  # new size
-#YR|        assert args[2] == AdjustmentReason.MANUAL
-#JX|
+    # MS|    def test_callback_invoked_on_change(
+    # MR|        self, mock_memory_monitor: MagicMock, mock_gpu_utils: dict[str, MagicMock]
+    # BJ|    ) -> None:
+    # PH|        """Test callback is invoked when batch size changes."""
+    # ZM|        from video2d3d.batch.adaptive_sizer import AdaptiveBatchSizer, AdjustmentReason
+    # HP|
+    # YJ|        sizer = AdaptiveBatchSizer()
+    # NP|        callback = MagicMock()
+    # NZ|        sizer.add_callback(callback)
+    # SZ|
+    # KW|        sizer.set_batch_size(8, AdjustmentReason.MANUAL)
+    # PM|
+    # SW|        callback.assert_called_once()
+    # MB|        args = callback.call_args[0]
+    # QQ|        # Callback signature is (old_size, new_size, reason)
+    # MR|        assert args[0] == 4  # old size
+    # VV|        assert args[1] == 8  # new size
+    # YR|        assert args[2] == AdjustmentReason.MANUAL
+    # JX|
     def test_handle_oom_error(
         self, mock_memory_monitor: MagicMock, mock_gpu_utils: dict[str, MagicMock]
     ) -> None:
         """Test OOM error handling reduces batch size."""
-        from video2d3d.batch.adaptive_sizer import (
-            AdaptiveBatchConfig,
-            AdaptiveBatchSizer,
-        )
+        from video2d3d.batch.adaptive_sizer import AdaptiveBatchConfig, AdaptiveBatchSizer
 
         config = AdaptiveBatchConfig(initial_batch_size=8)
         sizer = AdaptiveBatchSizer(config)
@@ -688,7 +685,7 @@ class TestMonitoring:
         self, mock_memory_monitor: MagicMock, mock_gpu_utils: dict[str, MagicMock]
     ) -> None:
         """Test starting monitoring twice logs warning."""
-        from video2d3d.batch.adaptive_sizer import AdaptiveBatchSizer, AdjustmentReason
+        from video2d3d.batch.adaptive_sizer import AdaptiveBatchSizer
 
         sizer = AdaptiveBatchSizer()
 
@@ -721,10 +718,7 @@ class TestContextManager:
         self, mock_memory_monitor: MagicMock, mock_gpu_utils: dict[str, MagicMock]
     ) -> None:
         """Test basic context manager usage."""
-        from video2d3d.batch.adaptive_sizer import (
-            AdaptiveBatchSizer,
-            adaptive_batch_sizer_context,
-        )
+        from video2d3d.batch.adaptive_sizer import AdaptiveBatchSizer, adaptive_batch_sizer_context
 
         with adaptive_batch_sizer_context() as sizer:
             assert isinstance(sizer, AdaptiveBatchSizer)
@@ -853,7 +847,7 @@ class TestThreadSafety:
         self, mock_memory_monitor: MagicMock, mock_gpu_utils: dict[str, MagicMock]
     ) -> None:
         """Test concurrent callback add/remove is thread-safe."""
-        from video2d3d.batch.adaptive_sizer import AdaptiveBatchSizer, AdjustmentReason
+        from video2d3d.batch.adaptive_sizer import AdaptiveBatchSizer
 
         sizer = AdaptiveBatchSizer()
         errors: list[Exception] = []

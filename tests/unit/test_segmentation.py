@@ -14,7 +14,6 @@ from unittest.mock import MagicMock, patch
 import numpy as np
 import pytest
 
-
 # ---------------------------------------------------------------------------
 # Fixtures
 # ---------------------------------------------------------------------------
@@ -326,10 +325,7 @@ class TestSegmentationProcessor:
 
     def test_extract_boundaries(self, sample_masks: list[dict[str, Any]]) -> None:
         """Test boundary extraction."""
-        from video2d3d.segmentation.processor import (
-            SegmentationProcessor,
-            BoundaryType,
-        )
+        from video2d3d.segmentation.processor import BoundaryType, SegmentationProcessor
 
         processor = SegmentationProcessor()
 
@@ -398,10 +394,7 @@ class TestDepthSegmentationIntegrator:
 
     def test_initialization_with_config(self) -> None:
         """Test initialization with config."""
-        from video2d3d.segmentation.integrator import (
-            DepthSegmentationIntegrator,
-            IntegrationConfig,
-        )
+        from video2d3d.segmentation.integrator import DepthSegmentationIntegrator, IntegrationConfig
 
         config = IntegrationConfig(smoothing_strength=0.8)
         integrator = DepthSegmentationIntegrator(config=config)
@@ -444,10 +437,7 @@ class TestDepthSegmentationIntegrator:
         sample_image: np.ndarray,
     ) -> None:
         """Test depth refinement with image for edge detection."""
-        from video2d3d.segmentation.integrator import (
-            DepthSegmentationIntegrator,
-            IntegrationConfig,
-        )
+        from video2d3d.segmentation.integrator import DepthSegmentationIntegrator, IntegrationConfig
 
         config = IntegrationConfig(depth_refinement="edge_aware_filter")
         integrator = DepthSegmentationIntegrator(config=config)
@@ -619,9 +609,7 @@ class TestSegmentationConstants:
 
     def test_main_module_constants_exist(self) -> None:
         """Test that main module constants are defined."""
-        from video2d3d.segmentation import (
-            _SAM_DEFAULT_INPUT_SIZE,
-        )
+        from video2d3d.segmentation import _SAM_DEFAULT_INPUT_SIZE
 
         # Verify constants have expected values
         assert _SAM_DEFAULT_INPUT_SIZE == 1024
@@ -629,11 +617,11 @@ class TestSegmentationConstants:
     def test_processor_constants_exist(self) -> None:
         """Test that processor module constants are defined."""
         from video2d3d.segmentation.processor import (
-            _DEFAULT_MIN_AREA,
-            _DEFAULT_MAX_AREA,
-            _DEFAULT_MORPHOLOGY_KERNEL_SIZE,
             _DEFAULT_BOUNDARY_WIDTH,
             _DEFAULT_GAUSSIAN_KERNEL_SIZE,
+            _DEFAULT_MAX_AREA,
+            _DEFAULT_MIN_AREA,
+            _DEFAULT_MORPHOLOGY_KERNEL_SIZE,
             _VALID_HOLE_FILLING_METHODS,
         )
 
@@ -648,11 +636,11 @@ class TestSegmentationConstants:
     def test_integrator_constants_exist(self) -> None:
         """Test that integrator module constants are defined."""
         from video2d3d.segmentation.integrator import (
-            _DEFAULT_SMOOTHING_STRENGTH,
+            _CANNY_HIGH_THRESHOLD,
+            _CANNY_LOW_THRESHOLD,
             _DEFAULT_BOUNDARY_SHARPNESS,
             _DEFAULT_EDGE_DILATION,
-            _CANNY_LOW_THRESHOLD,
-            _CANNY_HIGH_THRESHOLD,
+            _DEFAULT_SMOOTHING_STRENGTH,
         )
 
         assert _DEFAULT_SMOOTHING_STRENGTH == 0.5
@@ -672,18 +660,14 @@ class TestSegmentationProcessorAdvancedValidation:
 
     def test_invalid_hole_filling_method(self) -> None:
         """Test validation of hole_filling_method."""
-        from video2d3d.segmentation.processor import (
-            SegmentationProcessorConfig,
-        )
+        from video2d3d.segmentation.processor import SegmentationProcessorConfig
 
         with pytest.raises(ValueError, match="hole_filling_method must be one of"):
             SegmentationProcessorConfig(hole_filling_method="invalid_method")
 
     def test_valid_hole_filling_methods(self) -> None:
         """Test that valid hole filling methods are accepted."""
-        from video2d3d.segmentation.processor import (
-            SegmentationProcessorConfig,
-        )
+        from video2d3d.segmentation.processor import SegmentationProcessorConfig
 
         # morphology method
         config1 = SegmentationProcessorConfig(hole_filling_method="morphology")
@@ -695,25 +679,19 @@ class TestSegmentationProcessorAdvancedValidation:
 
     def test_invalid_morphology_kernel_size(self) -> None:
         """Test validation of morphology_kernel_size."""
-        from video2d3d.segmentation.processor import (
-            SegmentationProcessorConfig,
-        )
+        from video2d3d.segmentation.processor import SegmentationProcessorConfig
 
         with pytest.raises(ValueError, match="morphology_kernel_size must be >= 1"):
             SegmentationProcessorConfig(morphology_kernel_size=0)
 
     def test_invalid_boundary_width(self) -> None:
         """Test validation of boundary_width."""
-        from video2d3d.segmentation.processor import (
-            SegmentationProcessorConfig,
-        )
+        from video2d3d.segmentation.processor import SegmentationProcessorConfig
 
         with pytest.raises(ValueError, match="boundary_width must be >= 1"):
             SegmentationProcessorConfig(boundary_width=0)
 
-    def test_morphology_kernel_helper(
-        self, sample_masks: list[dict[str, Any]]
-    ) -> None:
+    def test_morphology_kernel_helper(self, sample_masks: list[dict[str, Any]]) -> None:
         """Test the _get_morphology_kernel helper method."""
         from video2d3d.segmentation.processor import (
             SegmentationProcessor,
@@ -822,10 +800,7 @@ class TestDepthRefinementMethods:
         sample_masks: list[dict[str, Any]],
     ) -> None:
         """Test boundary_sharpening refinement method."""
-        from video2d3d.segmentation.integrator import (
-            DepthSegmentationIntegrator,
-            IntegrationConfig,
-        )
+        from video2d3d.segmentation.integrator import DepthSegmentationIntegrator, IntegrationConfig
 
         config = IntegrationConfig(
             depth_refinement="boundary_sharpening",
@@ -843,10 +818,7 @@ class TestDepthRefinementMethods:
         sample_masks: list[dict[str, Any]],
     ) -> None:
         """Test object_smoothing refinement method."""
-        from video2d3d.segmentation.integrator import (
-            DepthSegmentationIntegrator,
-            IntegrationConfig,
-        )
+        from video2d3d.segmentation.integrator import DepthSegmentationIntegrator, IntegrationConfig
 
         config = IntegrationConfig(
             depth_refinement="object_smoothing",
@@ -865,10 +837,7 @@ class TestDepthRefinementMethods:
         sample_image: np.ndarray,
     ) -> None:
         """Test edge_aware_filter refinement method."""
-        from video2d3d.segmentation.integrator import (
-            DepthSegmentationIntegrator,
-            IntegrationConfig,
-        )
+        from video2d3d.segmentation.integrator import DepthSegmentationIntegrator, IntegrationConfig
 
         config = IntegrationConfig(depth_refinement="edge_aware_filter")
         integrator = DepthSegmentationIntegrator(config=config)
@@ -884,10 +853,7 @@ class TestDepthRefinementMethods:
         sample_image: np.ndarray,
     ) -> None:
         """Test combined refinement method (default)."""
-        from video2d3d.segmentation.integrator import (
-            DepthSegmentationIntegrator,
-            IntegrationConfig,
-        )
+        from video2d3d.segmentation.integrator import DepthSegmentationIntegrator, IntegrationConfig
 
         config = IntegrationConfig(depth_refinement="combined")
         integrator = DepthSegmentationIntegrator(config=config)
@@ -903,10 +869,7 @@ class TestDepthRefinementMethods:
         sample_masks: list[dict[str, Any]],
     ) -> None:
         """Test with boundary preservation disabled."""
-        from video2d3d.segmentation.integrator import (
-            DepthSegmentationIntegrator,
-            IntegrationConfig,
-        )
+        from video2d3d.segmentation.integrator import DepthSegmentationIntegrator, IntegrationConfig
 
         config = IntegrationConfig(
             depth_refinement="boundary_sharpening",
@@ -924,10 +887,7 @@ class TestDepthRefinementMethods:
         sample_masks: list[dict[str, Any]],
     ) -> None:
         """Test with object smoothing disabled."""
-        from video2d3d.segmentation.integrator import (
-            DepthSegmentationIntegrator,
-            IntegrationConfig,
-        )
+        from video2d3d.segmentation.integrator import DepthSegmentationIntegrator, IntegrationConfig
 
         config = IntegrationConfig(
             depth_refinement="object_smoothing",
@@ -953,10 +913,7 @@ class TestEdgeAwareFilterFormats:
         sample_masks: list[dict[str, Any]],
     ) -> None:
         """Test edge-aware filter with grayscale image."""
-        from video2d3d.segmentation.integrator import (
-            DepthSegmentationIntegrator,
-            IntegrationConfig,
-        )
+        from video2d3d.segmentation.integrator import DepthSegmentationIntegrator, IntegrationConfig
 
         # Create grayscale image
         np.random.seed(42)
@@ -974,10 +931,7 @@ class TestEdgeAwareFilterFormats:
         sample_masks: list[dict[str, Any]],
     ) -> None:
         """Test edge-aware filter with 4-channel RGBA image."""
-        from video2d3d.segmentation.integrator import (
-            DepthSegmentationIntegrator,
-            IntegrationConfig,
-        )
+        from video2d3d.segmentation.integrator import DepthSegmentationIntegrator, IntegrationConfig
 
         # Create 4-channel RGBA image
         np.random.seed(42)
@@ -995,10 +949,7 @@ class TestEdgeAwareFilterFormats:
         sample_masks: list[dict[str, Any]],
     ) -> None:
         """Test edge-aware filter without image input."""
-        from video2d3d.segmentation.integrator import (
-            DepthSegmentationIntegrator,
-            IntegrationConfig,
-        )
+        from video2d3d.segmentation.integrator import DepthSegmentationIntegrator, IntegrationConfig
 
         config = IntegrationConfig(depth_refinement="edge_aware_filter")
         integrator = DepthSegmentationIntegrator(config=config)
@@ -1023,8 +974,8 @@ class TestSegmentationDepthIntegration:
     ) -> None:
         """Test full pipeline from segmentation to depth refinement."""
         from video2d3d.segmentation import SemanticSegmenter
-        from video2d3d.segmentation.processor import SegmentationProcessor
         from video2d3d.segmentation.integrator import DepthSegmentationIntegrator
+        from video2d3d.segmentation.processor import SegmentationProcessor
 
         # Step 1: Create segmenter and extract boundaries
         segmenter = SemanticSegmenter(device="cpu")
@@ -1050,11 +1001,7 @@ class TestSegmentationDepthIntegration:
         sample_image: np.ndarray,
     ) -> None:
         """Test that segmentation-based refinement preserves depth edges."""
-        from video2d3d.segmentation import SemanticSegmenter
-        from video2d3d.segmentation.integrator import (
-            DepthSegmentationIntegrator,
-            IntegrationConfig,
-        )
+        from video2d3d.segmentation.integrator import DepthSegmentationIntegrator, IntegrationConfig
 
         # Create depth map with sharp edge
         depth_map = np.zeros((100, 100), dtype=np.float32)
@@ -1064,13 +1011,15 @@ class TestSegmentationDepthIntegration:
         # Create mask matching the depth edge
         mask = np.zeros((100, 100), dtype=bool)
         mask[:, :50] = True
-        masks = [{
-            "segmentation": mask,
-            "area": 5000,
-            "bbox": [0, 0, 50, 100],
-            "predicted_iou": 0.95,
-            "stability_score": 0.95,
-        }]
+        masks = [
+            {
+                "segmentation": mask,
+                "area": 5000,
+                "bbox": [0, 0, 50, 100],
+                "predicted_iou": 0.95,
+                "stability_score": 0.95,
+            }
+        ]
 
         # Refine depth with high sharpness
         config = IntegrationConfig(
@@ -1100,10 +1049,20 @@ class TestSegmentationDepthIntegration:
         mask2[60:80, 60:80] = True
 
         masks = [
-            {"segmentation": mask1, "area": 400, "bbox": [20, 20, 20, 20],
-             "predicted_iou": 0.9, "stability_score": 0.9},
-            {"segmentation": mask2, "area": 400, "bbox": [60, 60, 20, 20],
-             "predicted_iou": 0.9, "stability_score": 0.9},
+            {
+                "segmentation": mask1,
+                "area": 400,
+                "bbox": [20, 20, 20, 20],
+                "predicted_iou": 0.9,
+                "stability_score": 0.9,
+            },
+            {
+                "segmentation": mask2,
+                "area": 400,
+                "bbox": [60, 60, 20, 20],
+                "predicted_iou": 0.9,
+                "stability_score": 0.9,
+            },
         ]
 
         integrator = DepthSegmentationIntegrator()
@@ -1133,13 +1092,15 @@ class TestAdditionalEdgeCases:
         large_mask = np.ones((256, 256), dtype=bool)
         large_mask[:26, :] = False  # 10% uncovered
 
-        masks = [{
-            "segmentation": large_mask,
-            "area": int(np.sum(large_mask)),
-            "bbox": [0, 0, 256, 230],
-            "predicted_iou": 0.9,
-            "stability_score": 0.9,
-        }]
+        masks = [
+            {
+                "segmentation": large_mask,
+                "area": int(np.sum(large_mask)),
+                "bbox": [0, 0, 256, 230],
+                "predicted_iou": 0.9,
+                "stability_score": 0.9,
+            }
+        ]
 
         integrator = DepthSegmentationIntegrator()
         refined = integrator.refine(sample_depth_map, masks)
@@ -1161,10 +1122,20 @@ class TestAdditionalEdgeCases:
         mask2[40:80, 40:80] = True  # Overlaps with mask1
 
         masks = [
-            {"segmentation": mask1, "area": int(np.sum(mask1)), "bbox": [20, 20, 40, 40],
-             "predicted_iou": 0.9, "stability_score": 0.9},
-            {"segmentation": mask2, "area": int(np.sum(mask2)), "bbox": [40, 40, 40, 40],
-             "predicted_iou": 0.9, "stability_score": 0.9},
+            {
+                "segmentation": mask1,
+                "area": int(np.sum(mask1)),
+                "bbox": [20, 20, 40, 40],
+                "predicted_iou": 0.9,
+                "stability_score": 0.9,
+            },
+            {
+                "segmentation": mask2,
+                "area": int(np.sum(mask2)),
+                "bbox": [40, 40, 40, 40],
+                "predicted_iou": 0.9,
+                "stability_score": 0.9,
+            },
         ]
 
         depth = np.random.rand(100, 100).astype(np.float32)
@@ -1187,13 +1158,15 @@ class TestAdditionalEdgeCases:
         tiny_mask = np.zeros((256, 256), dtype=bool)
         tiny_mask[100:102, 100:102] = True  # Only 4 pixels
 
-        masks = sample_masks + [{
-            "segmentation": tiny_mask,
-            "area": 4,
-            "bbox": [100, 100, 2, 2],
-            "predicted_iou": 0.9,
-            "stability_score": 0.9,
-        }]
+        masks = sample_masks + [
+            {
+                "segmentation": tiny_mask,
+                "area": 4,
+                "bbox": [100, 100, 2, 2],
+                "predicted_iou": 0.9,
+                "stability_score": 0.9,
+            }
+        ]
 
         config = SegmentationProcessorConfig(min_mask_area=10)
         processor = SegmentationProcessor(config=config)
@@ -1208,15 +1181,10 @@ class TestAdditionalEdgeCases:
         sample_masks: list[dict[str, Any]],
     ) -> None:
         """Test extracting only inner boundaries."""
-        from video2d3d.segmentation.processor import (
-            SegmentationProcessor,
-            BoundaryType,
-        )
+        from video2d3d.segmentation.processor import BoundaryType, SegmentationProcessor
 
         processor = SegmentationProcessor()
-        inner = processor.extract_boundaries(
-            sample_masks, (256, 256), BoundaryType.INNER
-        )
+        inner = processor.extract_boundaries(sample_masks, (256, 256), BoundaryType.INNER)
 
         assert inner.shape == (256, 256)
         assert inner.dtype == bool
@@ -1226,15 +1194,10 @@ class TestAdditionalEdgeCases:
         sample_masks: list[dict[str, Any]],
     ) -> None:
         """Test extracting only outer boundaries."""
-        from video2d3d.segmentation.processor import (
-            SegmentationProcessor,
-            BoundaryType,
-        )
+        from video2d3d.segmentation.processor import BoundaryType, SegmentationProcessor
 
         processor = SegmentationProcessor()
-        outer = processor.extract_boundaries(
-            sample_masks, (256, 256), BoundaryType.OUTER
-        )
+        outer = processor.extract_boundaries(sample_masks, (256, 256), BoundaryType.OUTER)
 
         assert outer.shape == (256, 256)
         assert outer.dtype == bool
@@ -1246,13 +1209,15 @@ class TestAdditionalEdgeCases:
         # Create simple mask
         mask = np.zeros((50, 50), dtype=bool)
         mask[10:40, 10:40] = True
-        masks = [{
-            "segmentation": mask,
-            "area": 900,
-            "bbox": [10, 10, 30, 30],
-            "predicted_iou": 0.9,
-            "stability_score": 0.9,
-        }]
+        masks = [
+            {
+                "segmentation": mask,
+                "area": 900,
+                "bbox": [10, 10, 30, 30],
+                "predicted_iou": 0.9,
+                "stability_score": 0.9,
+            }
+        ]
 
         processor = SegmentationProcessor()
         weights = processor.create_weight_map(masks, (50, 50), boundary_weight=3.0)
@@ -1341,8 +1306,13 @@ class TestSegmentationModes:
 
         # Create some test masks
         masks = [
-            {"segmentation": np.ones((100, 100), dtype=bool), "area": 10000,
-             "bbox": [0, 0, 100, 100], "predicted_iou": 0.9, "stability_score": 0.9},
+            {
+                "segmentation": np.ones((100, 100), dtype=bool),
+                "area": 10000,
+                "bbox": [0, 0, 100, 100],
+                "predicted_iou": 0.9,
+                "stability_score": 0.9,
+            },
         ]
 
         # Should not raise for RGB images
@@ -1359,8 +1329,13 @@ class TestSegmentationModes:
         gray_image = np.random.randint(0, 255, (100, 100), dtype=np.uint8)
 
         masks = [
-            {"segmentation": np.ones((100, 100), dtype=bool), "area": 10000,
-             "bbox": [0, 0, 100, 100], "predicted_iou": 0.9, "stability_score": 0.9},
+            {
+                "segmentation": np.ones((100, 100), dtype=bool),
+                "area": 10000,
+                "bbox": [0, 0, 100, 100],
+                "predicted_iou": 0.9,
+                "stability_score": 0.9,
+            },
         ]
 
         # Should not raise for grayscale images
@@ -1410,10 +1385,7 @@ class TestBoundaryPreservationMethods:
         sample_masks: list[dict[str, Any]],
     ) -> None:
         """Test edge_weighted boundary preservation."""
-        from video2d3d.segmentation.integrator import (
-            DepthSegmentationIntegrator,
-            IntegrationConfig,
-        )
+        from video2d3d.segmentation.integrator import DepthSegmentationIntegrator, IntegrationConfig
 
         config = IntegrationConfig(boundary_preservation="edge_weighted")
         integrator = DepthSegmentationIntegrator(config=config)
@@ -1427,10 +1399,7 @@ class TestBoundaryPreservationMethods:
         sample_masks: list[dict[str, Any]],
     ) -> None:
         """Test mask_guided boundary preservation."""
-        from video2d3d.segmentation.integrator import (
-            DepthSegmentationIntegrator,
-            IntegrationConfig,
-        )
+        from video2d3d.segmentation.integrator import DepthSegmentationIntegrator, IntegrationConfig
 
         config = IntegrationConfig(boundary_preservation="mask_guided")
         integrator = DepthSegmentationIntegrator(config=config)
@@ -1444,10 +1413,7 @@ class TestBoundaryPreservationMethods:
         sample_masks: list[dict[str, Any]],
     ) -> None:
         """Test joint_bilateral boundary preservation."""
-        from video2d3d.segmentation.integrator import (
-            DepthSegmentationIntegrator,
-            IntegrationConfig,
-        )
+        from video2d3d.segmentation.integrator import DepthSegmentationIntegrator, IntegrationConfig
 
         config = IntegrationConfig(boundary_preservation="joint_bilateral")
         integrator = DepthSegmentationIntegrator(config=config)
@@ -1461,10 +1427,7 @@ class TestBoundaryPreservationMethods:
         sample_masks: list[dict[str, Any]],
     ) -> None:
         """Test none boundary preservation."""
-        from video2d3d.segmentation.integrator import (
-            DepthSegmentationIntegrator,
-            IntegrationConfig,
-        )
+        from video2d3d.segmentation.integrator import DepthSegmentationIntegrator, IntegrationConfig
 
         config = IntegrationConfig(boundary_preservation="none")
         integrator = DepthSegmentationIntegrator(config=config)
@@ -1547,10 +1510,20 @@ class TestMaskMerging:
         mask2[40:80, 40:80] = True
 
         masks = [
-            {"segmentation": mask1, "area": 1600, "bbox": [20, 20, 40, 40],
-             "predicted_iou": 0.9, "stability_score": 0.9},
-            {"segmentation": mask2, "area": 1600, "bbox": [40, 40, 40, 40],
-             "predicted_iou": 0.9, "stability_score": 0.9},
+            {
+                "segmentation": mask1,
+                "area": 1600,
+                "bbox": [20, 20, 40, 40],
+                "predicted_iou": 0.9,
+                "stability_score": 0.9,
+            },
+            {
+                "segmentation": mask2,
+                "area": 1600,
+                "bbox": [40, 40, 40, 40],
+                "predicted_iou": 0.9,
+                "stability_score": 0.9,
+            },
         ]
 
         config = SegmentationProcessorConfig(merge_overlapping=False)
@@ -1575,10 +1548,20 @@ class TestMaskMerging:
         mask2[30:50, 30:50] = True  # Mostly inside mask1
 
         masks = [
-            {"segmentation": mask1, "area": 1600, "bbox": [20, 20, 40, 40],
-             "predicted_iou": 0.9, "stability_score": 0.9},
-            {"segmentation": mask2, "area": 400, "bbox": [30, 30, 20, 20],
-             "predicted_iou": 0.9, "stability_score": 0.9},
+            {
+                "segmentation": mask1,
+                "area": 1600,
+                "bbox": [20, 20, 40, 40],
+                "predicted_iou": 0.9,
+                "stability_score": 0.9,
+            },
+            {
+                "segmentation": mask2,
+                "area": 400,
+                "bbox": [30, 30, 20, 20],
+                "predicted_iou": 0.9,
+                "stability_score": 0.9,
+            },
         ]
 
         config = SegmentationProcessorConfig(
@@ -1638,7 +1621,7 @@ class TestSemanticSegmenterAdvanced:
         segmenter = SemanticSegmenter(device="cpu")
 
         # Mock load_model to avoid actual loading
-        with patch.object(segmenter, 'load_model') as mock_load:
+        with patch.object(segmenter, "load_model") as mock_load:
             segmenter._mask_generator = MagicMock()
             segmenter._mask_generator.generate.return_value = []
 
@@ -1697,13 +1680,15 @@ class TestGetObjectDepthLayersEdgeCases:
         # Mask with no True pixels
         empty_mask = np.zeros((100, 100), dtype=bool)
 
-        masks = [{
-            "segmentation": empty_mask,
-            "area": 0,
-            "bbox": [0, 0, 0, 0],
-            "predicted_iou": 0.9,
-            "stability_score": 0.9,
-        }]
+        masks = [
+            {
+                "segmentation": empty_mask,
+                "area": 0,
+                "bbox": [0, 0, 0, 0],
+                "predicted_iou": 0.9,
+                "stability_score": 0.9,
+            }
+        ]
 
         depth = np.random.rand(100, 100).astype(np.float32)
         integrator = DepthSegmentationIntegrator()
@@ -1726,10 +1711,20 @@ class TestGetObjectDepthLayersEdgeCases:
         mask2[50:, :] = True  # Bottom half
 
         masks = [
-            {"segmentation": mask1, "area": 5000, "bbox": [0, 0, 100, 50],
-             "predicted_iou": 0.9, "stability_score": 0.9},
-            {"segmentation": mask2, "area": 5000, "bbox": [0, 50, 100, 50],
-             "predicted_iou": 0.9, "stability_score": 0.9},
+            {
+                "segmentation": mask1,
+                "area": 5000,
+                "bbox": [0, 0, 100, 50],
+                "predicted_iou": 0.9,
+                "stability_score": 0.9,
+            },
+            {
+                "segmentation": mask2,
+                "area": 5000,
+                "bbox": [0, 50, 100, 50],
+                "predicted_iou": 0.9,
+                "stability_score": 0.9,
+            },
         ]
 
         depth = sample_depth_map[:100, :100]
@@ -1786,9 +1781,7 @@ class TestSegmentationErrorClasses:
 
     def test_processor_error_attributes(self) -> None:
         """Test SegmentationProcessorError attributes."""
-        from video2d3d.segmentation.processor import (
-            SegmentationProcessorError,
-        )
+        from video2d3d.segmentation.processor import SegmentationProcessorError
 
         original = ValueError("original error")
         error = SegmentationProcessorError(
@@ -1974,10 +1967,7 @@ class TestEdgeDilationConfiguration:
         sample_masks: list[dict[str, Any]],
     ) -> None:
         """Test integrator with zero edge dilation."""
-        from video2d3d.segmentation.integrator import (
-            DepthSegmentationIntegrator,
-            IntegrationConfig,
-        )
+        from video2d3d.segmentation.integrator import DepthSegmentationIntegrator, IntegrationConfig
 
         config = IntegrationConfig(edge_dilation=0)
         integrator = DepthSegmentationIntegrator(config=config)
@@ -1990,10 +1980,7 @@ class TestEdgeDilationConfiguration:
         sample_masks: list[dict[str, Any]],
     ) -> None:
         """Test integrator with large edge dilation."""
-        from video2d3d.segmentation.integrator import (
-            DepthSegmentationIntegrator,
-            IntegrationConfig,
-        )
+        from video2d3d.segmentation.integrator import DepthSegmentationIntegrator, IntegrationConfig
 
         config = IntegrationConfig(edge_dilation=10)
         integrator = DepthSegmentationIntegrator(config=config)
@@ -2017,8 +2004,8 @@ class TestIntegrationWithDepthProcessor:
         sample_masks: list[dict[str, Any]],
     ) -> None:
         """Test that segmentation output is compatible with depth processing."""
-        from video2d3d.segmentation.processor import process_segmentation_masks
         from video2d3d.segmentation.integrator import refine_depth_with_segmentation
+        from video2d3d.segmentation.processor import process_segmentation_masks
 
         # Process masks
         processed_masks = process_segmentation_masks(
@@ -2055,14 +2042,16 @@ class TestIntegrationWithDepthProcessor:
                 center_y = (i * 50 + 50) % 256
                 center_x = (i * 30 + 30) % 256
                 radius = 20
-                mask[(y - center_y) ** 2 + (x - center_x) ** 2 <= radius ** 2] = True
-                masks.append({
-                    "segmentation": mask,
-                    "area": int(np.sum(mask)),
-                    "bbox": [center_x - radius, center_y - radius, radius * 2, radius * 2],
-                    "predicted_iou": 0.9,
-                    "stability_score": 0.9,
-                })
+                mask[(y - center_y) ** 2 + (x - center_x) ** 2 <= radius**2] = True
+                masks.append(
+                    {
+                        "segmentation": mask,
+                        "area": int(np.sum(mask)),
+                        "bbox": [center_x - radius, center_y - radius, radius * 2, radius * 2],
+                        "predicted_iou": 0.9,
+                        "stability_score": 0.9,
+                    }
+                )
 
             refined = integrator.refine(sample_depth_map, masks)
             assert refined.shape == sample_depth_map.shape

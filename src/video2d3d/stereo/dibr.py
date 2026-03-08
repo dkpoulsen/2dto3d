@@ -30,7 +30,6 @@ if TYPE_CHECKING:
 
 from video2d3d.utils.logger import get_logger, log_exception, log_performance
 
-
 # ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------
@@ -46,6 +45,7 @@ _HOLE_FILL_KERNEL_SIZE: int = 5  # Kernel size for morphological hole filling
 _HOLE_FILL_ITERATIONS: int = 5  # Number of dilation iterations for hole filling
 _INPAINT_RADIUS: int = 3  # Radius for CV2 inpainting
 _MIN_IMAGE_DIMENSION: int = 1  # Minimum allowed image dimension
+
 
 class HoleFillingMethod(Enum):
     """Available hole-filling methods for disocclusions."""
@@ -151,7 +151,7 @@ class DIBRError(Exception):
 # ---------------------------------------------------------------------------
 
 
-def _get_dibr_logger() -> "Logger":
+def _get_dibr_logger() -> Logger:
     """Get the DIBR module logger (lazy initialization)."""
     return get_logger("stereo.dibr")
 
@@ -437,7 +437,9 @@ class DIBREngine:
         if len(image.shape) == 3:
             # Color image
             if image.dtype == np.uint8:
-                result = cv2.inpaint(image, mask_uint8, inpaintRadius=_INPAINT_RADIUS, flags=cv2.INPAINT_TELEA)
+                result = cv2.inpaint(
+                    image, mask_uint8, inpaintRadius=_INPAINT_RADIUS, flags=cv2.INPAINT_TELEA
+                )
             else:
                 # Convert to uint8 for inpainting
                 image_uint8 = self._to_uint8(image)

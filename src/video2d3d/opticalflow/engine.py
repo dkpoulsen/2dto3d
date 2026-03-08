@@ -49,9 +49,8 @@ if TYPE_CHECKING:
     from loguru import Logger
     from torch import nn
 
-from video2d3d.utils.logger import get_logger, log_exception, log_model_inference
 from video2d3d.utils.gpu import GPUConfig, clear_gpu_memory, select_device
-
+from video2d3d.utils.logger import get_logger, log_exception, log_model_inference
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -69,6 +68,7 @@ _DEFAULT_FARNEBACK_ITERATIONS: int = 3
 _DEFAULT_FARNEBACK_POLY_N: int = 5
 _DEFAULT_FARNEBACK_POLY_SIGMA: float = 1.2
 
+
 class OpticalFlowModelType(Enum):
     """Available optical flow model types."""
 
@@ -80,7 +80,7 @@ class OpticalFlowModelType(Enum):
     FARNEBACK = "farneback"  # OpenCV Farneback (CPU fallback)
 
     @classmethod
-    def from_string(cls, name: str) -> "OpticalFlowModelType":
+    def from_string(cls, name: str) -> OpticalFlowModelType:
         """Get model type from string name.
 
         Args:
@@ -182,7 +182,7 @@ class InferenceError(OpticalFlowError):
     pass
 
 
-def _get_opticalflow_logger() -> "Logger":
+def _get_opticalflow_logger() -> Logger:
     """Get the optical flow module logger (lazy initialization)."""
     return get_logger("opticalflow")
 
@@ -268,6 +268,8 @@ class OpticalFlowConfig:
             f"device={self.device!r}, input_resolution={self.input_resolution!r}, "
             f"use_fp16={self.use_fp16!r})"
         )
+
+
 class OpticalFlowEngine:
     """Optical flow estimation using deep learning models.
 
@@ -318,7 +320,7 @@ class OpticalFlowEngine:
             self.config = OpticalFlowConfig(model_type=model_type, device=device)
 
         # Model components (lazy loaded)
-        self._model: Optional["nn.Module"] = None
+        self._model: Optional[nn.Module] = None
         self._is_loaded: bool = False
 
         logger = _get_opticalflow_logger()
@@ -328,7 +330,7 @@ class OpticalFlowEngine:
         )
 
     @property
-    def model(self) -> Optional["nn.Module"]:
+    def model(self) -> Optional[nn.Module]:
         """Get the loaded model (loads if not already loaded)."""
         if not self._is_loaded and self.config.model_type.is_deep_learning:
             self.load_model()
@@ -439,11 +441,14 @@ class OpticalFlowEngine:
 
             # Map model type to RAFT model name in torch.hub
             # Note: torch.hub RAFT only supports 'raft_small' and 'raft_large'
-            raft_model_name = "raft_small" if self.config.model_type == OpticalFlowModelType.RAFT_SMALL else "raft_large"
+            raft_model_name = (
+                "raft_small"
+                if self.config.model_type == OpticalFlowModelType.RAFT_SMALL
+                else "raft_large"
+            )
 
             self._model = torch.hub.load(
-                "princeton-vl/RAFT",
-                raft_model_name, pretrained=True, trust_repo=True
+                "princeton-vl/RAFT", raft_model_name, pretrained=True, trust_repo=True
             )
         # Move model to device
         self._model = self._model.to(self.config.device)
@@ -456,7 +461,6 @@ class OpticalFlowEngine:
 
     def _load_pwc_model(self) -> None:
         """Load the PWC-Net model."""
-        import torch
 
         logger = _get_opticalflow_logger()
         logger.warning("PWC-Net loading not fully implemented, using fallback")
@@ -779,9 +783,7 @@ class OpticalFlowEngine:
         if not isinstance(flow, np.ndarray):
             raise ValueError(f"flow must be a numpy array, got {type(flow).__name__}")
         if flow.ndim != 3 or flow.shape[2] != 2:
-            raise ValueError(
-                f"flow must have shape (H, W, 2), got {flow.shape}"
-            )
+            raise ValueError(f"flow must have shape (H, W, 2), got {flow.shape}")
         if frame is not None:
             if frame.shape[:2] != flow.shape[:2]:
                 raise ValueError(
@@ -796,7 +798,6 @@ class OpticalFlowEngine:
             magnitude = magnitude / magnitude.max()
         else:
             magnitude = np.zeros_like(magnitude)
-
 
         # Create HSV image
         hsv = np.zeros((flow.shape[0], flow.shape[1], 3), dtype=np.uint8)
@@ -830,7 +831,7 @@ class OpticalFlowEngine:
         """
         return self.compute_flow(frame1, frame2)
 
-    def __enter__(self) -> "OpticalFlowEngine":
+    def __enter__(self) -> OpticalFlowEngine:
         """Context manager entry."""
         return self
 

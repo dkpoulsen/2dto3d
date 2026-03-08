@@ -21,13 +21,11 @@ from typing import TYPE_CHECKING, Any, Optional, Union
 
 import cv2
 import numpy as np
-from scipy import ndimage
 
 if TYPE_CHECKING:
     from loguru import Logger
 
 from video2d3d.utils.logger import get_logger, log_exception, log_performance
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -135,7 +133,7 @@ class IntegrationError(Exception):
         self.original_exception = original_exception
 
 
-def _get_integrator_logger() -> "Logger":
+def _get_integrator_logger() -> Logger:
     """Get the integrator logger."""
     return get_logger("segmentation.integrator")
 
@@ -424,7 +422,9 @@ class DepthSegmentationIntegrator:
             gray = image.astype(np.float32)
         else:
             # Fallback for unexpected formats
-            gray = image[:, :, 0].astype(np.float32) if image.ndim == 3 else image.astype(np.float32)
+            gray = (
+                image[:, :, 0].astype(np.float32) if image.ndim == 3 else image.astype(np.float32)
+            )
 
         # Normalize grayscale
         gray = gray / 255.0

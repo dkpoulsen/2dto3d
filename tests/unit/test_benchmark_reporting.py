@@ -5,23 +5,24 @@ from __future__ import annotations
 import csv
 import io
 import json
-import pytest
 import tempfile
-from pathlib import Path
 from datetime import datetime
+from pathlib import Path
 
+import pytest
+
+from video2d3d.benchmark.reporting import (
+    CSVReporter,
+    JSONReporter,
+    MarkdownReporter,
+    generate_report,
+)
 from video2d3d.benchmark.results import (
     BenchmarkResult,
     BenchmarkResults,
-    TimingMetrics,
-    MemoryMetrics,
     GPUMetrics,
-)
-from video2d3d.benchmark.reporting import (
-    MarkdownReporter,
-    JSONReporter,
-    CSVReporter,
-    generate_report,
+    MemoryMetrics,
+    TimingMetrics,
 )
 
 

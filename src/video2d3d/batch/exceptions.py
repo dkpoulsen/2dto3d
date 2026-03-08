@@ -76,9 +76,7 @@ class CircularDependencyError(BatchQueueError):
     def __init__(self, job_id: str, dependency_id: str) -> None:
         self.job_id = job_id
         self.dependency_id = dependency_id
-        super().__init__(
-            f"Circular dependency detected: job {job_id} depends on {dependency_id}"
-        )
+        super().__init__(f"Circular dependency detected: job {job_id} depends on {dependency_id}")
 
 
 class DependencyFailedError(BatchQueueError):

@@ -10,7 +10,6 @@ Tests cover:
 
 from __future__ import annotations
 
-import tempfile
 from pathlib import Path
 from typing import TYPE_CHECKING
 from unittest.mock import MagicMock, patch

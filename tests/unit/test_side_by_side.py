@@ -28,7 +28,6 @@ from video2d3d.stereo.side_by_side import (
     encode_side_by_side,
 )
 
-
 # ---------------------------------------------------------------------------
 # Fixtures
 # ---------------------------------------------------------------------------
@@ -526,11 +525,7 @@ class TestIntegration:
 
     def test_import_from_stereo_module(self) -> None:
         """Test that encoder can be imported from stereo module."""
-        from video2d3d.stereo import (
-            SideBySideEncoder,
-            SideBySideLayout,
-            encode_side_by_side,
-        )
+        from video2d3d.stereo import SideBySideEncoder, SideBySideLayout, encode_side_by_side
 
         assert SideBySideEncoder is not None
         assert SideBySideLayout is not None

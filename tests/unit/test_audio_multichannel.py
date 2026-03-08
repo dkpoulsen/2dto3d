@@ -4,17 +4,13 @@ from __future__ import annotations
 
 from pathlib import Path
 from unittest.mock import MagicMock, patch
-import subprocess
 
 import pytest
 
 from video2d3d.audio.config import AudioChannelLayout, AudioFormatConfig
 from video2d3d.audio.exceptions import AudioProcessingError
-from video2d3d.audio.multichannel import (
-    DownmixResult,
-    MultiChannelAudioProcessor,
-)
 from video2d3d.audio.metadata import AudioMetadata, AudioTrackInfo
+from video2d3d.audio.multichannel import DownmixResult, MultiChannelAudioProcessor
 
 
 class TestDownmixResult:
@@ -281,8 +277,9 @@ class TestMultiChannelAudioProcessor:
         processor = MultiChannelAudioProcessor()
 
         with patch("shutil.copy") as mock_copy:
-            with patch.object(Path, "exists", return_value=True):
-                with patch.object(
+            with (
+                patch.object(Path, "exists", return_value=True),
+                patch.object(
                     AudioMetadata,
                     "extract_from_video",
                     return_value=AudioMetadata(
@@ -290,12 +287,13 @@ class TestMultiChannelAudioProcessor:
                         has_audio=True,
                         tracks=[AudioTrackInfo(index=0, channels=2)],
                     ),
-                ):
-                    result = processor.convert_channel_layout(
-                        "test.mp4",
-                        "output.m4a",
-                        AudioChannelLayout.STEREO,
-                    )
+                ),
+            ):
+                result = processor.convert_channel_layout(
+                    "test.mp4",
+                    "output.m4a",
+                    AudioChannelLayout.STEREO,
+                )
             mock_copy.assert_called_once()
 
     @patch("video2d3d.audio.multichannel.shutil.which")

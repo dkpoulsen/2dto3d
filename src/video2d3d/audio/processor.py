@@ -7,11 +7,11 @@ import subprocess
 import tempfile
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Callable
+from typing import Any, Callable, Dict, List, Optional
 
-from video2d3d.audio.config import AudioConfig, AudioFormatConfig, SpatialAudioConfig
-from video2d3d.audio.exceptions import AudioProcessingError, AudioExtractionError
-from video2d3d.audio.metadata import AudioMetadata, AudioTrackInfo
+from video2d3d.audio.config import AudioConfig
+from video2d3d.audio.exceptions import AudioProcessingError
+from video2d3d.audio.metadata import AudioMetadata
 from video2d3d.audio.multichannel import MultiChannelAudioProcessor
 from video2d3d.audio.spatial import SpatialAudioProcessor, SpatialProcessingResult
 from video2d3d.audio.tracks import AudioTrackPreserver, TrackPreservationResult

@@ -9,15 +9,13 @@ Run with: pytest tests/integration/test_opticalflow_integration.py -v
 
 from __future__ import annotations
 
-import sys
-from pathlib import Path
 from typing import TYPE_CHECKING
 
 import numpy as np
 import pytest
 
 if TYPE_CHECKING:
-    from collections.abc import Generator
+    pass
 
 # Check if OpenCV is available
 pytest.importorskip("cv2")
@@ -140,9 +138,9 @@ class TestFarnebackOpticalFlowIntegration:
         # Mean horizontal flow in the moving region should be positive
         mean_horizontal_flow = np.mean(flow_in_region[moving_region[:, :, 0] > 0])
         # Allow some tolerance since Farneback is not exact
-        assert mean_horizontal_flow > 0, (
-            f"Expected positive horizontal flow, got {mean_horizontal_flow}"
-        )
+        assert (
+            mean_horizontal_flow > 0
+        ), f"Expected positive horizontal flow, got {mean_horizontal_flow}"
 
     def test_compute_flow_farneback_custom_params(
         self, sample_frame_pair: tuple[np.ndarray, np.ndarray]
@@ -397,14 +395,14 @@ class TestModuleImportsIntegration:
     def test_module_level_imports(self) -> None:
         """Test that all expected exports are available from the module."""
         from video2d3d.opticalflow import (
-            OpticalFlowEngine,
-            OpticalFlowConfig,
-            OpticalFlowModelType,
-            OpticalFlowError,
-            ModelLoadError,
             InferenceError,
-            create_opticalflow_engine,
+            ModelLoadError,
+            OpticalFlowConfig,
+            OpticalFlowEngine,
+            OpticalFlowError,
+            OpticalFlowModelType,
             compute_optical_flow,
+            create_opticalflow_engine,
         )
 
         assert OpticalFlowEngine is not None
@@ -419,12 +417,9 @@ class TestModuleImportsIntegration:
     def test_engine_module_imports(self) -> None:
         """Test imports from engine submodule."""
         from video2d3d.opticalflow.engine import (
-            OpticalFlowEngine,
-            OpticalFlowConfig,
-            OpticalFlowModelType,
-            _DEFAULT_RAFT_RESOLUTION,
-            _DEFAULT_PWC_RESOLUTION,
             _DEFAULT_FARNEBACK_PYR_SCALE,
+            _DEFAULT_PWC_RESOLUTION,
+            _DEFAULT_RAFT_RESOLUTION,
         )
 
         assert _DEFAULT_RAFT_RESOLUTION == 384

@@ -13,7 +13,6 @@ from pathlib import Path
 import pytest
 import yaml
 
-
 # Path to the USER_GUIDE.md file
 USER_GUIDE_PATH = Path(__file__).parent.parent.parent / "docs" / "USER_GUIDE.md"
 
@@ -68,15 +67,15 @@ class TestUserGuideStructure:
         for section in self.REQUIRED_SECTIONS:
             # Check for section header (## followed by section name)
             pattern = rf"##\s+.*{re.escape(section)}"
-            assert re.search(pattern, user_guide_content, re.IGNORECASE), (
-                f"Missing required section: {section}"
-            )
+            assert re.search(
+                pattern, user_guide_content, re.IGNORECASE
+            ), f"Missing required section: {section}"
 
     def test_has_version_info(self, user_guide_content: str) -> None:
         """Verify version information is present."""
-        assert "**Version:**" in user_guide_content or "Version:" in user_guide_content, (
-            "Missing version information"
-        )
+        assert (
+            "**Version:**" in user_guide_content or "Version:" in user_guide_content
+        ), "Missing version information"
 
     def test_has_development_status_warning(self, user_guide_content: str) -> None:
         """Verify development status warning is present."""
@@ -101,9 +100,9 @@ class TestUserGuideCodeBlocks:
     def test_code_blocks_balanced(self, user_guide_content: str) -> None:
         """Verify all code blocks are properly closed."""
         code_block_count = user_guide_content.count("```")
-        assert code_block_count % 2 == 0, (
-            f"Unbalanced code blocks: found {code_block_count} ``` markers (should be even)"
-        )
+        assert (
+            code_block_count % 2 == 0
+        ), f"Unbalanced code blocks: found {code_block_count} ``` markers (should be even)"
 
     def test_yaml_code_blocks_valid(self, user_guide_content: str) -> None:
         """Verify YAML code blocks are valid syntax."""
@@ -118,7 +117,7 @@ class TestUserGuideCodeBlocks:
             except yaml.YAMLError as e:
                 errors.append(f"YAML block {i + 1}: {e}")
 
-        assert not errors, f"Invalid YAML code blocks:\n" + "\n".join(errors)
+        assert not errors, "Invalid YAML code blocks:\n" + "\n".join(errors)
 
     def test_bash_code_blocks_format(self, user_guide_content: str) -> None:
         """Verify bash code blocks have proper format."""
@@ -126,9 +125,9 @@ class TestUserGuideCodeBlocks:
         bash_pattern = r"```bash\n(.*?)```"
         bash_blocks = re.findall(bash_pattern, user_guide_content, re.DOTALL)
 
-        assert len(bash_blocks) >= 10, (
-            f"Expected at least 10 bash code examples, found {len(bash_blocks)}"
-        )
+        assert (
+            len(bash_blocks) >= 10
+        ), f"Expected at least 10 bash code examples, found {len(bash_blocks)}"
 
     def test_http_code_blocks_format(self, user_guide_content: str) -> None:
         """Verify HTTP code blocks have proper format."""
@@ -153,9 +152,9 @@ class TestUserGuideLinks:
         anchor_pattern = r"\[([^\]]+)\]\(#[a-z0-9-]+\)"
         anchor_links = re.findall(anchor_pattern, user_guide_content)
 
-        assert len(anchor_links) >= 5, (
-            f"Expected at least 5 internal anchor links, found {len(anchor_links)}"
-        )
+        assert (
+            len(anchor_links) >= 5
+        ), f"Expected at least 5 internal anchor links, found {len(anchor_links)}"
 
     def test_no_broken_markdown_links(self, user_guide_content: str) -> None:
         """Verify no broken markdown link syntax."""
@@ -279,9 +278,9 @@ class TestUserGuideContent:
                             if idx >= 0 and idx + 1 < len(parts):
                                 commands_found.add(parts[idx + 1])
 
-        assert len(commands_found) >= 3, (
-            f"Expected CLI command examples, found commands: {commands_found}"
-        )
+        assert (
+            len(commands_found) >= 3
+        ), f"Expected CLI command examples, found commands: {commands_found}"
 
 
 class TestUserGuideTables:
@@ -302,16 +301,16 @@ class TestUserGuideTables:
     def test_model_table_exists(self, user_guide_content: str) -> None:
         """Verify model comparison table exists."""
         # Look for table containing model information
-        assert "midas_small" in user_guide_content and "|" in user_guide_content, (
-            "Missing model comparison table"
-        )
+        assert (
+            "midas_small" in user_guide_content and "|" in user_guide_content
+        ), "Missing model comparison table"
 
     def test_format_table_exists(self, user_guide_content: str) -> None:
         """Verify format comparison table exists."""
         # Look for table containing format information
-        assert "side_by_side" in user_guide_content and "anaglyph" in user_guide_content, (
-            "Missing format comparison table"
-        )
+        assert (
+            "side_by_side" in user_guide_content and "anaglyph" in user_guide_content
+        ), "Missing format comparison table"
 
 
 class TestUserGuideBestPractices:
@@ -347,18 +346,18 @@ class TestUserGuideCompleteness:
     def test_minimum_line_count(self, user_guide_content: str) -> None:
         """Verify documentation has sufficient content."""
         line_count = len(user_guide_content.split("\n"))
-        assert line_count >= 500, (
-            f"Documentation too short: {line_count} lines (expected at least 500)"
-        )
+        assert (
+            line_count >= 500
+        ), f"Documentation too short: {line_count} lines (expected at least 500)"
 
     def test_minimum_word_count(self, user_guide_content: str) -> None:
         """Verify documentation has sufficient detail."""
         # Remove code blocks for word count
         text_only = re.sub(r"```.*?```", "", user_guide_content, flags=re.DOTALL)
         word_count = len(text_only.split())
-        assert word_count >= 2000, (
-            f"Documentation lacks detail: {word_count} words (expected at least 2000)"
-        )
+        assert (
+            word_count >= 2000
+        ), f"Documentation lacks detail: {word_count} words (expected at least 2000)"
 
     def test_no_placeholder_text(self, user_guide_content: str) -> None:
         """Verify no TODO or placeholder text remains."""
@@ -370,13 +369,13 @@ class TestUserGuideCompleteness:
 
         for placeholder in placeholders:
             # Only flag placeholder if it appears as a directive (uppercase)
-            assert placeholder not in user_guide_content.upper(), (
-                f"Found placeholder text: {placeholder}"
-            )
+            assert (
+                placeholder not in user_guide_content.upper()
+            ), f"Found placeholder text: {placeholder}"
 
     def test_documentation_freshness(self, user_guide_content: str) -> None:
         """Verify documentation includes last updated date."""
         # Check for date pattern (year)
-        assert "2026" in user_guide_content or "2025" in user_guide_content, (
-            "Documentation may be outdated - no recent year found"
-        )
+        assert (
+            "2026" in user_guide_content or "2025" in user_guide_content
+        ), "Documentation may be outdated - no recent year found"

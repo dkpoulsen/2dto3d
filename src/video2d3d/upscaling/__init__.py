@@ -39,6 +39,7 @@ Example usage:
 
 from __future__ import annotations
 
+from video2d3d.upscaling.base import BaseUpscaler, UpscaleResult
 from video2d3d.upscaling.config import (
     ModelType,
     UpscalerConfig,
@@ -46,7 +47,6 @@ from video2d3d.upscaling.config import (
     get_model_info,
     list_available_models,
 )
-from video2d3d.upscaling.base import BaseUpscaler, UpscaleResult
 from video2d3d.upscaling.esrgan import RealESRGANUpscaler
 from video2d3d.upscaling.processor import VideoUpscaler
 

@@ -2,18 +2,19 @@
 
 from __future__ import annotations
 
-import pytest
 from unittest.mock import patch
+
+import pytest
 
 from video2d3d.audio.constants import (
     CODEC_EXTENSIONS,
     DEFAULT_AUDIO_CODEC,
     DEFAULT_AUDIO_EXTENSION,
     ERROR_MESSAGE_MAX_LENGTH,
-    FFPROBE_TIMEOUT,
     FFMPEG_EXTRACT_TIMEOUT,
     FFMPEG_PROCESS_TIMEOUT,
     FFMPEG_SPATIAL_TIMEOUT,
+    FFPROBE_TIMEOUT,
     check_ffmpeg_available,
     get_extension_for_codec,
     truncate_error_message,

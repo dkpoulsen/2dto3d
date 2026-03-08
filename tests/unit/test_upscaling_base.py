@@ -2,18 +2,18 @@
 
 from __future__ import annotations
 
-import pytest
 import numpy as np
+import pytest
 
 from video2d3d.upscaling.base import (
     BaseUpscaler,
-    UpscaleResult,
-    UpscalerError,
-    ModelNotFoundError,
-    ModelLoadError,
     InferenceError,
+    ModelLoadError,
+    ModelNotFoundError,
+    UpscalerError,
+    UpscaleResult,
 )
-from video2d3d.upscaling.config import UpscalerConfig, ModelType
+from video2d3d.upscaling.config import ModelType, UpscalerConfig
 
 
 class TestUpscaleResult:

@@ -36,9 +36,8 @@ import numpy as np
 if TYPE_CHECKING:
     from loguru import Logger
 
-from video2d3d.utils.logger import get_logger, log_exception, log_model_inference
 from video2d3d.utils.gpu import GPUConfig, select_device
-
+from video2d3d.utils.logger import get_logger
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -65,7 +64,7 @@ class DepthModelType(Enum):
     ZOEDEPTH_NK = "zoedepth_nk"
 
     @classmethod
-    def from_string(cls, name: str) -> "DepthModelType":
+    def from_string(cls, name: str) -> DepthModelType:
         """Get model type from string name.
 
         Args:
@@ -252,7 +251,7 @@ class ModelInferenceError(Exception):
         self.original_exceptions = original_exceptions or []
 
 
-def _get_selector_logger() -> "Logger":
+def _get_selector_logger() -> Logger:
     """Get the model selector logger (lazy initialization)."""
     return get_logger("depth.model_selector")
 
@@ -385,11 +384,7 @@ class DepthModelSelector:
             return DepthEstimator(config=config)
 
         elif model_type.is_adabins:
-            from video2d3d.depth.adadepth import (
-                AdaBinsEstimator,
-                AdaBinsConfig,
-                AdaBinsModelType,
-            )
+            from video2d3d.depth.adadepth import AdaBinsConfig, AdaBinsEstimator, AdaBinsModelType
 
             # Map DepthModelType to AdaBinsModelType
             adabins_mapping = {
@@ -405,8 +400,8 @@ class DepthModelSelector:
 
         elif model_type.is_zoedepth:
             from video2d3d.depth.zoedepth import (
-                ZoeDepthEstimator,
                 ZoeDepthConfig,
+                ZoeDepthEstimator,
                 ZoeDepthModelVariant,
             )
 
@@ -667,7 +662,7 @@ class DepthModelSelector:
         """Estimate depth from a single frame (callable interface)."""
         return self.estimate_depth(frame)
 
-    def __enter__(self) -> "DepthModelSelector":
+    def __enter__(self) -> DepthModelSelector:
         """Context manager entry."""
         return self
 

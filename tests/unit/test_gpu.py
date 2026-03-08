@@ -12,7 +12,7 @@ from __future__ import annotations
 
 import sys
 from typing import TYPE_CHECKING
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 import numpy as np
 import pytest
@@ -93,7 +93,7 @@ def mock_torch_modules() -> Generator[None, None, None]:
     mock_logger_module = MagicMock()
     mock_logger_module.get_logger = MagicMock(return_value=MagicMock())
     mock_logger_module.log_exception = MagicMock()
-    
+
     # Store original modules
     if "video2d3d.utils.logger" in sys.modules:
         original_modules["video2d3d.utils.logger"] = sys.modules["video2d3d.utils.logger"]
@@ -298,7 +298,6 @@ class TestMemoryFunctions:
 
         mock_torch.cuda.is_available.return_value = False
         """Test memory usage when CUDA is not available."""
-        from video2d3d.utils.gpu import get_memory_usage
 
         mock_torch.cuda.is_available.return_value = False
         used, free, total = get_memory_usage("cuda:0")
@@ -462,7 +461,7 @@ class TestHelperFunctions:
 
     def test_create_cpu_selection(self, mock_torch: MagicMock) -> None:
         """Test creating CPU device selection."""
-        from video2d3d.utils.gpu import _create_cpu_selection, DeviceType
+        from video2d3d.utils.gpu import DeviceType, _create_cpu_selection
 
         selection = _create_cpu_selection("Test reason")
 
@@ -474,7 +473,7 @@ class TestHelperFunctions:
 
     def test_create_cpu_selection_with_fallback(self, mock_torch: MagicMock) -> None:
         """Test creating CPU device selection with fallback flag."""
-        from video2d3d.utils.gpu import _create_cpu_selection, DeviceType
+        from video2d3d.utils.gpu import _create_cpu_selection
 
         selection = _create_cpu_selection("Test reason", fallback_used=True)
 
@@ -486,7 +485,7 @@ class TestSetupDevice:
 
     def test_setup_device_default(self, mock_torch: MagicMock) -> None:
         """Test device setup with default config."""
-        from video2d3d.utils.gpu import setup_device, DeviceType
+        from video2d3d.utils.gpu import setup_device
 
         mock_torch.cuda.is_available.return_value = False
         mock_torch.backends.mps.is_available.return_value = False
@@ -536,12 +535,13 @@ class TestTransferToGpu:
         """Test transfer_to_gpu raises error when PyTorch not available."""
         # Temporarily set TORCH_AVAILABLE to False
         import video2d3d.utils.gpu as gpu_module
+
         original = gpu_module.TORCH_AVAILABLE
         gpu_module.TORCH_AVAILABLE = False
-        
+
         try:
-            from video2d3d.utils.gpu import transfer_to_gpu, GPUError
-            
+            from video2d3d.utils.gpu import GPUError, transfer_to_gpu
+
             data = np.zeros((100, 100), dtype=np.float32)
             with pytest.raises(GPUError):
                 transfer_to_gpu(data, "cuda:0")
@@ -551,10 +551,10 @@ class TestTransferToGpu:
     def test_transfer_to_gpu_basic(self, mock_torch: MagicMock) -> None:
         """Test basic transfer_to_gpu functionality."""
         from video2d3d.utils.gpu import transfer_to_gpu
-        
+
         data = np.zeros((100, 100), dtype=np.float32)
         result = transfer_to_gpu(data, "cpu", pinned=False)
-        
+
         # Verify from_numpy was called
         mock_torch.from_numpy.assert_called_once()
 
@@ -565,25 +565,25 @@ class TestTransferToCpu:
     def test_transfer_to_cpu_cuda_tensor(self, mock_torch: MagicMock) -> None:
         """Test transferring CUDA tensor to CPU."""
         from video2d3d.utils.gpu import transfer_to_cpu
-        
+
         mock_tensor = MagicMock()
         mock_tensor.device.type = "cuda"
         mock_tensor.detach.return_value.cpu.return_value.numpy.return_value = np.zeros((10, 10))
-        
+
         result = transfer_to_cpu(mock_tensor, async_transfer=True)
-        
+
         assert isinstance(result, np.ndarray)
 
     def test_transfer_to_cpu_cpu_tensor(self, mock_torch: MagicMock) -> None:
         """Test transferring CPU tensor to CPU (no-op)."""
         from video2d3d.utils.gpu import transfer_to_cpu
-        
+
         mock_tensor = MagicMock()
         mock_tensor.device.type = "cpu"
         mock_tensor.detach.return_value.cpu.return_value.numpy.return_value = np.zeros((10, 10))
-        
+
         result = transfer_to_cpu(mock_tensor, async_transfer=False)
-        
+
         assert isinstance(result, np.ndarray)
 
 
@@ -593,19 +593,19 @@ class TestCreatePinnedTensor:
     def test_create_pinned_tensor_no_cuda(self, mock_torch: MagicMock) -> None:
         """Test create_pinned_tensor returns None when CUDA unavailable."""
         from video2d3d.utils.gpu import create_pinned_tensor
-        
+
         mock_torch.cuda.is_available.return_value = False
         result = create_pinned_tensor((100, 100))
-        
+
         assert result is None
 
     def test_create_pinned_tensor_with_cuda(self, mock_torch: MagicMock) -> None:
         """Test create_pinned_tensor creates tensor when CUDA available."""
         from video2d3d.utils.gpu import create_pinned_tensor
-        
+
         mock_torch.cuda.is_available.return_value = True
         result = create_pinned_tensor((100, 100))
-        
+
         # Verify empty and pin_memory were called
         mock_torch.empty.assert_called_once()
 
@@ -615,44 +615,44 @@ class TestWithOomRetry:
 
     def test_with_oom_retry_success(self, mock_torch: MagicMock) -> None:
         """Test with_oom_retry returns result on success."""
-        from video2d3d.utils.gpu import with_oom_retry, GPUConfig
-        
+        from video2d3d.utils.gpu import GPUConfig, with_oom_retry
+
         config = GPUConfig(min_batch_size=1, max_batch_size=32)
-        
+
         def success_func():
             return "success"
-        
+
         result, batch_size = with_oom_retry(success_func, config, 4)
-        
+
         assert result == "success"
         assert batch_size == 4
 
     def test_with_oom_retry_oom_recovery(self, mock_torch: MagicMock) -> None:
         """Test with_oom_retry reduces batch size on OOM."""
-        from video2d3d.utils.gpu import with_oom_retry, GPUConfig
-        
+        from video2d3d.utils.gpu import GPUConfig, with_oom_retry
+
         config = GPUConfig(min_batch_size=1, max_batch_size=32)
         call_count = [0]
-        
+
         def oom_then_success():
             call_count[0] += 1
             if call_count[0] == 1:
                 raise RuntimeError("CUDA out of memory")
             return "recovered"
-        
+
         result, batch_size = with_oom_retry(oom_then_success, config, 4)
-        
+
         assert result == "recovered"
         assert batch_size == 2  # Reduced from 4 to 2
 
     def test_with_oom_retry_non_oom_error(self, mock_torch: MagicMock) -> None:
         """Test with_oom_retry re-raises non-OOM errors."""
-        from video2d3d.utils.gpu import with_oom_retry, GPUConfig
-        
+        from video2d3d.utils.gpu import GPUConfig, with_oom_retry
+
         config = GPUConfig(min_batch_size=1, max_batch_size=32)
-        
+
         def fail_func():
             raise ValueError("Some other error")
-        
+
         with pytest.raises(ValueError):
             with_oom_retry(fail_func, config, 4)

@@ -70,7 +70,7 @@ class CurveControlPoint:
         return (self.x, self.y)
 
     @classmethod
-    def from_tuple(cls, t: Tuple[float, float]) -> "CurveControlPoint":
+    def from_tuple(cls, t: Tuple[float, float]) -> CurveControlPoint:
         """Create from tuple format."""
         return cls(x=t[0], y=t[1])
 
@@ -158,7 +158,7 @@ class DepthCurveConfig:
         }
 
     @classmethod
-    def from_dict(cls, data: dict) -> "DepthCurveConfig":
+    def from_dict(cls, data: dict) -> DepthCurveConfig:
         """Create from dictionary."""
         control_points_data = data.get("control_points", [])
         control_points = [
@@ -172,12 +172,12 @@ class DepthCurveConfig:
         )
 
     @classmethod
-    def linear(cls) -> "DepthCurveConfig":
+    def linear(cls) -> DepthCurveConfig:
         """Create a linear (no adjustment) curve config."""
         return cls(enabled=False, preset=CurvePreset.LINEAR.value)
 
     @classmethod
-    def from_preset(cls, preset: CurvePreset) -> "DepthCurveConfig":
+    def from_preset(cls, preset: CurvePreset) -> DepthCurveConfig:
         """Create a curve config from a preset."""
         return cls(enabled=True, preset=preset.value)
 

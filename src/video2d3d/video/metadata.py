@@ -19,6 +19,7 @@ from typing import Any, Optional
 
 from video2d3d.utils.logger import get_logger
 
+
 @dataclass
 class VideoMetadata:
     """
@@ -119,9 +120,6 @@ class VideoMetadata:
             parts.append(f"Audio: {self.audio_codec or 'unknown'}")
         return " | ".join(parts)
 
-            "validation_errors": self.validation_errors,
-        }
-
 
 def _get_video_metadata_logger():
     """Get the video metadata logger (lazy initialization)."""
@@ -131,10 +129,10 @@ def _get_video_metadata_logger():
 @dataclass
 class ExifMetadata:
     """EXIF metadata extracted from video or embedded images.
-    
+
     EXIF (Exchangeable Image File Format) metadata contains camera
     settings, timestamps, and GPS information.
-    
+
     Attributes:
         make: Camera/device manufacturer.
         model: Camera/device model.
@@ -154,7 +152,7 @@ class ExifMetadata:
         color_space: Color space identifier.
         custom_tags: Additional EXIF tags not covered by standard fields.
     """
-    
+
     make: str = ""
     model: str = ""
     software: str = ""
@@ -172,12 +170,12 @@ class ExifMetadata:
     y_resolution: Optional[float] = None
     color_space: str = "sRGB"
     custom_tags: dict[str, Any] = field(default_factory=dict)
-    
+
     @property
     def has_gps(self) -> bool:
         """Check if GPS coordinates are available."""
         return self.gps_latitude is not None and self.gps_longitude is not None
-    
+
     @property
     def exposure_formatted(self) -> str:
         """Return formatted exposure time."""
@@ -186,29 +184,33 @@ class ExifMetadata:
         if self.exposure_time >= 1:
             return f"{self.exposure_time:.1f}s"
         return f"1/{int(1/self.exposure_time)}s"
-    
+
     @property
     def aperture_formatted(self) -> str:
         """Return formatted aperture value."""
         if self.f_number is None:
             return "unknown"
         return f"f/{self.f_number:.1f}"
-    
+
     @property
     def gps_coordinates(self) -> Optional[tuple[float, float]]:
         """Return GPS coordinates as (lat, lon) tuple."""
         if self.has_gps:
             return (self.gps_latitude, self.gps_longitude)
         return None
-    
+
     def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return {
             "make": self.make,
             "model": self.model,
             "software": self.software,
-            "datetime_original": self.datetime_original.isoformat() if self.datetime_original else None,
-            "datetime_modified": self.datetime_modified.isoformat() if self.datetime_modified else None,
+            "datetime_original": (
+                self.datetime_original.isoformat() if self.datetime_original else None
+            ),
+            "datetime_modified": (
+                self.datetime_modified.isoformat() if self.datetime_modified else None
+            ),
             "exposure_time": self.exposure_time,
             "exposure_formatted": self.exposure_formatted,
             "f_number": self.f_number,
@@ -231,10 +233,10 @@ class ExifMetadata:
 @dataclass
 class IptcMetadata:
     """IPTC metadata for video content.
-    
+
     IPTC (International Press Telecommunications Council) metadata
     contains descriptive information about the content.
-    
+
     Attributes:
         title: Content title/headline.
         description: Content description/caption.
@@ -252,7 +254,7 @@ class IptcMetadata:
         urgency: Editorial urgency (1-8).
         custom_fields: Additional IPTC fields.
     """
-    
+
     title: str = ""
     description: str = ""
     keywords: list[str] = field(default_factory=list)
@@ -268,22 +270,22 @@ class IptcMetadata:
     supplemental_categories: list[str] = field(default_factory=list)
     urgency: int = 5
     custom_fields: dict[str, str] = field(default_factory=dict)
-    
+
     @property
     def has_keywords(self) -> bool:
         """Check if keywords are available."""
         return len(self.keywords) > 0
-    
+
     @property
     def keywords_str(self) -> str:
         """Return keywords as comma-separated string."""
         return ", ".join(self.keywords)
-    
+
     @property
     def has_location(self) -> bool:
         """Check if location information is available."""
         return bool(self.city or self.country or self.location)
-    
+
     def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return {
@@ -310,10 +312,10 @@ class IptcMetadata:
 @dataclass
 class XmpMetadata:
     """XMP (Extensible Metadata Platform) metadata.
-    
+
     XMP is Adobe's standard for embedding metadata in files.
     It supports various namespaces including Dublin Core.
-    
+
     Attributes:
         dc_title: Dublin Core title.
         dc_description: Dublin Core description.
@@ -333,7 +335,7 @@ class XmpMetadata:
         project: Project name.
         custom_namespaces: Custom XMP namespace data.
     """
-    
+
     # Dublin Core elements
     dc_title: str = ""
     dc_description: str = ""
@@ -347,31 +349,31 @@ class XmpMetadata:
     dc_source: str = ""
     dc_language: str = ""
     dc_rights: str = ""
-    
+
     # XMP specific
     rating: Optional[int] = None
     label: str = ""
     event: str = ""
     project: str = ""
-    
+
     # Custom namespaces
     custom_namespaces: dict[str, dict[str, Any]] = field(default_factory=dict)
-    
+
     @property
     def has_rating(self) -> bool:
         """Check if rating is set."""
         return self.rating is not None and 1 <= self.rating <= 5
-    
+
     @property
     def subject_str(self) -> str:
         """Return subjects as comma-separated string."""
         return ", ".join(self.dc_subject)
-    
+
     @property
     def creator_str(self) -> str:
         """Return creators as comma-separated string."""
         return ", ".join(self.dc_creator)
-    
+
     def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return {
@@ -401,41 +403,41 @@ class XmpMetadata:
 @dataclass
 class CustomMetadata:
     """Custom application-specific metadata.
-    
+
     Stores arbitrary key-value pairs for application-specific use.
-    
+
     Attributes:
         fields: Dictionary of custom field name to value.
         namespace: Optional namespace prefix for fields.
     """
-    
+
     fields: dict[str, Any] = field(default_factory=dict)
     namespace: str = ""
-    
+
     def get(self, key: str, default: Any = None) -> Any:
         """Get a custom field value."""
         return self.fields.get(key, default)
-    
+
     def set(self, key: str, value: Any) -> None:
         """Set a custom field value."""
         self.fields[key] = value
-    
+
     def remove(self, key: str) -> bool:
         """Remove a custom field. Returns True if key existed."""
         if key in self.fields:
             del self.fields[key]
             return True
         return False
-    
+
     def keys(self) -> list[str]:
         """Get all field names."""
         return list(self.fields.keys())
-    
+
     @property
     def count(self) -> int:
         """Get number of custom fields."""
         return len(self.fields)
-    
+
     def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return {
@@ -448,10 +450,10 @@ class CustomMetadata:
 @dataclass
 class ExtendedVideoMetadata:
     """Complete extended metadata for a video file.
-    
+
     Combines all metadata types (basic, EXIF, IPTC, XMP, custom)
     into a single comprehensive metadata object.
-    
+
     Attributes:
         basic: Basic video metadata.
         exif: EXIF metadata (camera settings, GPS).
@@ -460,37 +462,37 @@ class ExtendedVideoMetadata:
         custom: Custom application-specific metadata.
         raw_tags: Raw metadata tags from FFprobe.
     """
-    
+
     basic: VideoMetadata
     exif: ExifMetadata = field(default_factory=ExifMetadata)
     iptc: IptcMetadata = field(default_factory=IptcMetadata)
     xmp: XmpMetadata = field(default_factory=XmpMetadata)
     custom: CustomMetadata = field(default_factory=CustomMetadata)
     raw_tags: dict[str, Any] = field(default_factory=dict)
-    
+
     @classmethod
-    def from_video(cls, video_path: Path | str) -> "ExtendedVideoMetadata":
+    def from_video(cls, video_path: Path | str) -> ExtendedVideoMetadata:
         """Extract all metadata from a video file.
-        
+
         Args:
             video_path: Path to the video file.
-            
+
         Returns:
             ExtendedVideoMetadata with all available metadata.
         """
         file_path = Path(video_path).resolve()
         logger = _get_video_metadata_logger()
-        
+
         # Import here to avoid circular import
         from video2d3d.video.handler import VideoInputHandler
-        
+
         # Extract basic metadata
         handler = VideoInputHandler()
         basic = handler.validate_and_extract(file_path)
-        
+
         # Extract extended metadata using FFprobe
         extractor = VideoMetadataExtractor(file_path)
-        
+
         return cls(
             basic=basic,
             exif=extractor.extract_exif(),
@@ -499,29 +501,25 @@ class ExtendedVideoMetadata:
             custom=extractor.extract_custom(),
             raw_tags=extractor.raw_tags,
         )
-    
+
     @property
     def has_extended_metadata(self) -> bool:
         """Check if any extended metadata is available."""
         return (
-            bool(self.exif.make or self.exif.model) or
-            bool(self.iptc.title or self.iptc.description) or
-            bool(self.xmp.dc_title or self.xmp.dc_description) or
-            self.custom.count > 0
+            bool(self.exif.make or self.exif.model)
+            or bool(self.iptc.title or self.iptc.description)
+            or bool(self.xmp.dc_title or self.xmp.dc_description)
+            or self.custom.count > 0
         )
-    
+
     def get_title(self) -> str:
         """Get title from any available metadata source."""
-        return (
-            self.iptc.title or
-            self.xmp.dc_title or
-            self.basic.file_path.stem
-        )
-    
+        return self.iptc.title or self.xmp.dc_title or self.basic.file_path.stem
+
     def get_description(self) -> str:
         """Get description from any available metadata source."""
         return self.iptc.description or self.xmp.dc_description
-    
+
     def get_keywords(self) -> list[str]:
         """Get keywords from any available metadata source."""
         keywords = list(self.iptc.keywords)
@@ -529,58 +527,50 @@ class ExtendedVideoMetadata:
             if subject not in keywords:
                 keywords.append(subject)
         return keywords
-    
+
     def get_creation_date(self) -> Optional[datetime]:
         """Get creation date from any available metadata source."""
-        return (
-            self.exif.datetime_original or
-            self.iptc.date_created or
-            self.xmp.dc_date
-        )
-    
+        return self.exif.datetime_original or self.iptc.date_created or self.xmp.dc_date
+
     def get_creator(self) -> str:
         """Get creator from any available metadata source."""
-        return (
-            self.iptc.creator or
-            self.xmp.creator_str or
-            self.exif.make
-        )
-    
+        return self.iptc.creator or self.xmp.creator_str or self.exif.make
+
     def to_ffmpeg_metadata(self) -> dict[str, str]:
         """Convert to FFmpeg-compatible metadata dictionary.
-        
+
         Returns metadata in a format suitable for passing to FFmpeg's
         -metadata option.
         """
         metadata = {}
-        
+
         # Standard metadata
         title = self.get_title()
         if title:
             metadata["title"] = title
-        
+
         description = self.get_description()
         if description:
             metadata["description"] = description
-        
+
         keywords = self.get_keywords()
         if keywords:
             metadata["keywords"] = ", ".join(keywords)
-        
+
         creator = self.get_creator()
         if creator:
             metadata["artist"] = creator
             metadata["author"] = creator
-        
+
         copyright_info = self.iptc.copyright or self.xmp.dc_rights
         if copyright_info:
             metadata["copyright"] = copyright_info
-        
+
         # Date
         creation_date = self.get_creation_date()
         if creation_date:
             metadata["creation_time"] = creation_date.isoformat()
-        
+
         # Camera info
         if self.exif.make:
             metadata["make"] = self.exif.make
@@ -588,7 +578,7 @@ class ExtendedVideoMetadata:
             metadata["model"] = self.exif.model
         if self.exif.software:
             metadata["encoder"] = self.exif.software
-        
+
         # Location
         if self.iptc.has_location:
             location_parts = []
@@ -598,19 +588,19 @@ class ExtendedVideoMetadata:
                 location_parts.append(self.iptc.country)
             if location_parts:
                 metadata["location"] = ", ".join(location_parts)
-        
+
         # GPS
         if self.exif.has_gps:
             metadata["gps_latitude"] = str(self.exif.gps_latitude)
             metadata["gps_longitude"] = str(self.exif.gps_longitude)
-        
+
         # Custom fields
         for key, value in self.custom.fields.items():
             prefixed_key = f"{self.custom.namespace}_{key}" if self.custom.namespace else key
             metadata[prefixed_key] = str(value)
-        
+
         return metadata
-    
+
     def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return {
@@ -623,17 +613,19 @@ class ExtendedVideoMetadata:
             "title": self.get_title(),
             "description": self.get_description(),
             "keywords": self.get_keywords(),
-            "creation_date": self.get_creation_date().isoformat() if self.get_creation_date() else None,
+            "creation_date": (
+                self.get_creation_date().isoformat() if self.get_creation_date() else None
+            ),
             "creator": self.get_creator(),
         }
 
 
 class VideoMetadataExtractor:
     """Extract extended metadata from video files using FFprobe.
-    
+
     This class extracts EXIF, IPTC, XMP, and custom metadata from
     video files using FFprobe and parses them into structured objects.
-    
+
     Example usage:
         ```python
         extractor = VideoMetadataExtractor("video.mp4")
@@ -642,37 +634,39 @@ class VideoMetadataExtractor:
         xmp = extractor.extract_xmp()
         ```
     """
-    
+
     def __init__(self, video_path: Path | str) -> None:
         """Initialize the metadata extractor.
-        
+
         Args:
             video_path: Path to the video file.
         """
         self.video_path = Path(video_path).resolve()
         self._raw_data: Optional[dict[str, Any]] = None
         self._tags: dict[str, Any] = {}
-        
+
     @property
     def raw_tags(self) -> dict[str, Any]:
         """Get raw metadata tags."""
         if not self._tags:
             self._extract_raw_data()
         return self._tags
-    
+
     def _extract_raw_data(self) -> dict[str, Any]:
         """Extract raw metadata using FFprobe."""
         if self._raw_data is not None:
             return self._raw_data
-            
+
         logger = _get_video_metadata_logger()
-        
+
         try:
             result = subprocess.run(
                 [
                     "ffprobe",
-                    "-v", "quiet",
-                    "-print_format", "json",
+                    "-v",
+                    "quiet",
+                    "-print_format",
+                    "json",
                     "-show_format",
                     "-show_streams",
                     str(self.video_path),
@@ -681,27 +675,27 @@ class VideoMetadataExtractor:
                 text=True,
                 timeout=30,
             )
-            
+
             if result.returncode != 0:
                 logger.warning(f"FFprobe failed for {self.video_path}: {result.stderr}")
                 self._raw_data = {}
                 return self._raw_data
-            
+
             self._raw_data = json.loads(result.stdout)
-            
+
             # Extract tags from format and streams
             format_info = self._raw_data.get("format", {})
             self._tags = format_info.get("tags", {})
-            
+
             # Also check video stream for tags
             for stream in self._raw_data.get("streams", []):
                 if stream.get("codec_type") == "video":
                     stream_tags = stream.get("tags", {})
                     self._tags.update(stream_tags)
                     break
-            
+
             return self._raw_data
-            
+
         except FileNotFoundError:
             logger.warning("FFprobe not found. Extended metadata extraction unavailable.")
             self._raw_data = {}
@@ -714,12 +708,12 @@ class VideoMetadataExtractor:
             logger.warning(f"Failed to parse FFprobe output: {e}")
             self._raw_data = {}
             return self._raw_data
-    
+
     def _parse_datetime(self, value: Optional[str]) -> Optional[datetime]:
         """Parse datetime from various formats."""
         if not value:
             return None
-        
+
         # Common datetime formats in metadata
         formats = [
             "%Y-%m-%dT%H:%M:%S",
@@ -728,15 +722,15 @@ class VideoMetadataExtractor:
             "%Y:%m:%d %H:%M:%S",  # EXIF format
             "%Y-%m-%d",
         ]
-        
+
         for fmt in formats:
             try:
                 return datetime.strptime(value, fmt)
             except ValueError:
                 continue
-        
+
         return None
-    
+
     def _get_tag(self, *keys: str) -> Optional[str]:
         """Get tag value trying multiple possible key names."""
         for key in keys:
@@ -744,11 +738,11 @@ class VideoMetadataExtractor:
             if value:
                 return str(value)
         return None
-    
+
     def extract_exif(self) -> ExifMetadata:
         """Extract EXIF metadata from the video."""
         self._extract_raw_data()
-        
+
         return ExifMetadata(
             make=self._get_tag("make", "Make") or "",
             model=self._get_tag("model", "Model") or "",
@@ -763,24 +757,28 @@ class VideoMetadataExtractor:
             f_number=self._try_float(self._get_tag("FNumber", "f_number", "Aperture")),
             iso_speed=self._try_int(self._get_tag("ISOSpeedRatings", "iso_speed", "ISO")),
             focal_length=self._try_float(self._get_tag("FocalLength", "focal_length")),
-            gps_latitude=self._try_float(self._get_tag("GPSLatitude", "gps_latitude", "location_latitude")),
-            gps_longitude=self._try_float(self._get_tag("GPSLongitude", "gps_longitude", "location_longitude")),
+            gps_latitude=self._try_float(
+                self._get_tag("GPSLatitude", "gps_latitude", "location_latitude")
+            ),
+            gps_longitude=self._try_float(
+                self._get_tag("GPSLongitude", "gps_longitude", "location_longitude")
+            ),
             gps_altitude=self._try_float(self._get_tag("GPSAltitude", "gps_altitude")),
             orientation=self._try_int(self._get_tag("Orientation", "orientation")) or 1,
             x_resolution=self._try_float(self._get_tag("XResolution", "x_resolution")),
             y_resolution=self._try_float(self._get_tag("YResolution", "y_resolution")),
         )
-    
+
     def extract_iptc(self) -> IptcMetadata:
         """Extract IPTC metadata from the video."""
         self._extract_raw_data()
-        
+
         keywords_str = self._get_tag("keywords", "Keywords", "subject") or ""
         keywords = [k.strip() for k in keywords_str.split(",") if k.strip()]
-        
+
         supp_cat_str = self._get_tag("SupplementalCategories") or ""
         supp_cats = [c.strip() for c in supp_cat_str.split(",") if c.strip()]
-        
+
         return IptcMetadata(
             title=self._get_tag("title", "Title", "headline") or "",
             description=self._get_tag("description", "Description", "caption", "comment") or "",
@@ -792,35 +790,31 @@ class VideoMetadataExtractor:
             city=self._get_tag("city", "City", "location_city") or "",
             country=self._get_tag("country", "Country", "location_country") or "",
             location=self._get_tag("location", "Location") or "",
-            date_created=self._parse_datetime(
-                self._get_tag("date_created", "DateCreated")
-            ),
+            date_created=self._parse_datetime(self._get_tag("date_created", "DateCreated")),
             category=self._get_tag("category", "Category") or "",
             supplemental_categories=supp_cats,
             urgency=self._try_int(self._get_tag("urgency", "Urgency")) or 5,
         )
-    
+
     def extract_xmp(self) -> XmpMetadata:
         """Extract XMP metadata from the video."""
         self._extract_raw_data()
-        
+
         # Parse subjects/keywords
         subject_str = self._get_tag("subject", "Subject", "dc:subject") or ""
         subjects = [s.strip() for s in subject_str.split(",") if s.strip()]
-        
+
         # Parse creators
         creator_str = self._get_tag("creator", "Creator", "dc:creator") or ""
         creators = [c.strip() for c in creator_str.split(";") if c.strip()]
-        
+
         return XmpMetadata(
             dc_title=self._get_tag("dc:title", "title") or "",
             dc_description=self._get_tag("dc:description", "description") or "",
             dc_creator=creators,
             dc_subject=subjects,
             dc_publisher=self._get_tag("dc:publisher", "publisher") or "",
-            dc_date=self._parse_datetime(
-                self._get_tag("dc:date", "date", "creation_time")
-            ),
+            dc_date=self._parse_datetime(self._get_tag("dc:date", "date", "creation_time")),
             dc_type=self._get_tag("dc:type") or "",
             dc_format=self._get_tag("dc:format", "format") or "",
             dc_identifier=self._get_tag("dc:identifier", "identifier") or "",
@@ -832,32 +826,61 @@ class VideoMetadataExtractor:
             event=self._get_tag("event", "Event") or "",
             project=self._get_tag("project", "Project") or "",
         )
-    
+
     def extract_custom(self) -> CustomMetadata:
         """Extract custom metadata from the video.
-        
+
         Collects any non-standard tags into a custom metadata object.
         """
         self._extract_raw_data()
-        
+
         # Known standard tags to exclude
         standard_tags = {
-            "title", "Title", "description", "Description", "comment",
-            "copyright", "Copyright", "artist", "Artist", "author",
-            "creation_time", "modification_time", "encoder", "Encoder",
-            "make", "Make", "model", "Model", "software", "Software",
-            "keywords", "Keywords", "subject", "Subject",
-            "rating", "Rating", "genre", "Genre", "album", "Album",
-            "track", "Track", "year", "Year", "language", "Language",
+            "title",
+            "Title",
+            "description",
+            "Description",
+            "comment",
+            "copyright",
+            "Copyright",
+            "artist",
+            "Artist",
+            "author",
+            "creation_time",
+            "modification_time",
+            "encoder",
+            "Encoder",
+            "make",
+            "Make",
+            "model",
+            "Model",
+            "software",
+            "Software",
+            "keywords",
+            "Keywords",
+            "subject",
+            "Subject",
+            "rating",
+            "Rating",
+            "genre",
+            "Genre",
+            "album",
+            "Album",
+            "track",
+            "Track",
+            "year",
+            "Year",
+            "language",
+            "Language",
         }
-        
+
         custom_fields = {}
         for key, value in self._tags.items():
             if key.lower() not in {t.lower() for t in standard_tags}:
                 custom_fields[key] = value
-        
+
         return CustomMetadata(fields=custom_fields)
-    
+
     def _try_float(self, value: Optional[str]) -> Optional[float]:
         """Try to parse a float value."""
         if not value:
@@ -866,7 +889,7 @@ class VideoMetadataExtractor:
             return float(value)
         except (ValueError, TypeError):
             return None
-    
+
     def _try_int(self, value: Optional[str]) -> Optional[int]:
         """Try to parse an integer value."""
         if not value:
@@ -879,13 +902,13 @@ class VideoMetadataExtractor:
 
 def extract_extended_metadata(video_path: Path | str) -> ExtendedVideoMetadata:
     """Convenience function to extract all metadata from a video.
-    
+
     Args:
         video_path: Path to the video file.
-        
+
     Returns:
         ExtendedVideoMetadata with all available metadata.
-        
+
     Example:
         ```python
         metadata = extract_extended_metadata("video.mp4")

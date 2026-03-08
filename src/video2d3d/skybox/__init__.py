@@ -37,67 +37,55 @@ Example usage:
 from __future__ import annotations
 
 # Import configuration classes
-from video2d3d.skybox.config import (
-    # Enums
-    SkyDetectionMethod,
-    SkyDepthMode,
-    # Main configuration
-    SkyboxConfig,
-    # Sub-configurations
-    ColorDetectionConfig,
-    PositionDetectionConfig,
-    EdgeDetectionConfig,
-    SkyDepthConfig,
-    # Constants
-    _DEFAULT_SKY_HUE_MIN,
+from video2d3d.skybox.config import (  # Enums; Main configuration; Sub-configurations; Constants
+    _DEFAULT_BOUNDARY_BLEND_PIXELS,
+    _DEFAULT_EDGE_THRESHOLD,
+    _DEFAULT_HORIZON_SEARCH_RATIO,
+    _DEFAULT_MAX_SKY_COVERAGE,
+    _DEFAULT_MIN_CONFIDENCE,
+    _DEFAULT_MIN_SKY_COVERAGE,
+    _DEFAULT_SKY_DEPTH_VALUE,
+    _DEFAULT_SKY_GRADIENT_THRESHOLD,
     _DEFAULT_SKY_HUE_MAX,
+    _DEFAULT_SKY_HUE_MIN,
+    _DEFAULT_SKY_REGION_RATIO,
     _DEFAULT_SKY_SATURATION_MAX,
     _DEFAULT_SKY_VALUE_MIN,
-    _DEFAULT_SKY_GRADIENT_THRESHOLD,
-    _DEFAULT_SKY_REGION_RATIO,
-    _DEFAULT_MIN_SKY_COVERAGE,
-    _DEFAULT_MAX_SKY_COVERAGE,
-    _DEFAULT_HORIZON_SEARCH_RATIO,
-    _DEFAULT_EDGE_THRESHOLD,
-    _DEFAULT_SKY_DEPTH_VALUE,
-    _DEFAULT_BOUNDARY_BLEND_PIXELS,
-    _DEFAULT_MIN_CONFIDENCE,
+    ColorDetectionConfig,
+    EdgeDetectionConfig,
+    PositionDetectionConfig,
+    SkyboxConfig,
+    SkyDepthConfig,
+    SkyDepthMode,
+    SkyDetectionMethod,
 )
 
 # Import detector classes
-from video2d3d.skybox.detector import (
-    # Classes
-    SkyDetector,
-    SkyDetectionResult,
-    # Exceptions
+from video2d3d.skybox.detector import (  # Classes; Exceptions; Functions; Constants
+    _BLUR_KERNEL_SIZE,
+    _COLOR_WEIGHT,
+    _EDGE_WEIGHT,
+    _MORPHOLOGY_KERNEL_SIZE,
+    _POSITION_WEIGHT,
     SkyDetectionError,
-    # Functions
+    SkyDetectionResult,
+    SkyDetector,
     create_sky_detector,
     detect_sky,
-    # Constants
-    _COLOR_WEIGHT,
-    _POSITION_WEIGHT,
-    _EDGE_WEIGHT,
-    _BLUR_KERNEL_SIZE,
-    _MORPHOLOGY_KERNEL_SIZE,
 )
 
 # Import processor classes
-from video2d3d.skybox.processor import (
-    # Classes
-    SkyProcessor,
-    # Exceptions
-    SkyProcessingError,
-    # Functions
-    integrate_sky_depth,
-    create_sky_depth_mask,
-    blend_depth_at_boundary,
-    create_sky_processor,
-    process_sky_depth,
-    # Constants
+from video2d3d.skybox.processor import (  # Classes; Exceptions; Functions; Constants
     _BOUNDARY_BLUR_KERNEL,
-    _MIN_DEPTH_VALUE,
     _MAX_DEPTH_VALUE,
+    _MIN_DEPTH_VALUE,
+    SkyProcessingError,
+    SkyProcessor,
+    blend_depth_at_boundary,
+    create_sky_depth_mask,
+    create_sky_processor,
+    integrate_sky_depth,
+    process_sky_depth,
 )
 
 

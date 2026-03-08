@@ -10,17 +10,8 @@ from rich.table import Table
 
 from video2d3d import __version__
 from video2d3d.utils.config import get_config
-from video2d3d.utils.logger import (
-    LogLevel,
-    configure_logging,
-    get_logger,
-    log_exception,
-)
-from video2d3d.utils.progress import (
-    ProgressConfig,
-    ProgressStage,
-    VideoConversionProgress,
-)
+from video2d3d.utils.logger import LogLevel, configure_logging, get_logger, log_exception
+from video2d3d.utils.progress import ProgressConfig, VideoConversionProgress
 
 # ============================================================================
 # Constants
@@ -220,8 +211,12 @@ def convert(
         help=f"Depth estimation model. Options: {', '.join(VALID_MODELS)}",
     ),
     gpu: bool = typer.Option(True, "--gpu/--no-gpu", help="Use GPU acceleration"),
-    preview: bool = typer.Option(False, "--preview", "-p", help="Enable live preview during processing"),
-    no_progress: bool = typer.Option(False, "--no-progress", help="Disable progress tracking display"),
+    preview: bool = typer.Option(
+        False, "--preview", "-p", help="Enable live preview during processing"
+    ),
+    no_progress: bool = typer.Option(
+        False, "--no-progress", help="Disable progress tracking display"
+    ),
     config_path: str | None = typer.Option(None, "--config", "-c", help="Path to config file"),
 ) -> None:
     """Convert a 2D video to 3D.
@@ -387,7 +382,7 @@ def list_models() -> None:
         table.add_row(model_id, info["description"], info["quality"], info["speed"])
 
     console.print(table)
-    console.print(f"\n[dim]Default model: midas_small[/dim]")
+    console.print("\n[dim]Default model: midas_small[/dim]")
 
 
 @app.command("list-formats")
@@ -402,29 +397,20 @@ def list_formats() -> None:
 
     console.print("\n[bold blue]Available 3D Output Formats[/bold blue]\n")
 
+
 @app.command("batch-convert")
 def batch_convert(
     input_path: str = typer.Argument(
-        ...,
-        help="Path to input file, directory, or wildcard pattern",
-        metavar="INPUT"
+        ..., help="Path to input file, directory, or wildcard pattern", metavar="INPUT"
     ),
     output_dir: str | None = typer.Option(
-        None,
-        "--output-dir",
-        "-o",
-        help="Output directory for converted files"
+        None, "--output-dir", "-o", help="Output directory for converted files"
     ),
     pattern: str | None = typer.Option(
-        None,
-        "--pattern",
-        "-p",
-        help="Wildcard pattern for file matching (e.g., '*.mp4')"
+        None, "--pattern", "-p", help="Wildcard pattern for file matching (e.g., '*.mp4')"
     ),
     recursive: bool = typer.Option(
-        True,
-        "--recursive/--no-recursive",
-        help="Search directories recursively"
+        True, "--recursive/--no-recursive", help="Search directories recursively"
     ),
     format: str = typer.Option(
         "side_by_side",
@@ -439,109 +425,101 @@ def batch_convert(
         help=f"Depth estimation model. Options: {', '.join(VALID_MODELS)}",
     ),
     concurrent: int = typer.Option(
-        1,
-        "--concurrent",
-        "-c",
-        help="Number of concurrent jobs to process"
+        1, "--concurrent", "-c", help="Number of concurrent jobs to process"
     ),
     skip_existing: bool = typer.Option(
-        True,
-        "--skip-existing/--no-skip-existing",
-        help="Skip files that already have output"
+        True, "--skip-existing/--no-skip-existing", help="Skip files that already have output"
     ),
     watch: bool = typer.Option(
-        False,
-        "--watch",
-        "-w",
-        help="Watch folder for new files (continuous mode)"
+        False, "--watch", "-w", help="Watch folder for new files (continuous mode)"
     ),
     list_file: str | None = typer.Option(
-        None,
-        "--list",
-        "-l",
-        help="Path to text file containing list of videos to process"
+        None, "--list", "-l", help="Path to text file containing list of videos to process"
     ),
 ) -> None:
     from pathlib import Path
-    from video2d3d.batch import BatchVideoQueue, BatchQueueConfig, BatchJobResult
-    
+
+    from video2d3d.batch import BatchJobResult, BatchQueueConfig, BatchVideoQueue
+
     logger = get_logger("batch_convert")
     output_format = validate_output_format(format)
     validated_model = validate_model(model)
-    
-    console.print(f"[bold blue]Batch Video Conversion[/bold blue]")
+
+    console.print("[bold blue]Batch Video Conversion[/bold blue]")
     console.print(f"[bold]Format:[/bold] {format}, [bold]Model:[/bold] {model}")
     console.print(f"[bold]Concurrent:[/bold] {concurrent}, [bold]Recursive:[/bold] {recursive}")
-    
+
     config = BatchQueueConfig(
         max_concurrent_jobs=concurrent,
         skip_existing=skip_existing,
         output_directory=Path(output_dir) if output_dir else None,
     )
-    
+
     if watch:
         config.folder_watcher.enabled = True
         config.folder_watcher.watch_paths = [Path(input_path)]
-    
+
     def dummy_processor(input_path: Path, output_path: Path) -> BatchJobResult:
         return BatchJobResult(
-            success=True,
-            output_path=output_path,
-            metadata={"format": format, "model": model}
+            success=True, output_path=output_path, metadata={"format": format, "model": model}
         )
-    
+
     queue = BatchVideoQueue(config=config, processor=dummy_processor)
-    
+
     try:
         input_p = Path(input_path)
-        
+
         if list_file:
             jobs = queue.add_jobs_from_list(
                 list(Path(line.strip()) for line in open(list_file) if line.strip())
             )
         elif pattern:
-            jobs = queue.add_jobs_from_pattern(pattern, base_dir=input_p if input_p.is_dir() else None)
+            jobs = queue.add_jobs_from_pattern(
+                pattern, base_dir=input_p if input_p.is_dir() else None
+            )
         elif input_p.is_dir():
             jobs = queue.add_jobs_from_directory(input_p, recursive=recursive)
         else:
             job = queue.add_job(input_p)
             jobs = [job]
-        
+
         console.print(f"[green]Added {len(jobs)} jobs to queue[/green]")
-        
+
         if not watch:
             queue.start()
-            
+
             import time
+
             while queue.running_count > 0 or queue.pending_count > 0:
                 stats = queue.get_stats()
                 console.print(
                     f"\r[bold]Progress:[/bold] {stats.completed_jobs}/{stats.total_jobs} "
                     f"completed, {stats.running_jobs} running, {stats.pending_jobs} pending",
-                    end=""
+                    end="",
                 )
                 time.sleep(1.0)
-            
+
             console.print()
             stats = queue.get_stats()
-            console.print(f"\n[bold green]Batch complete![/bold green]")
+            console.print("\n[bold green]Batch complete![/bold green]")
             console.print(f"  Completed: {stats.completed_jobs}")
             console.print(f"  Failed: {stats.failed_jobs}")
             console.print(f"  Skipped: {stats.skipped_jobs}")
             console.print(f"  Success rate: {stats.success_rate:.1f}%")
-            
+
             queue.stop()
         else:
             console.print("[yellow]Watching for new files... Press Ctrl+C to stop[/yellow]")
             queue.start()
             try:
                 import time
+
                 while True:
                     time.sleep(1.0)
             except KeyboardInterrupt:
                 console.print("\n[yellow]Stopping...[/yellow]")
                 queue.stop()
-    
+
     except FileNotFoundError as e:
         console.print(f"[red]Error: {e}[/red]")
         raise typer.Exit(code=1)
@@ -554,46 +532,35 @@ def batch_convert(
 @app.command("queue-status")
 def queue_status(
     state_file: str | None = typer.Option(
-        None,
-        "--state-file",
-        "-s",
-        help="Path to queue state file"
+        None, "--state-file", "-s", help="Path to queue state file"
     ),
-    watch: bool = typer.Option(
-        False,
-        "--watch",
-        "-w",
-        help="Continuously monitor queue status"
-    ),
-    clear_completed: bool = typer.Option(
-        False,
-        "--clear",
-        help="Clear completed jobs from queue"
-    ),
+    watch: bool = typer.Option(False, "--watch", "-w", help="Continuously monitor queue status"),
+    clear_completed: bool = typer.Option(False, "--clear", help="Clear completed jobs from queue"),
 ) -> None:
     import json
     from pathlib import Path
+
     from video2d3d.batch import BatchQueueConfig
-    
+
     logger = get_logger("queue_status")
     config = BatchQueueConfig()
     state_path = Path(state_file) if state_file else Path("logs/batch_queue_state.json")
-    
+
     if not state_path.exists():
         console.print(f"[yellow]No queue state file found at {state_path}[/yellow]")
         console.print("[dim]Start a batch conversion to create a queue.[/dim]")
         return
-    
+
     try:
         with open(state_path) as f:
             state = json.load(f)
-        
-        console.print(f"\n[bold blue]Batch Queue Status[/bold blue]")
+
+        console.print("\n[bold blue]Batch Queue Status[/bold blue]")
         console.print(f"[dim]State file: {state_path}[/dim]")
         console.print(f"[dim]Saved at: {state.get('saved_at', 'unknown')}[/dim]\n")
-        
+
         jobs = state.get("jobs", [])
-        
+
         stats = {
             "total": len(jobs),
             "pending": sum(1 for j in jobs if j["status"] == "pending"),
@@ -603,7 +570,7 @@ def queue_status(
             "cancelled": sum(1 for j in jobs if j["status"] == "cancelled"),
             "skipped": sum(1 for j in jobs if j["status"] == "skipped"),
         }
-        
+
         table = Table(title="Queue Statistics")
         table.add_column("Status", style="cyan")
         table.add_column("Count", style="green")
@@ -615,21 +582,26 @@ def queue_status(
         table.add_row("Cancelled", str(stats["cancelled"]))
         table.add_row("Skipped", str(stats["skipped"]))
         console.print(table)
-        
+
         if stats["total"] > 0:
-            success_rate = (stats["completed"] / (stats["completed"] + stats["failed"])) * 100 if (stats["completed"] + stats["failed"]) > 0 else 0
+            success_rate = (
+                (stats["completed"] / (stats["completed"] + stats["failed"])) * 100
+                if (stats["completed"] + stats["failed"]) > 0
+                else 0
+            )
             console.print(f"\n[bold]Success Rate:[/bold] {success_rate:.1f}%")
-        
+
         if watch:
             console.print("\n[yellow]Monitoring... Press Ctrl+C to stop[/yellow]")
             import time
+
             try:
                 while True:
                     time.sleep(2.0)
                     console.clear()
             except KeyboardInterrupt:
                 console.print("\n[yellow]Stopped.[/yellow]")
-    
+
     except json.JSONDecodeError as e:
         console.print(f"[red]Error reading state file: {e}[/red]")
         raise typer.Exit(code=1)
@@ -694,7 +666,7 @@ def serve(
 
     config = get_config()
 
-    console.print(f"[bold blue]Starting 2Dto3D API Server[/bold blue]")
+    console.print("[bold blue]Starting 2Dto3D API Server[/bold blue]")
     console.print(f"[bold]Host:[/bold] {host}")
     console.print(f"[bold]Port:[/bold] {port}")
     console.print(f"[bold]Workers:[/bold] {workers}")
@@ -728,13 +700,13 @@ def config_export(
     output_file: str = typer.Argument(
         ...,
         help="Path to output configuration file (e.g., config.json or config.yaml)",
-        metavar="OUTPUT_FILE"
+        metavar="OUTPUT_FILE",
     ),
     format: str = typer.Option(
         "auto",
         "--format",
         "-f",
-        help="Output format: json, yaml, or auto (detect from file extension)"
+        help="Output format: json, yaml, or auto (detect from file extension)",
     ),
 ) -> None:
     """Export the current configuration to a JSON or YAML file.
@@ -748,6 +720,7 @@ def config_export(
         video2d3d config-export config.json --format json
     """
     from pathlib import Path
+
     from video2d3d.utils.config import export_current_config
 
     logger = get_logger("config_export")
@@ -784,15 +757,13 @@ def config_export(
 @app.command("config-import")
 def config_import(
     input_file: str = typer.Argument(
-        ...,
-        help="Path to configuration file to import (JSON or YAML)",
-        metavar="INPUT_FILE"
+        ..., help="Path to configuration file to import (JSON or YAML)", metavar="INPUT_FILE"
     ),
     apply: bool = typer.Option(
         False,
         "--apply",
         "-a",
-        help="Apply imported configuration as the global (active) configuration"
+        help="Apply imported configuration as the global (active) configuration",
     ),
 ) -> None:
     """Import configuration from a JSON or YAML file.
@@ -806,7 +777,8 @@ def config_import(
         video2d3d config-import my-config.yaml --apply
     """
     from pathlib import Path
-    from video2d3d.utils.config import import_config, import_and_apply_config
+
+    from video2d3d.utils.config import import_and_apply_config, import_config
 
     logger = get_logger("config_import")
 
@@ -827,15 +799,17 @@ def config_import(
             logger.info(f"Configuration imported from {input_path}")
 
         # Display summary
-        console.print(f"\n[bold]Configuration Summary:[/bold]")
+        console.print("\n[bold]Configuration Summary:[/bold]")
         console.print(f"  Project: {config.project_name}")
         console.print(f"  Version: {config.version}")
-        console.print(f"  Processing: batch_size={config.processing.batch_size}, workers={config.processing.num_workers}")
+        console.print(
+            f"  Processing: batch_size={config.processing.batch_size}, workers={config.processing.num_workers}"
+        )
         console.print(f"  Depth Model: {config.depth_estimation.model}")
         console.print(f"  Output Format: {config.stereo_generation.format}")
 
         if not apply:
-            console.print(f"\n[dim]Use --apply to make this the active configuration[/dim]")
+            console.print("\n[dim]Use --apply to make this the active configuration[/dim]")
 
     except FileNotFoundError as e:
         console.print(f"[red]Error: {e}[/red]")

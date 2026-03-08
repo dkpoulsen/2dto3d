@@ -28,16 +28,7 @@ Usage:
         return {"message": "Admin access granted"}
 """
 
-from video2d3d.web.auth.database import (
-    UserModel,
-    get_session,
-    init_database,
-    session_scope,
-)
-    UserModel,
-    get_session,
-    init_database,
-)
+from video2d3d.web.auth.database import UserModel, get_session, init_database, session_scope
 from video2d3d.web.auth.jwt_service import (
     authenticate_user,
     create_access_token,
@@ -88,10 +79,6 @@ __all__ = [
     "init_database",
     "get_session",
     "session_scope",
-    "UserModel",
-    "init_database",
-    "get_session",
-    # JWT Service
     "hash_password",
     "verify_password",
     "create_access_token",

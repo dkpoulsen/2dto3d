@@ -91,7 +91,7 @@ class Notification:
         }
 
     @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> "Notification":
+    def from_dict(cls, data: dict[str, Any]) -> Notification:
         """Create notification from dictionary."""
         return cls(
             notification_id=data.get("notification_id"),
@@ -103,12 +103,12 @@ class Notification:
             data=data.get("data", {}),
             read=data.get("read", False),
             dismissed=data.get("dismissed", False),
-            created_at=datetime.fromisoformat(data["created_at"])
-            if data.get("created_at")
-            else None,
-            expires_at=datetime.fromisoformat(data["expires_at"])
-            if data.get("expires_at")
-            else None,
+            created_at=(
+                datetime.fromisoformat(data["created_at"]) if data.get("created_at") else None
+            ),
+            expires_at=(
+                datetime.fromisoformat(data["expires_at"]) if data.get("expires_at") else None
+            ),
         )
 
     @property

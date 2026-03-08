@@ -52,10 +52,10 @@ from video2d3d.audio.exceptions import (
     SpatialAudioError,
 )
 from video2d3d.audio.metadata import AudioMetadata, AudioTrackInfo
+from video2d3d.audio.multichannel import MultiChannelAudioProcessor
 from video2d3d.audio.processor import AudioProcessor
 from video2d3d.audio.spatial import SpatialAudioProcessor
 from video2d3d.audio.tracks import AudioTrackPreserver
-from video2d3d.audio.multichannel import MultiChannelAudioProcessor
 
 __all__ = [
     # Main processor

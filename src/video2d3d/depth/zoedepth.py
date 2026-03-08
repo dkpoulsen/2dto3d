@@ -48,18 +48,13 @@ if TYPE_CHECKING:
     from loguru import Logger
     from torch import nn
 
-from video2d3d.utils.logger import (
-    get_logger,
-    log_exception,
-    log_model_inference,
-)
 from video2d3d.utils.gpu import (
     GPUConfig,
     clear_gpu_memory,
     compute_optimal_batch_size,
     select_device,
 )
-
+from video2d3d.utils.logger import get_logger, log_exception, log_model_inference
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -83,7 +78,7 @@ class ZoeDepthModelVariant(Enum):
     ZOE_NK = "ZoeD_NK"  # Combined, supports both relative and metric
 
     @classmethod
-    def from_string(cls, name: str) -> "ZoeDepthModelVariant":
+    def from_string(cls, name: str) -> ZoeDepthModelVariant:
         """Get model variant from string name.
 
         Args:
@@ -302,7 +297,7 @@ class ZoeDepthInferenceError(Exception):
         self.original_exception = original_exception
 
 
-def _get_zoedepth_logger() -> "Logger":
+def _get_zoedepth_logger() -> Logger:
     """Get the ZoeDepth module logger (lazy initialization)."""
     return get_logger("depth.zoedepth")
 
@@ -374,7 +369,7 @@ class ZoeDepthEstimator:
             )
 
         # Model components (lazy loaded)
-        self._model: Optional["nn.Module"] = None
+        self._model: Optional[nn.Module] = None
         self._transform: Optional[Any] = None  # torchvision.transforms.Compose
         self._is_loaded: bool = False
 
@@ -386,7 +381,7 @@ class ZoeDepthEstimator:
         )
 
     @property
-    def model(self) -> Optional["nn.Module"]:
+    def model(self) -> Optional[nn.Module]:
         """Get the loaded model (loads if not already loaded)."""
         if not self._is_loaded:
             self.load_model()
@@ -563,7 +558,6 @@ class ZoeDepthEstimator:
                 device=self.config.device,
                 original_exception=e,
             ) from e
-
 
     def _postprocess_depth(
         self,
@@ -828,7 +822,9 @@ class ZoeDepthEstimator:
 
                     # Postprocess each frame
                     for idx, (pred, shape) in enumerate(zip(predictions, original_shapes)):
-                        depth_map = self._postprocess_depth(pred.unsqueeze(0), shape, depth_mode=depth_mode)
+                        depth_map = self._postprocess_depth(
+                            pred.unsqueeze(0), shape, depth_mode=depth_mode
+                        )
                         depth_maps.append(depth_map)
 
                     elapsed_ms = (time.time() - batch_start_time) * 1000
@@ -943,7 +939,7 @@ class ZoeDepthEstimator:
         """Estimate depth from a single frame (callable interface)."""
         return self.estimate_depth(frame)
 
-    def __enter__(self) -> "ZoeDepthEstimator":
+    def __enter__(self) -> ZoeDepthEstimator:
         """Context manager entry."""
         return self
 

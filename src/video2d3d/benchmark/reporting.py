@@ -12,13 +12,14 @@ import json
 from abc import ABC, abstractmethod
 from datetime import datetime
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Optional, Union
+from typing import Optional, Union
+
 
 class ReportGenerator(ABC):
     """Abstract base class for report generators."""
 
     @abstractmethod
-    def generate(self, results: "BenchmarkResults") -> str:
+    def generate(self, results: BenchmarkResults) -> str:
         """Generate a report from benchmark results.
 
         Args:
@@ -30,7 +31,7 @@ class ReportGenerator(ABC):
         pass
 
     @abstractmethod
-    def save(self, results: "BenchmarkResults", path: Path) -> None:
+    def save(self, results: BenchmarkResults, path: Path) -> None:
         """Save a report to a file.
 
         Args:
@@ -63,7 +64,7 @@ class MarkdownReporter(ReportGenerator):
         self.include_comparison = include_comparison
         self.include_details = include_details
 
-    def generate(self, results: "BenchmarkResults") -> str:
+    def generate(self, results: BenchmarkResults) -> str:
         """Generate a Markdown report."""
         lines: list[str] = []
 
@@ -95,7 +96,7 @@ class MarkdownReporter(ReportGenerator):
 
         return "\n".join(lines)
 
-    def _generate_system_info(self, results: "BenchmarkResults") -> list[str]:
+    def _generate_system_info(self, results: BenchmarkResults) -> list[str]:
         """Generate system information section."""
         lines = [
             "## System Information",
@@ -130,7 +131,7 @@ class MarkdownReporter(ReportGenerator):
         lines.append("")
         return lines
 
-    def _generate_summary(self, results: "BenchmarkResults") -> list[str]:
+    def _generate_summary(self, results: BenchmarkResults) -> list[str]:
         """Generate summary statistics section."""
         lines = [
             "## Summary",
@@ -161,7 +162,7 @@ class MarkdownReporter(ReportGenerator):
 
         return lines
 
-    def _generate_comparison(self, results: "BenchmarkResults") -> list[str]:
+    def _generate_comparison(self, results: BenchmarkResults) -> list[str]:
         """Generate model comparison section."""
         comparison = results.compare_models()
         if not comparison:
@@ -191,7 +192,7 @@ class MarkdownReporter(ReportGenerator):
         lines.append("")
         return lines
 
-    def _generate_details(self, results: "BenchmarkResults") -> list[str]:
+    def _generate_details(self, results: BenchmarkResults) -> list[str]:
         """Generate detailed results section."""
         lines = [
             "## Detailed Results",
@@ -224,7 +225,7 @@ class MarkdownReporter(ReportGenerator):
 
         return lines
 
-    def _generate_failures(self, results: "BenchmarkResults") -> list[str]:
+    def _generate_failures(self, results: BenchmarkResults) -> list[str]:
         """Generate failed benchmarks section."""
         lines = [
             "## Failed Benchmarks",
@@ -237,7 +238,7 @@ class MarkdownReporter(ReportGenerator):
         lines.append("")
         return lines
 
-    def save(self, results: "BenchmarkResults", path: Path) -> None:
+    def save(self, results: BenchmarkResults, path: Path) -> None:
         """Save the Markdown report to a file."""
         report = self.generate(results)
         path = Path(path)
@@ -257,7 +258,7 @@ class JSONReporter(ReportGenerator):
         """
         self.pretty = pretty
 
-    def generate(self, results: "BenchmarkResults") -> str:
+    def generate(self, results: BenchmarkResults) -> str:
         """Generate a JSON report."""
         data = {
             "config_name": results.config_name,
@@ -272,7 +273,7 @@ class JSONReporter(ReportGenerator):
         indent = 2 if self.pretty else None
         return json.dumps(data, indent=indent)
 
-    def save(self, results: "BenchmarkResults", path: Path) -> None:
+    def save(self, results: BenchmarkResults, path: Path) -> None:
         """Save the JSON report to a file."""
         report = self.generate(results)
         path = Path(path)
@@ -301,7 +302,7 @@ class CSVReporter(ReportGenerator):
         self.include_memory = include_memory
         self.include_gpu = include_gpu
 
-    def generate(self, results: "BenchmarkResults") -> str:
+    def generate(self, results: BenchmarkResults) -> str:
         """Generate a CSV report."""
         rows = []
         headers = [
@@ -408,7 +409,7 @@ class CSVReporter(ReportGenerator):
 
         return output.getvalue()
 
-    def save(self, results: "BenchmarkResults", path: Path) -> None:
+    def save(self, results: BenchmarkResults, path: Path) -> None:
         """Save the CSV report to a file."""
         report = self.generate(results)
         path = Path(path)
@@ -418,7 +419,7 @@ class CSVReporter(ReportGenerator):
 
 
 def generate_report(
-    results: "BenchmarkResults",
+    results: BenchmarkResults,
     format: str = "markdown",
     output_path: Optional[Union[Path, str]] = None,
 ) -> str:
@@ -446,8 +447,7 @@ def generate_report(
     else:
         valid_formats = ["markdown", "md", "json", "csv"]
         raise ValueError(
-            f"Unknown report format: '{format}'. "
-            f"Valid formats are: {', '.join(valid_formats)}"
+            f"Unknown report format: '{format}'. " f"Valid formats are: {', '.join(valid_formats)}"
         )
 
     report = reporter.generate(results)
@@ -456,6 +456,8 @@ def generate_report(
         reporter.save(results, Path(output_path))
 
     return report
+
+
 __all__ = [
     "ReportGenerator",
     "MarkdownReporter",

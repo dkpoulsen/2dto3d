@@ -132,7 +132,7 @@ class AudioMetadata:
     overall_bitrate: int = 0
 
     @classmethod
-    def extract_from_video(cls, video_path: Path | str) -> "AudioMetadata":
+    def extract_from_video(cls, video_path: Path | str) -> AudioMetadata:
         """Extract audio metadata from a video file using FFprobe.
 
         Args:

@@ -249,6 +249,8 @@ class TestExceptionHierarchy:
             except BatchQueueError as e:
                 assert e is exc
             else:
+                pytest.fail(f"Expected BatchQueueError but {exc.__class__.__name__} was not caught")
+
     def test_exception_can_be_chained(self) -> None:
         """Test that exceptions can be chained with 'from'."""
         original = ValueError("original error")

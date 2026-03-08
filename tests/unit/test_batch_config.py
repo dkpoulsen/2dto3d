@@ -8,21 +8,17 @@ Tests cover:
 
 from __future__ import annotations
 
+import warnings
 from pathlib import Path
 from typing import TYPE_CHECKING
 from unittest.mock import patch
-import warnings
 
 import pytest
 
 if TYPE_CHECKING:
     from collections.abc import Generator
 
-from video2d3d.batch.config import (
-    BatchQueueConfig,
-    FileDiscoveryConfig,
-    FolderWatcherConfig,
-)
+from video2d3d.batch.config import BatchQueueConfig, FileDiscoveryConfig, FolderWatcherConfig
 from video2d3d.batch.models import JobPriority
 
 

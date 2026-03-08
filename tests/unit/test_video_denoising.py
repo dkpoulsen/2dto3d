@@ -11,30 +11,24 @@ Tests cover:
 from __future__ import annotations
 
 from pathlib import Path
-from unittest.mock import MagicMock, patch
 
 import numpy as np
 import pytest
 
 from video2d3d.denoising import (
-    DenoiserModelType,
-    NoiseLevelMode,
-    FastDVDNetConfig,
     BasicVSRPlusPlusConfig,
+    DenoiserModelType,
+    FastDVDNetConfig,
+    InferenceError,
+    ModelLoadError,
     VideoDenoiserConfig,
     VideoDenoiserSelector,
     VideoDenoisingError,
-    ModelLoadError,
-    InferenceError,
-    UnsupportedModelError,
     create_video_denoiser,
     denoise_frames_auto,
 )
-from video2d3d.denoising.fastdvdnet import FastDVDNetDenoiser, FastDVDNetModel
-from video2d3d.denoising.basicvsr_plusplus import (
-    BasicVSRPlusPlusDenoiser,
-    BasicVSRPlusPlusModel,
-)
+from video2d3d.denoising.basicvsr_plusplus import BasicVSRPlusPlusModel
+from video2d3d.denoising.fastdvdnet import FastDVDNetModel
 
 
 class TestDenoiserModelType:

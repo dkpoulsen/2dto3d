@@ -9,6 +9,7 @@ Key Components:
 - CheckpointConfig: Configuration for checkpoint behavior
 """
 
+from video2d3d.checkpoint.manager import CheckpointManager
 from video2d3d.checkpoint.models import (
     CheckpointConfig,
     CheckpointState,
@@ -16,7 +17,6 @@ from video2d3d.checkpoint.models import (
     FrameCheckpoint,
     StageCheckpoint,
 )
-from video2d3d.checkpoint.manager import CheckpointManager
 
 __all__ = [
     "CheckpointConfig",

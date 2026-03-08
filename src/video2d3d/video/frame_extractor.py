@@ -31,16 +31,11 @@ from __future__ import annotations
 import gc
 import threading
 from collections import deque
+from collections.abc import Generator, Iterator
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    Callable,
-    Generator,
-    Iterator,
-)
+from typing import Any, Callable
 
 import cv2
 import numpy as np
@@ -110,19 +105,13 @@ class FrameExtractorConfig:
     def __post_init__(self) -> None:
         """Validate configuration after initialization."""
         if self.sampling_interval < 1:
-            raise ValueError(
-                f"sampling_interval must be >= 1, got {self.sampling_interval}"
-            )
+            raise ValueError(f"sampling_interval must be >= 1, got {self.sampling_interval}")
         if self.target_frame_count is not None and self.target_frame_count < 1:
-            raise ValueError(
-                f"target_frame_count must be >= 1, got {self.target_frame_count}"
-            )
+            raise ValueError(f"target_frame_count must be >= 1, got {self.target_frame_count}")
         if self.buffer_size < 1:
             raise ValueError(f"buffer_size must be >= 1, got {self.buffer_size}")
         if self.max_memory_mb <= 0:
-            raise ValueError(
-                f"max_memory_mb must be > 0, got {self.max_memory_mb}"
-            )
+            raise ValueError(f"max_memory_mb must be > 0, got {self.max_memory_mb}")
 
 
 @dataclass

@@ -28,7 +28,6 @@ from video2d3d.stereo.checkerboard import (
     encode_checkerboard,
 )
 
-
 # ---------------------------------------------------------------------------
 # Fixtures
 # ---------------------------------------------------------------------------
@@ -547,7 +546,6 @@ class TestEdgeCases:
         assert "swap_eyes=True" in repr_str
 
 
-
 # ---------------------------------------------------------------------------
 # Integration Tests
 # ---------------------------------------------------------------------------
@@ -558,11 +556,7 @@ class TestIntegration:
 
     def test_import_from_stereo_module(self) -> None:
         """Test that encoder can be imported from stereo module."""
-        from video2d3d.stereo import (
-            CheckerboardEncoder,
-            CheckerboardPattern,
-            encode_checkerboard,
-        )
+        from video2d3d.stereo import CheckerboardEncoder, CheckerboardPattern, encode_checkerboard
 
         assert CheckerboardEncoder is not None
         assert CheckerboardPattern is not None
