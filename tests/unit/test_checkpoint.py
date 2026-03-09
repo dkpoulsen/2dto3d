@@ -914,3 +914,8 @@ class TestCheckpointManagerGetCheckpoint:
         assert retrieved.total_frames == 500
 
         checkpoint_manager.delete("disk-test")
+
+
+# Mark as slow test
+import pytest
+pytestmark = pytest.mark.slow

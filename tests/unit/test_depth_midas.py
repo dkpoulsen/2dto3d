@@ -721,3 +721,8 @@ class TestGPUFallback:
         with patch("video2d3d.depth.F"):
             with pytest.raises(InferenceError, match="Depth estimation failed"):
                 estimator.estimate_depth(sample_rgb_image)
+
+
+# Mark as slow test
+import pytest
+pytestmark = pytest.mark.slow

@@ -879,3 +879,8 @@ class TestThreadSafety:
             t.join()
 
         assert len(errors) == 0
+
+
+# Mark as slow test
+import pytest
+pytestmark = pytest.mark.slow

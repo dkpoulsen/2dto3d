@@ -917,3 +917,8 @@ class TestModelSelectorIntegration:
         assert DepthModelType.ZOEDEPTH_K.supports_metric is True
         assert DepthModelType.ZOEDEPTH_NK.supports_metric is True
         assert DepthModelType.MIDAS_SMALL.supports_metric is False
+
+
+# Mark as slow test
+import pytest
+pytestmark = pytest.mark.slow

@@ -791,3 +791,8 @@ class TestProgressCallback:
         list(extractor.extract_frames(end_frame=60, progress_callback=callback))
 
         assert len(progress_calls) == 3  # Frames 0, 20, 40
+
+
+# Mark as slow test
+import pytest
+pytestmark = pytest.mark.slow

@@ -736,3 +736,8 @@ class TestModuleConstants:
         from video2d3d.depth.model_selector import _DEFAULT_SCENE_CONFIDENCE_THRESHOLD
 
         assert _DEFAULT_SCENE_CONFIDENCE_THRESHOLD == 0.7
+
+
+# Mark as slow test
+import pytest
+pytestmark = pytest.mark.slow

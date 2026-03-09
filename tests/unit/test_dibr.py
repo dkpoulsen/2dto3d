@@ -881,3 +881,8 @@ class TestAdditionalCoverage:
 
         assert left.shape == sample_image.shape
         assert right.shape == sample_image.shape
+
+
+# Mark as slow test
+import pytest
+pytestmark = pytest.mark.slow

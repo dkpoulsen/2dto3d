@@ -951,3 +951,8 @@ class TestBatchJobSerializationWithScheduling:
         assert restored.scheduled_at.isoformat() == scheduled_time.isoformat()
         assert restored.depends_on == ["a", "b", "c"]
         assert restored.dependent_jobs == ["x", "y"]
+
+
+# Mark as slow test
+import pytest
+pytestmark = pytest.mark.slow

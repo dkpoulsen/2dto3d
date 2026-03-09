@@ -1088,3 +1088,8 @@ class TestEdgeCases:
             flow = engine.compute_flow(tiny_frame1, tiny_frame2)
 
             assert flow.shape == (1, 1, 2)
+
+
+# Mark as slow test
+import pytest
+pytestmark = pytest.mark.slow

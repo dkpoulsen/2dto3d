@@ -773,3 +773,8 @@ class TestBatchJobScheduler:
         assert restored.scheduled_at.isoformat() == scheduled_time.isoformat()
         assert restored.depends_on == ["job_1"]
         assert restored.dependent_jobs == ["waiting_job"]
+
+
+# Mark as slow test
+import pytest
+pytestmark = pytest.mark.slow

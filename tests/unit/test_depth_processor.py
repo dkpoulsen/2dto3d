@@ -893,3 +893,8 @@ class TestErrorHandling:
         """Test DepthProcessingError inheritance."""
         error = DepthProcessingError("Test")
         assert isinstance(error, Exception)
+
+
+# Mark as slow test
+import pytest
+pytestmark = pytest.mark.slow

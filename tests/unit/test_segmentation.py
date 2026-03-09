@@ -2064,3 +2064,8 @@ class TestIntegrationWithDepthProcessor:
 # ---------------------------------------------------------------------------
 # End of Additional Tests
 # ---------------------------------------------------------------------------
+
+
+# Mark as slow test
+import pytest
+pytestmark = pytest.mark.slow

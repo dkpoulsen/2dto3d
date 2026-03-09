@@ -732,3 +732,8 @@ class TestIntegration:
         result = encoder.encode(left, right)
 
         assert result.shape == (100, 200, 3)
+
+
+# Mark as slow test
+import pytest
+pytestmark = pytest.mark.slow
