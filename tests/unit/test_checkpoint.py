@@ -918,4 +918,5 @@ class TestCheckpointManagerGetCheckpoint:
 
 # Mark as slow test
 import pytest
+
 pytestmark = pytest.mark.slow
