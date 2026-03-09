@@ -132,16 +132,6 @@ jobs:
             --timeout=120 \
             -m "not slow and not gpu" \
             tests/
-            --cov=src/video2d3d \
-            --cov-report=xml:coverage-${{ matrix.python-version }}.xml \
-            --cov-report=term-missing \
-            --cov-fail-under=${{ env.COVERAGE_FAIL_UNDER }} \
-            --junitxml=test-results-${{ matrix.python-version }}.xml \
-            -v \
-            --tb=short \
-            -n auto \
-            -m "not slow and not gpu" \
-            tests/
         env:
           CI: "1"
 
