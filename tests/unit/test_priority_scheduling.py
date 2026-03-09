@@ -1,3 +1,7 @@
+import pytest
+
+pytestmark = pytest.mark.slow
+
 """Unit tests for priority-based job scheduling functionality.
 
 Tests cover:

@@ -1,3 +1,7 @@
+import pytest
+
+pytestmark = pytest.mark.slow
+
 """Unit tests for ZoeDepth depth estimation module.
 
 Tests cover:

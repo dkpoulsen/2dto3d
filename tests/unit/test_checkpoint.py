@@ -1,3 +1,7 @@
+import pytest
+
+pytestmark = pytest.mark.slow
+
 """Unit tests for checkpoint and resume system.
 
 Tests cover:

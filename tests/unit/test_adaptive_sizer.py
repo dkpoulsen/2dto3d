@@ -1,3 +1,7 @@
+import pytest
+
+pytestmark = pytest.mark.slow
+
 """Unit tests for adaptive batch sizing.
 
 Tests cover:

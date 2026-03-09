@@ -1,3 +1,7 @@
+import pytest
+
+pytestmark = pytest.mark.slow
+
 """Unit tests for DIBR (Depth-Image-Based Rendering) engine.
 
 Tests cover:

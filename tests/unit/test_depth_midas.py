@@ -1,3 +1,7 @@
+import pytest
+
+pytestmark = pytest.mark.slow
+
 """Unit tests for MiDaS depth estimation module.
 
 Tests cover:
