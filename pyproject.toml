@@ -202,7 +202,7 @@ addopts = "-ra -q --strict-markers --cov=video2d3d --cov-report=term-missing"
 testpaths = ["tests"]
 pythonpath = ["src"]
 markers = [
-    "slow: marks tests as slow (deselect with '-m "not slow"')",
+    "slow: marks tests as slow (deselect with -m 'not slow')",
     "gpu: marks tests that require GPU",
     "integration: marks integration tests",
     "heavy: marks tests that use heavy dependencies (torch, cv2)",
