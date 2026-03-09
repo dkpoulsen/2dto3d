@@ -163,10 +163,11 @@ ignore = [
     "F841",  # local variable assigned but never used
 ]
 
-[tool.ruff.lint.isort]
-known-first-party = ["video2d3d"]
 
 # MyPy configuration
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["F404"]  # from __future__ imports after docstrings
+
 [tool.mypy]
 python_version = "3.9"
 warn_return_any = true
