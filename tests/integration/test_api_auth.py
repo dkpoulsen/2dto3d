@@ -20,6 +20,8 @@ import pytest
 from fastapi import FastAPI, status
 from fastapi.testclient import TestClient
 
+from video2d3d.web.exceptions import register_exception_handlers
+
 if TYPE_CHECKING:
     from collections.abc import Generator
 
@@ -52,6 +54,7 @@ def app(temp_db: Path) -> Generator[FastAPI, None, None]:
     from video2d3d.web.auth.router import router as auth_router
 
     app = FastAPI()
+    register_exception_handlers(app)
     app.include_router(auth_router, prefix="/auth", tags=["Authentication"])
 
     yield app

@@ -212,7 +212,7 @@ class EnsembleError(Exception):
     def __str__(self) -> str:
         """Return string representation including failure details."""
         base = super().__str__()
-        if self.failed_models:
+        if self.failed_models and not self.successful_models:
             return f"{base} (failed: {self.failed_models})"
         return base
 
@@ -328,17 +328,17 @@ class EnsemblePredictor:
         # Loaded estimators cache
         self._estimators: dict[str, Any] = {}
 
+        # Performance tracking for adaptive weighting (must precede weight computation)
+        self._performance_history: dict[str, list[float]] = {
+            model: [] for model in self.config.models
+        }
+
         # Compute weights
         self._weights: list[float] | None = None
         if self.config.weights is not None:
             self._weights = self.config.weights
         elif self.config.auto_weight:
             self._weights = self._compute_auto_weights()
-
-        # Performance tracking for adaptive weighting
-        self._performance_history: dict[str, list[float]] = {
-            model: [] for model in self.config.models
-        }
 
         self._logger = _get_ensemble_logger()
         self._logger.info(

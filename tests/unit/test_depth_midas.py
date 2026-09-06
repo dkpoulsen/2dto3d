@@ -1,7 +1,3 @@
-import pytest
-
-pytestmark = pytest.mark.slow
-
 """Unit tests for MiDaS depth estimation module.
 
 Tests cover:
@@ -15,6 +11,10 @@ Note: These tests mock torch before importing the depth module.
 """
 
 from __future__ import annotations
+
+import pytest
+
+pytestmark = pytest.mark.slow
 
 import sys
 from pathlib import Path
@@ -99,6 +99,9 @@ def mock_torch_modules() -> Generator[None, None, None]:
         "torch.nn.functional",
         "torchvision",
         "torchvision.transforms",
+        "loguru",
+        "video2d3d.utils",
+        "video2d3d.utils.logger",
     ]
 
     for mod in modules_to_mock:

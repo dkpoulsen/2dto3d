@@ -24,14 +24,14 @@ if TYPE_CHECKING:
     from collections.abc import Generator
 
 
-# BQ|from video2d3d.utils.gpu import (
-# QJ|    GPUConfig,
-# ZN|    GPUInfo,
-# RS|    compute_optimal_batch_size,
-# ZH|    get_gpu_info,
-# PJ|    get_memory_usage,
-# RK|    is_cuda_available,
-# RK|)
+from video2d3d.utils.gpu import (
+    GPUConfig,
+    GPUInfo,
+    compute_optimal_batch_size,
+    get_gpu_info,
+    get_memory_usage,
+    is_cuda_available,
+)
 from video2d3d.utils.logger import get_logger, log_exception
 from video2d3d.utils.memory_monitor import MemoryInfo, get_current_memory_info
 

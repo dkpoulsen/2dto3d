@@ -252,7 +252,11 @@ class TestTestJob:
         """Verify test job excludes slow and GPU tests by default."""
         steps = test_job["steps"]
         pytest_step = next(
-            (s for s in steps if "pytest" in str(s.get("run", "")).lower()),
+            (
+                s
+                for s in steps
+                if "pytest" in str(s.get("run", "")) and "--durations" in str(s.get("run", ""))
+            ),
             None,
         )
         assert pytest_step is not None

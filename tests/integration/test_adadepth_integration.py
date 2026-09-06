@@ -85,6 +85,10 @@ def mock_torch_modules() -> Generator[None, None, None]:
         "torchvision",
         "torchvision.transforms",
         "huggingface_hub",
+        "loguru",
+        "video2d3d.utils",
+        "video2d3d.utils.logger",
+        "video2d3d.utils.gpu",
     ]
 
     for mod in modules_to_mock:
@@ -94,7 +98,7 @@ def mock_torch_modules() -> Generator[None, None, None]:
     mock_torch = _create_mock_torch()
     mock_torch_nn = MagicMock()
     mock_torch_nn.functional = _create_mock_torch_nn_functional()
-    MagicMock()
+    mock_torchview = MagicMock()
     mock_torchview.transforms = MagicMock()
 
     sys.modules["torch"] = mock_torch

@@ -1,7 +1,3 @@
-import pytest
-
-pytestmark = pytest.mark.slow
-
 """Unit tests for batch video processing models.
 
 Tests cover:
@@ -13,6 +9,10 @@ Tests cover:
 """
 
 from __future__ import annotations
+
+import pytest
+
+pytestmark = pytest.mark.slow
 
 from datetime import datetime, timedelta
 from pathlib import Path

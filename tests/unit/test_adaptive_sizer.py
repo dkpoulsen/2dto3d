@@ -1,7 +1,3 @@
-import pytest
-
-pytestmark = pytest.mark.slow
-
 """Unit tests for adaptive batch sizing.
 
 Tests cover:
@@ -14,6 +10,10 @@ Tests cover:
 """
 
 from __future__ import annotations
+
+import pytest
+
+pytestmark = pytest.mark.slow
 
 import sys
 import threading

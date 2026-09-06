@@ -20,6 +20,7 @@ from fastapi.testclient import TestClient
 if TYPE_CHECKING:
     from collections.abc import Generator
 
+from video2d3d.web.exceptions import register_exception_handlers
 from video2d3d.web.routers import downloads
 from video2d3d.web.state import AppState
 
@@ -40,6 +41,7 @@ def mock_app_state(tmp_path: Path) -> Generator[AppState, None, None]:
 def app(mock_app_state: AppState) -> Generator[FastAPI, None, None]:
     """Create test FastAPI app with download router."""
     app = FastAPI()
+    register_exception_handlers(app)
 
     # Mock get_config
     with patch("video2d3d.web.routers.downloads.get_config") as mock_config:

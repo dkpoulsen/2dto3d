@@ -88,6 +88,9 @@ def mock_torch_modules() -> Generator[None, None, None]:
         "torch.nn.functional",
         "torchvision",
         "torchvision.transforms",
+        "loguru",
+        "video2d3d.utils",
+        "video2d3d.utils.logger",
     ]
 
     for mod in modules_to_mock:

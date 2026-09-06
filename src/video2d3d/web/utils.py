@@ -22,6 +22,9 @@ MIME_TYPES: dict[str, str] = {
     ".flv": "video/x-flv",
 }
 
+# Video extensions accepted for uploads and job submission.
+SUPPORTED_VIDEO_EXTENSIONS: set[str] = set(MIME_TYPES.keys())
+
 
 def get_content_type(extension: str) -> str:
     """Get MIME type for file extension.

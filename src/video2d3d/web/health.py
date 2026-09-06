@@ -25,6 +25,11 @@ from video2d3d.web.schemas import (
 if TYPE_CHECKING:
     from video2d3d.batch import BatchVideoQueue
 
+try:
+    import psutil
+except ImportError:
+    psutil = None  # type: ignore[assignment]
+
 logger = get_logger("web.health")
 
 # Memory thresholds for health status
@@ -45,9 +50,15 @@ def get_system_memory() -> SystemMemoryResponse:
     Returns:
         SystemMemoryResponse with memory statistics.
     """
+    if psutil is None:
+        logger.debug("psutil not available, returning default memory stats")
+        return SystemMemoryResponse(
+            total_mb=0.0,
+            available_mb=0.0,
+            used_mb=0.0,
+            utilization_percent=0.0,
+        )
     try:
-        import psutil
-
         memory = psutil.virtual_memory()
         total_mb = memory.total / BYTES_TO_MB
         available_mb = memory.available / BYTES_TO_MB
@@ -58,15 +69,6 @@ def get_system_memory() -> SystemMemoryResponse:
             available_mb=round(available_mb, 2),
             used_mb=round(used_mb, 2),
             utilization_percent=round(utilization, 2),
-        )
-    except ImportError:
-        # psutil not available, return default values
-        logger.debug("psutil not available, returning default memory stats")
-        return SystemMemoryResponse(
-            total_mb=0.0,
-            available_mb=0.0,
-            used_mb=0.0,
-            utilization_percent=0.0,
         )
     except Exception as e:
         logger.warning(f"Failed to get system memory: {e}")

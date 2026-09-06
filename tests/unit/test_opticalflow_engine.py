@@ -1,7 +1,3 @@
-import pytest
-
-pytestmark = pytest.mark.slow
-
 """Unit tests for optical flow engine module.
 
 Tests cover:
@@ -16,6 +12,10 @@ and require OpenCV/cv2 to be installed.
 """
 
 from __future__ import annotations
+
+import pytest
+
+pytestmark = pytest.mark.slow
 
 from typing import TYPE_CHECKING
 from unittest.mock import MagicMock, patch

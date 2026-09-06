@@ -16,6 +16,8 @@ import time
 from datetime import datetime, timezone
 from typing import TYPE_CHECKING, Any
 
+import psutil
+
 from video2d3d.crash.models import ActiveJobInfo, GPUInfo, MemoryInfo, ProcessInfo, SystemState
 
 if TYPE_CHECKING:
@@ -143,6 +145,7 @@ def get_process_info() -> ProcessInfo:
         with process.oneshot():
             # CPU and memory
             process_info.cpu_percent = process.cpu_percent(interval=None)  # Non-blocking
+            mem_info = process.memory_info()
             process_info.memory_rss_mb = mem_info.rss / (1024 * 1024)
             process_info.memory_vms_mb = mem_info.vms / (1024 * 1024)
 

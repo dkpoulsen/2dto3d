@@ -67,7 +67,12 @@ def hash_password(password: str) -> str:
     Returns:
         Hashed password string.
     """
-    return _pwd_context.hash(password)
+    return _pwd_context.hash(_truncate_for_bcrypt(password))
+
+
+def _truncate_for_bcrypt(password: str) -> str:
+    """Truncate a password to bcrypt's 72-byte limit."""
+    return password.encode("utf-8")[:72].decode("utf-8", errors="ignore")
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
@@ -80,7 +85,7 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
     Returns:
         True if password matches, False otherwise.
     """
-    return _pwd_context.verify(plain_password, hashed_password)
+    return _pwd_context.verify(_truncate_for_bcrypt(plain_password), hashed_password)
 
 
 def create_access_token(

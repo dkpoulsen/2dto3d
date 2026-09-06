@@ -1,7 +1,3 @@
-import pytest
-
-pytestmark = pytest.mark.slow
-
 """Unit tests for DIBR (Depth-Image-Based Rendering) engine.
 
 Tests cover:
@@ -16,6 +12,10 @@ Note: These tests rely on mocks set up in tests/conftest.py.
 """
 
 from __future__ import annotations
+
+import pytest
+
+pytestmark = pytest.mark.slow
 
 from typing import TYPE_CHECKING
 from unittest.mock import MagicMock, patch

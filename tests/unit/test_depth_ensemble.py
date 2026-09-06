@@ -94,6 +94,21 @@ def _create_mock_scipy() -> MagicMock:
 
 
 # Mock torch, torchvision, and scipy before importing the module
+_original_modules = {
+    mod: sys.modules[mod]
+    for mod in [
+        "torch",
+        "torch.nn",
+        "torch.nn.functional",
+        "torchvision",
+        "torchvision.transforms",
+        "scipy",
+        "scipy.ndimage",
+        "scipy.interpolate",
+        "scipy.signal",
+    ]
+    if mod in sys.modules
+}
 sys.modules["torch"] = _create_mock_torch()
 sys.modules["torch.nn"] = sys.modules["torch"].nn
 sys.modules["torch.nn.functional"] = sys.modules["torch"].functional
@@ -116,6 +131,24 @@ from video2d3d.depth.ensemble import (
     create_ensemble_predictor,
     estimate_depth_ensemble,
 )
+
+# Restore the real modules so other test files in this worker are unaffected
+for _mod, _val in _original_modules.items():
+    sys.modules[_mod] = _val
+for _mod in [
+    "torch",
+    "torch.nn",
+    "torch.nn.functional",
+    "torchvision",
+    "torchvision.transforms",
+    "scipy",
+    "scipy.ndimage",
+    "scipy.interpolate",
+    "scipy.signal",
+]:
+    if _mod in sys.modules and _mod not in _original_modules:
+        del sys.modules[_mod]
+import scipy  # noqa: F401 - ensure real scipy importable after restore
 
 
 class TestEnsembleMethod:
@@ -250,7 +283,7 @@ class TestCombinationMethods:
     def test_combine_weighted_average(self):
         """Test weighted average combination."""
         config = EnsembleConfig(models=["a", "b"], device="cpu")
-        predictor = EnsemblePredictor.__new__(config)
+        predictor = EnsemblePredictor.__new__(EnsemblePredictor)
         predictor._estimators = {}
         predictor._weights = [0.3, 0.7]
         predictor._logger = MagicMock()
@@ -267,7 +300,7 @@ class TestCombinationMethods:
     def test_combine_average(self):
         """Test simple average combination."""
         config = EnsembleConfig(models=["a", "b"], device="cpu")
-        predictor = EnsemblePredictor.__new__(config)
+        predictor = EnsemblePredictor.__new__(EnsemblePredictor)
         predictor._estimators = {}
         predictor._weights = [0.5, 0.5]
         predictor._logger = MagicMock()
@@ -283,7 +316,7 @@ class TestCombinationMethods:
     def test_combine_median(self):
         """Test median combination."""
         config = EnsembleConfig(models=["a", "b", "c"], device="cpu")
-        predictor = EnsemblePredictor.__new__(config)
+        predictor = EnsemblePredictor.__new__(EnsemblePredictor)
         predictor._estimators = {}
         predictor._weights = [1 / 3, 1 / 3, 1 / 3]
         predictor._logger = MagicMock()
@@ -300,7 +333,7 @@ class TestCombinationMethods:
     def test_combine_max(self):
         """Test max combination."""
         config = EnsembleConfig(models=["a", "b"], device="cpu")
-        predictor = EnsemblePredictor.__new__(config)
+        predictor = EnsemblePredictor.__new__(EnsemblePredictor)
         predictor._estimators = {}
         predictor._weights = [0.5, 0.5]
         predictor._logger = MagicMock()
@@ -315,7 +348,7 @@ class TestCombinationMethods:
     def test_combine_min(self):
         """Test min combination."""
         config = EnsembleConfig(models=["a", "b"], device="cpu")
-        predictor = EnsemblePredictor.__new__(config)
+        predictor = EnsemblePredictor.__new__(EnsemblePredictor)
         predictor._estimators = {}
         predictor._weights = [0.5, 0.5]
         predictor._logger = MagicMock()
@@ -355,7 +388,7 @@ class TestInputValidation:
     def test_invalid_input_type(self):
         """Test invalid input type."""
         config = EnsembleConfig(models=["model_a"], device="cpu")
-        predictor = EnsemblePredictor.__new__(config)
+        predictor = EnsemblePredictor.__new__(EnsemblePredictor)
         predictor._estimators = {}
         predictor._weights = [1.0]
         predictor._logger = MagicMock()
@@ -366,7 +399,7 @@ class TestInputValidation:
     def test_wrong_dimensions(self):
         """Test wrong dimensions (2D instead of 3D)."""
         config = EnsembleConfig(models=["model_a"], device="cpu")
-        predictor = EnsemblePredictor.__new__(config)
+        predictor = EnsemblePredictor.__new__(EnsemblePredictor)
         predictor._estimators = {}
         predictor._weights = [1.0]
         predictor._logger = MagicMock()
@@ -377,7 +410,7 @@ class TestInputValidation:
     def test_wrong_channels(self):
         """Test wrong number of channels."""
         config = EnsembleConfig(models=["model_a"], device="cpu")
-        predictor = EnsemblePredictor.__new__(config)
+        predictor = EnsemblePredictor.__new__(EnsemblePredictor)
         predictor._estimators = {}
         predictor._weights = [1.0]
         predictor._logger = MagicMock()
@@ -529,7 +562,7 @@ class TestCallableInterface:
     def test_callable(self):
         """Test __call__ method."""
         config = EnsembleConfig(models=["model_a"], device="cpu")
-        predictor = EnsemblePredictor.__new__(config)
+        predictor = EnsemblePredictor.__new__(EnsemblePredictor)
         predictor._estimators = {}
         predictor._weights = [1.0]
         predictor._logger = MagicMock()

@@ -41,6 +41,12 @@ from video2d3d.web.schemas import (
     ThumbnailFrameResponse,
     ThumbnailGridResponse,
 )
+from video2d3d.web.state import app_state
+from video2d3d.web.utils import (
+    SUPPORTED_VIDEO_EXTENSIONS,
+    find_file_by_id,
+    validate_file_id,
+)
 
 logger = get_logger("web.jobs")
 

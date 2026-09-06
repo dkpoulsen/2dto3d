@@ -1,7 +1,3 @@
-import pytest
-
-pytestmark = pytest.mark.slow
-
 """Unit tests for DepthModelSelector module.
 
 Tests cover:
@@ -18,6 +14,10 @@ Note: These tests mock torch before importing the depth module.
 """
 
 from __future__ import annotations
+
+import pytest
+
+pytestmark = pytest.mark.slow
 
 import sys
 from typing import TYPE_CHECKING
@@ -99,6 +99,10 @@ def mock_torch_modules() -> Generator[None, None, None]:
         "torchvision",
         "torchvision.transforms",
         "huggingface_hub",
+        "loguru",
+        "video2d3d.utils",
+        "video2d3d.utils.logger",
+        "video2d3d.utils.gpu",
     ]
 
     for mod in modules_to_mock:

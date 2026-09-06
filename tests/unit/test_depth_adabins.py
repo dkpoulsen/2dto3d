@@ -93,6 +93,10 @@ def mock_torch_modules() -> Generator[None, None, None]:
         "torchvision",
         "torchvision.transforms",
         "huggingface_hub",
+        "loguru",
+        "video2d3d.utils",
+        "video2d3d.utils.logger",
+        "video2d3d.utils.gpu",
     ]
 
     for mod in modules_to_mock:

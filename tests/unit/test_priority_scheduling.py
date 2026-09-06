@@ -1,7 +1,3 @@
-import pytest
-
-pytestmark = pytest.mark.slow
-
 """Unit tests for priority-based job scheduling functionality.
 
 Tests cover:
@@ -14,6 +10,10 @@ Tests cover:
 """
 
 from __future__ import annotations
+
+import pytest
+
+pytestmark = pytest.mark.slow
 
 from datetime import datetime, timedelta
 from pathlib import Path

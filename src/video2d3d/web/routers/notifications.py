@@ -23,7 +23,7 @@ from video2d3d.web.notification_models import (
     WebhookConfig,
 )
 
-router = APIRouter(prefix="/notifications", tags=["Notifications"])
+router = APIRouter(tags=["Notifications"])
 
 
 def _notification_to_response(notification: Notification) -> NotificationResponse:

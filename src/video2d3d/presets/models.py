@@ -178,6 +178,15 @@ class QualitySettings:
         """Convert to dictionary for serialization."""
         return asdict(self)
 
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> QualitySettings:
+        """Create from dictionary."""
+        return cls(
+            preset=data.get("preset", "balanced"),
+            post_processing=data.get("post_processing", True),
+            calculate_metrics=data.get("calculate_metrics", False),
+        )
+
 
 @dataclass
 class DepthCurveSettings:
