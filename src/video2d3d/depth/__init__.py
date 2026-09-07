@@ -320,6 +320,8 @@ class DepthEstimator:
 
         # Ensure directory exists
         hub_dir.mkdir(parents=True, exist_ok=True)
+        # Point torch hub at the resolved directory
+        torch.hub.set_dir(str(hub_dir))
         return hub_dir
 
     def load_model(self) -> None:

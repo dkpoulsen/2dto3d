@@ -50,7 +50,7 @@ _DEFAULT_MODEL_LOAD_TIMEOUT: float = 60.0
 _DEFAULT_SCENE_CONFIDENCE_THRESHOLD: float = 0.7
 
 
-class DepthModelType(Enum):
+class DepthModelType(str, Enum):
     """Available depth estimation model types."""
 
     MIDAS_SMALL = "midas_small"
@@ -502,6 +502,16 @@ class DepthModelSelector:
             ModelInferenceError: If all models fail.
         """
         start_time = time.time()
+
+        # Honor explicitly-selected active model (e.g. set by the caller)
+        if self._active_model is not None:
+            estimator = self._get_estimator(self._active_model)
+            depth_map = estimator.estimate_depth(frame)
+            self._logger.debug(
+                f"Depth estimation completed with {self._active_model.value} "
+                f"in {(time.time() - start_time) * 1000:.2f}ms"
+            )
+            return depth_map
 
         # Determine scene type if needed
         if self.config.enable_scene_adaptation and scene_type is None:

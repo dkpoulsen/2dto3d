@@ -30,7 +30,9 @@ def _create_mock_torch() -> MagicMock:
     mock.hub.get_dir.return_value = "/tmp/torch_hub"
     mock.hub.set_dir = MagicMock()
     mock.hub.load = MagicMock()
-    mock.no_grad = MagicMock(return_value=MagicMock(__enter__=MagicMock(), __exit__=MagicMock()))
+    mock.no_grad = MagicMock(
+        return_value=MagicMock(__enter__=MagicMock(), __exit__=MagicMock(return_value=False))
+    )
     mock.backends.cudnn.benchmark = False
 
     mock_tensor = MagicMock()
@@ -98,6 +100,8 @@ def mock_torch_modules() -> Generator[None, None, None]:
     mock_torch = _create_mock_torch()
     mock_torch_nn = MagicMock()
     mock_torch_nn.functional = _create_mock_torch_nn_functional()
+    mock_torch.nn = mock_torch_nn
+    mock_torch.nn.functional = mock_torch_nn.functional
     mock_torchview = MagicMock()
     mock_torchview.transforms = MagicMock()
 
@@ -300,7 +304,19 @@ class TestZoeDepthBatchProcessingIntegration:
         estimator = ZoeDepthEstimator()
 
         mock_model = MagicMock()
-        mock_model.infer.return_value = MagicMock()
+        mock_prediction = MagicMock()
+        mock_prediction.dim.return_value = 3
+        mock_prediction.squeeze.return_value = MagicMock(
+            cpu=MagicMock(
+                return_value=MagicMock(numpy=MagicMock(return_value=np.zeros((100, 100), dtype=np.float32)))
+            )
+        )
+        batch_sizes = iter([4, 1])
+
+        def infer_side_effect(_tensor):
+            return [mock_prediction] * next(batch_sizes)
+
+        mock_model.infer.side_effect = infer_side_effect
         mock_model.to.return_value = mock_model
         mock_model.eval.return_value = mock_model
 
@@ -322,7 +338,19 @@ class TestZoeDepthBatchProcessingIntegration:
         estimator = ZoeDepthEstimator(auto_batch_size=False)
 
         mock_model = MagicMock()
-        mock_model.infer.return_value = MagicMock()
+        mock_prediction = MagicMock()
+        mock_prediction.dim.return_value = 3
+        mock_prediction.squeeze.return_value = MagicMock(
+            cpu=MagicMock(
+                return_value=MagicMock(numpy=MagicMock(return_value=np.zeros((100, 100), dtype=np.float32)))
+            )
+        )
+        batch_sizes = iter([3, 3, 3, 1])
+
+        def infer_side_effect(_tensor):
+            return [mock_prediction] * next(batch_sizes)
+
+        mock_model.infer.side_effect = infer_side_effect
         mock_model.to.return_value = mock_model
         mock_model.eval.return_value = mock_model
 
@@ -341,7 +369,7 @@ class TestZoeDepthModelSelectorIntegration:
 
     def test_selector_creates_zoedepth_estimator(self, mock_torch_modules: None) -> None:
         """Test model selector can create ZoeDepth estimators."""
-        from video2d3d.depth.model_selector import DepthModelSelector
+        from video2d3d.depth.model_selector import DepthModelSelector, DepthModelType
 
         selector = DepthModelSelector()
 
@@ -354,7 +382,7 @@ class TestZoeDepthModelSelectorIntegration:
         self, mock_torch_modules: None, sample_rgb_image: np.ndarray
     ) -> None:
         """Test model selector can estimate depth using ZoeDepth."""
-        from video2d3d.depth.model_selector import DepthModelSelector
+        from video2d3d.depth.model_selector import DepthModelSelector, DepthModelType
 
         selector = DepthModelSelector()
 
@@ -371,7 +399,7 @@ class TestZoeDepthModelSelectorIntegration:
 
     def test_selector_all_three_zoedepth_variants(self, mock_torch_modules: None) -> None:
         """Test model selector supports all three ZoeDepth variants."""
-        from video2d3d.depth.model_selector import DepthModelSelector
+        from video2d3d.depth.model_selector import DepthModelSelector, DepthModelType
 
         selector = DepthModelSelector()
 
