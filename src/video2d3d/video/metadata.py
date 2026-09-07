@@ -69,6 +69,27 @@ class VideoMetadata:
         """Return video resolution as (width, height) tuple."""
         return (self.width, self.height)
 
+    def to_dict(self) -> dict:
+        """Serialize metadata to a dictionary."""
+        return {
+            "file_path": str(self.file_path),
+            "width": self.width,
+            "height": self.height,
+            "fps": self.fps,
+            "frame_count": self.frame_count,
+            "duration": self.duration,
+            "codec": self.codec,
+            "format": self.format,
+            "bitrate": self.bitrate,
+            "has_audio": self.has_audio,
+            "audio_codec": self.audio_codec,
+            "audio_sample_rate": self.audio_sample_rate,
+            "audio_channels": self.audio_channels,
+            "file_size": self.file_size,
+            "is_valid": self.is_valid,
+            "validation_errors": list(self.validation_errors),
+        }
+
     @property
     def aspect_ratio(self) -> float:
         """Calculate and return the aspect ratio."""

@@ -117,6 +117,11 @@ class DepthCurveConfig:
         if len(self.control_points) < 2:
             raise ValueError(f"Must have at least 2 control points, got {len(self.control_points)}")
 
+        # Ensure x values are strictly increasing before sorting
+        xs = [p.x for p in self.control_points]
+        if any(b <= a for a, b in zip(xs, xs[1:])):
+            raise ValueError("x values must be strictly increasing")
+
         # Sort points by x coordinate
         self.control_points = sorted(self.control_points, key=lambda p: p.x)
 

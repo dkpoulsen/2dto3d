@@ -82,6 +82,7 @@ class TestConfigDataclasses:
         assert "avi" in video_in.supported_formats
 
     def test_video_output_config_defaults(self):
+        video_out = VideoOutputConfig()
         assert video_out.codec == "libx264"
         assert video_out.crf == 23
 
@@ -124,7 +125,7 @@ class TestProgressTrackingConfig:
         assert progress.show_percent is False
         assert progress.show_overall is False
         assert progress.refresh_rate == 0.5
-        assert isinstance(config.progress, ProgressTrackingConfig)
+        assert isinstance(progress, ProgressTrackingConfig)
 
 
 class TestRateLimitConfig:

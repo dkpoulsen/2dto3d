@@ -131,6 +131,12 @@ class AudioMetadata:
     total_duration: float = 0.0
     overall_bitrate: int = 0
 
+    def __post_init__(self) -> None:
+        """Derive track_count from tracks when not explicitly provided."""
+        if not self.track_count:
+            self.track_count = len(self.tracks)
+
+
     @classmethod
     def extract_from_video(cls, video_path: Path | str) -> AudioMetadata:
         """Extract audio metadata from a video file using FFprobe.

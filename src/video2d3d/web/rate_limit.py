@@ -42,6 +42,7 @@ except ImportError:
 
 from video2d3d.utils.config import get_config
 from video2d3d.utils.logger import get_logger
+from video2d3d.web.state import app_state
 
 logger = get_logger("web.rate_limit")
 
@@ -219,8 +220,6 @@ def get_limiter() -> Limiter | None:
     Returns:
         Limiter instance if configured, None otherwise.
     """
-    from video2d3d.web.state import app_state
-
     # Check if app has limiter in state using getattr with default
     return getattr(app_state, "limiter", None)
 

@@ -237,6 +237,7 @@ class TemporalSmoother:
         *,
         method: str = "ema",
         smoothing_factor: float = _DEFAULT_SMOOTHING_FACTOR,
+        window_size: int | None = None,
     ) -> None:
         """Initialize the temporal smoother.
 
@@ -244,14 +245,18 @@ class TemporalSmoother:
             config: TemporalSmoothingConfig object. If provided, other args ignored.
             method: Smoothing method ('ema', 'optical_flow', 'sliding_window', 'none').
             smoothing_factor: Weight for current frame (0-1).
+            window_size: Sliding window size (ignored if config is provided).
         """
         if config is not None:
             self.config = config
         else:
-            self.config = TemporalSmoothingConfig(
-                method=method,
-                smoothing_factor=smoothing_factor,
-            )
+            kwargs = {
+                "method": method,
+                "smoothing_factor": smoothing_factor,
+            }
+            if window_size is not None:
+                kwargs["window_size"] = window_size
+            self.config = TemporalSmoothingConfig(**kwargs)
 
         self.state = TemporalState(depth_history=deque(maxlen=self.config.window_size))
         self._logger = _get_temporal_logger()
