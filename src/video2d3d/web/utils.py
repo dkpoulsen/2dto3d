@@ -140,8 +140,8 @@ def find_file_by_id(
         if not file_path.is_file():
             continue
 
-        # Check if stem matches file_id
-        if file_path.stem == file_id:
+        # Check if name starts with file_id (ID-prefixed) or stem matches exactly
+        if file_path.name.startswith(f"{file_id}_") or file_path.stem == file_id:
             if extensions is None or file_path.suffix.lower() in extensions:
                 return file_path
 

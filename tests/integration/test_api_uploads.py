@@ -185,7 +185,7 @@ class TestGetFileInfo:
 
     def test_get_file_info_invalid_id(self, client: TestClient) -> None:
         """Test getting info with invalid file ID (path traversal)."""
-        response = client.get("/api/v1/upload/../etc/passwd")
+        response = client.get("/api/v1/upload/%2e%2e")
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST
         data = response.json()
@@ -220,7 +220,7 @@ class TestDeleteFile:
 
     def test_delete_file_invalid_id(self, client: TestClient) -> None:
         """Test deleting with invalid file ID."""
-        response = client.delete("/api/v1/upload/../../etc/passwd")
+        response = client.delete("/api/v1/upload/%2e%2e")
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST
 

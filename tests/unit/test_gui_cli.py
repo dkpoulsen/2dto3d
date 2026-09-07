@@ -153,4 +153,4 @@ class TestCLIGUIIntegration:
 
         # Test that we can get registered commands
         # The typer app should have multiple commands registered
-        assert app.info.commands is not None
+        assert app.registered_commands is not None

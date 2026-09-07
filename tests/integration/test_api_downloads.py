@@ -124,7 +124,7 @@ class TestDownloadFile:
 
     def test_download_file_invalid_id(self, client: TestClient) -> None:
         """Test downloading with invalid file ID (path traversal)."""
-        response = client.get("/api/v1/download/../etc/passwd")
+        response = client.get("/api/v1/download/%2e%2e")
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST
         data = response.json()
@@ -169,7 +169,7 @@ class TestGetDownloadInfo:
 
     def test_get_download_info_invalid_id(self, client: TestClient) -> None:
         """Test getting info with invalid file ID."""
-        response = client.get("/api/v1/download/../../../etc/passwd/info")
+        response = client.get("/api/v1/download/%2e%2e/info")
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST
 
@@ -255,7 +255,7 @@ class TestDeleteDownload:
 
     def test_delete_download_invalid_id(self, client: TestClient) -> None:
         """Test deleting with invalid file ID."""
-        response = client.delete("/api/v1/download/../../etc/passwd")
+        response = client.delete("/api/v1/download/%2e%2e")
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST
 
@@ -269,7 +269,7 @@ class TestDownloadSecurity:
         (mock_app_state.output_dir / "safe.mp4").write_bytes(b"content")
 
         # Try to access a file outside output directory
-        response = client.get("/api/v1/download/../../../etc/passwd")
+        response = client.get("/api/v1/download/%2e%2e")
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST
 
