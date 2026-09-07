@@ -121,9 +121,7 @@ class Notification:
         if self.expires_at is None:
             return False
         now = (
-            datetime.now(timezone.utc)
-            if self.expires_at.tzinfo is not None
-            else datetime.utcnow()
+            datetime.now(timezone.utc) if self.expires_at.tzinfo is not None else datetime.utcnow()
         )
         return now > self.expires_at
 
