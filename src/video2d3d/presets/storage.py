@@ -49,8 +49,12 @@ class PresetStorage:
             presets_dir = project_root / "presets"
 
         if builtin_presets_dir is None:
-            # Default to 'builtins' subdirectory in presets module
-            builtin_presets_dir = Path(__file__).parent / "builtins"
+            if presets_dir is not None:
+                # Custom user directory: keep built-ins alongside it
+                builtin_presets_dir = Path(presets_dir) / "builtins"
+            else:
+                # Default to 'builtins' subdirectory in presets module
+                builtin_presets_dir = Path(__file__).parent / "builtins"
 
         self.presets_dir = Path(presets_dir)
         self.builtin_presets_dir = Path(builtin_presets_dir)
@@ -127,8 +131,9 @@ class PresetStorage:
                 prefix=f".{file_path.stem}_",
                 suffix=".tmp",
             )
+            os.close(temp_fd)
             try:
-                with os.fdopen(temp_fd, "w", encoding="utf-8") as f:
+                with open(temp_path, "w", encoding="utf-8") as f:
                     f.write(content)
                 # Atomic rename (on POSIX systems)
                 os.replace(temp_path, file_path)
@@ -159,7 +164,7 @@ class PresetStorage:
                     with open(file_path, encoding="utf-8") as f:
                         data = json.load(f)
                     preset = Preset.from_dict(data)
-                    preset.is_builtin = builtin
+                    preset.is_builtin = builtin or bool(data.get("is_builtin", False))
                     logger.debug(f"Loaded preset '{preset.name}' from {file_path}")
                     return preset
 
@@ -278,6 +283,8 @@ class PresetStorage:
             raise PresetStorageError(f"Preset '{preset_id}' not found")
 
         try:
+            export_path = Path(export_path)
+            export_path.parent.mkdir(parents=True, exist_ok=True)
             with open(export_path, "w", encoding="utf-8") as f:
                 json.dump(preset.to_dict(), f, indent=2)
 
@@ -337,12 +344,13 @@ class PresetStorage:
         Returns:
             Path to the backup.
         """
-        if backup_path.is_dir():
-            # Copy entire presets directory
-            shutil.copytree(self.presets_dir, backup_path / "presets", dirs_exist_ok=True)
-        else:
+        if backup_path.suffix.lower() == ".zip" or str(backup_path).endswith(".zip"):
             # Create archive
             shutil.make_archive(str(backup_path), "zip", self.presets_dir)
+        else:
+            # Copy entire presets directory
+            backup_path.mkdir(parents=True, exist_ok=True)
+            shutil.copytree(self.presets_dir, backup_path / "presets", dirs_exist_ok=True)
 
         logger.info(f"Created preset backup at {backup_path}")
         return backup_path

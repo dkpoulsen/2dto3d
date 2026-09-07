@@ -277,6 +277,7 @@ class TestPresetStorageList:
         presets_dir = tmp_path / "presets"
         builtin_dir = tmp_path / "builtins"
         builtin_dir.mkdir(parents=True)
+        presets_dir.mkdir(parents=True)
 
         # Create user preset
         user_preset = Preset(id="user-1", name="User Preset")

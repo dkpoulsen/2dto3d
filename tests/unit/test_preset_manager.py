@@ -9,6 +9,7 @@ This module tests the PresetManager class including:
 
 from pathlib import Path
 
+import json
 import pytest
 
 from video2d3d.presets.manager import PresetManager, PresetManagerError, get_preset_manager
@@ -207,12 +208,13 @@ class TestPresetManagerUpdate:
     def test_update_builtin_raises_error(self, tmp_path: Path):
         """Test updating built-in preset raises error."""
         manager = PresetManager(presets_dir=tmp_path / "presets")
-        # Create a preset and mark as built-in
+        # Create a preset and persist it as built-in directly in storage
         preset = manager.create(name="Built-in Test")
-        # Manually mark as builtin in storage
-        loaded = manager.get(preset.id)
-        loaded.is_builtin = True
-        manager.storage.save = lambda p: None  # Mock save to prevent overwrite
+        file_path = manager.storage.presets_dir / f"{preset.id}.json"
+        data = json.loads(file_path.read_text())
+        data["is_builtin"] = True
+        file_path.write_text(json.dumps(data))
+        manager._invalidate_cache()
 
         with pytest.raises(PresetManagerError, match="Cannot update built-in preset"):
             manager.update(preset.id, name="New Name")
