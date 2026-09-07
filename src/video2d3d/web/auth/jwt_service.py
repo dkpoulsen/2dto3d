@@ -9,6 +9,7 @@ This module provides functions for:
 from __future__ import annotations
 
 import os
+import uuid
 from datetime import datetime, timedelta, timezone
 
 from jose import JWTError, jwt
@@ -120,6 +121,7 @@ def create_access_token(
         "type": "access",
         "exp": expire,
         "iat": now,
+        "jti": uuid.uuid4().hex,
     }
 
     return jwt.encode(payload, config.secret_key, algorithm=config.algorithm)
@@ -157,6 +159,7 @@ def create_refresh_token(
         "type": "refresh",
         "exp": expire,
         "iat": now,
+        "jti": uuid.uuid4().hex,
     }
 
     return jwt.encode(payload, config.secret_key, algorithm=config.algorithm)
@@ -238,6 +241,8 @@ def authenticate_user(username_or_email: str, password: str) -> UserModel | None
         # Update last login
         user.last_login = datetime.now(timezone.utc)
         session.commit()
+        # Reload attributes so the instance stays usable after the session closes
+        session.refresh(user)
 
         return user
 
