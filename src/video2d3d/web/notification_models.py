@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import re
 import uuid
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from enum import Enum
 from typing import Any
 from urllib.parse import urlparse
@@ -42,6 +42,8 @@ class NotificationPriority(str, Enum):
 # Domain Model (internal)
 # ============================================================================
 
+_UNSET: Any = object()  # Sentinel distinguishing "not provided" from None
+
 
 class Notification:
     """In-memory notification model with serialization support.
@@ -61,7 +63,7 @@ class Notification:
         data: dict[str, Any] | None = None,
         read: bool = False,
         dismissed: bool = False,
-        created_at: datetime | None = None,
+        created_at: Any = _UNSET,
         expires_at: datetime | None = None,
     ) -> None:
         self.notification_id = notification_id or str(uuid.uuid4())
@@ -73,7 +75,7 @@ class Notification:
         self.data = data or {}
         self.read = read
         self.dismissed = dismissed
-        self.created_at = created_at or datetime.now(UTC)
+        self.created_at = datetime.now(timezone.utc) if created_at is _UNSET else created_at
         self.expires_at = expires_at
 
     def to_dict(self) -> dict[str, Any]:
@@ -118,7 +120,12 @@ class Notification:
         """Check if notification has expired."""
         if self.expires_at is None:
             return False
-        return datetime.now(UTC) > self.expires_at
+        now = (
+            datetime.now(timezone.utc)
+            if self.expires_at.tzinfo is not None
+            else datetime.utcnow()
+        )
+        return now > self.expires_at
 
 
 # ============================================================================
