@@ -6,6 +6,8 @@ and FastAPI exception handlers to convert them to proper HTTP responses.
 
 from __future__ import annotations
 
+HTTP_400_BAD_REQUEST = 400
+
 from typing import Any
 
 from fastapi import HTTPException, Request, status
@@ -171,9 +173,9 @@ class JobNotRetryableError(APIError):
     ) -> None:
         super().__init__(
             message=reason,
-            status_code=status.HTTP_400_BAD_REQUEST,
+            status_code=HTTP_400_BAD_REQUEST,
             error_type="job_not_retryable",
-            detail={"job_id": job_id, "status": status},
+            detail={"job_id": job_id, "status": str(status)},
         )
 
 
@@ -188,9 +190,9 @@ class JobNotCancellableError(APIError):
     ) -> None:
         super().__init__(
             message=reason,
-            status_code=status.HTTP_400_BAD_REQUEST,
+            status_code=HTTP_400_BAD_REQUEST,
             error_type="job_not_cancellable",
-            detail={"job_id": job_id, "status": status},
+            detail={"job_id": job_id, "status": str(status)},
         )
 
 

@@ -91,10 +91,11 @@ async def get_notification_counts() -> NotificationCountResponse:
     manager = get_notification_manager()
     notifications, total, unread = manager.get_notifications(
         include_read=True,
-        include_dismissed=False,
+        include_dismissed=True,
     )
 
     dismissed = sum(1 for n in notifications if n.dismissed)
+    unread = sum(1 for n in notifications if not n.read and not n.dismissed)
 
     return NotificationCountResponse(
         total=total,
@@ -103,6 +104,53 @@ async def get_notification_counts() -> NotificationCountResponse:
     )
 
 
+# Webhook management endpoints
+
+
+@router.post(
+    "/webhooks",
+    status_code=status.HTTP_201_CREATED,
+    summary="Add webhook configuration",
+    description="Add a new webhook configuration for notifications.",
+)
+async def add_webhook(config: WebhookConfig) -> dict:
+    """Add a webhook configuration."""
+    manager = get_notification_manager()
+    manager.add_webhook_config(config)
+    return {"message": "Webhook configuration added", "url": config.url}
+
+
+@router.get(
+    "/webhooks",
+    response_model=list[WebhookConfig],
+    summary="List webhook configurations",
+    description="Get all webhook configurations.",
+)
+async def list_webhooks() -> list[WebhookConfig]:
+    """List all webhook configurations."""
+    manager = get_notification_manager()
+    return manager.get_webhook_configs()
+
+
+@router.delete(
+    "/webhooks",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Remove webhook configuration",
+    description="Remove a webhook configuration by URL.",
+)
+async def remove_webhook(url: str = Query(..., description="Webhook URL to remove")) -> None:
+    """Remove a webhook configuration."""
+    manager = get_notification_manager()
+    removed = manager.remove_webhook_config(url)
+
+    if not removed:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Webhook configuration for {url} not found",
+        )
+
+
+__all__ = ["router"]
 @router.get(
     "/{notification_id}",
     response_model=NotificationResponse,
@@ -204,50 +252,3 @@ async def clear_all_notifications() -> None:
     manager.clear_all()
 
 
-# Webhook management endpoints
-
-
-@router.post(
-    "/webhooks",
-    status_code=status.HTTP_201_CREATED,
-    summary="Add webhook configuration",
-    description="Add a new webhook configuration for notifications.",
-)
-async def add_webhook(config: WebhookConfig) -> dict:
-    """Add a webhook configuration."""
-    manager = get_notification_manager()
-    manager.add_webhook_config(config)
-    return {"message": "Webhook configuration added", "url": config.url}
-
-
-@router.get(
-    "/webhooks",
-    response_model=list[WebhookConfig],
-    summary="List webhook configurations",
-    description="Get all webhook configurations.",
-)
-async def list_webhooks() -> list[WebhookConfig]:
-    """List all webhook configurations."""
-    manager = get_notification_manager()
-    return manager.get_webhook_configs()
-
-
-@router.delete(
-    "/webhooks",
-    status_code=status.HTTP_204_NO_CONTENT,
-    summary="Remove webhook configuration",
-    description="Remove a webhook configuration by URL.",
-)
-async def remove_webhook(url: str = Query(..., description="Webhook URL to remove")) -> None:
-    """Remove a webhook configuration."""
-    manager = get_notification_manager()
-    removed = manager.remove_webhook_config(url)
-
-    if not removed:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Webhook configuration for {url} not found",
-        )
-
-
-__all__ = ["router"]

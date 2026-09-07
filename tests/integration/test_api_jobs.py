@@ -227,6 +227,9 @@ class TestGetJob:
         mock_job.retry_count = 0
         mock_job.result = None
         mock_job.config = {}
+        mock_job.scheduled_at = None
+        mock_job.depends_on = []
+        mock_job.dependent_jobs = []
         mock_queue.get_job.return_value = mock_job
 
         response = client.get("/api/v1/jobs/test-job-id")
@@ -282,6 +285,9 @@ class TestListJobs:
             job.retry_count = 0
             job.result = None
             job.config = {}
+            job.scheduled_at = None
+            job.depends_on = []
+            job.dependent_jobs = []
             mock_jobs.append(job)
 
         mock_queue.get_all_jobs.return_value = mock_jobs
@@ -322,8 +328,7 @@ class TestCancelJob:
         """Test successful job cancellation."""
         mock_job = MagicMock(spec=BatchJob)
         mock_job.job_id = "test-job-id"
-        mock_job.status = JobStatus.RUNNING
-        mock_job.status.is_terminal = False
+        mock_job.status = MagicMock(is_terminal=False)
         mock_queue.get_job.return_value = mock_job
         mock_queue.cancel_job.return_value = True
 
@@ -346,8 +351,7 @@ class TestCancelJob:
         """Test cancelling a completed job fails."""
         mock_job = MagicMock(spec=BatchJob)
         mock_job.job_id = "test-job-id"
-        mock_job.status = JobStatus.COMPLETED
-        mock_job.status.is_terminal = True
+        mock_job.status = MagicMock(is_terminal=True)
         mock_queue.get_job.return_value = mock_job
 
         response = client.post("/api/v1/jobs/test-job-id/cancel")
@@ -710,7 +714,7 @@ class TestSubmitJobWithDepthCurve:
         call_args = mock_queue.add_job.call_args
         assert call_args is not None
         job_config = call_args.kwargs.get(
-            "job_config", call_args.args[2] if len(call_args.args) > 2 else {}
+            "config", call_args.args[2] if len(call_args.args) > 2 else {}
         )
         assert "depth_focus" in job_config
         assert job_config["depth_focus"]["enabled"] is True
@@ -750,7 +754,7 @@ class TestSubmitJobWithDepthCurve:
         call_args = mock_queue.add_job.call_args
         assert call_args is not None
         job_config = call_args.kwargs.get(
-            "job_config", call_args.args[2] if len(call_args.args) > 2 else {}
+            "config", call_args.args[2] if len(call_args.args) > 2 else {}
         )
 
         # Both depth_focus and depth_curve should be present

@@ -136,8 +136,8 @@ def job_to_response(job) -> JobResponse:
         result=result_response,
         config=job.config,
         scheduled_at=job.scheduled_at,
-        depends_on=job.depends_on,
-        dependent_jobs=job.dependent_jobs,
+        depends_on=getattr(job, "depends_on", None),
+        dependent_jobs=getattr(job, "dependent_jobs", []),
     )
 
 

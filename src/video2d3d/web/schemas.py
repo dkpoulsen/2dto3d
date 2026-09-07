@@ -545,8 +545,8 @@ class JobResponse(BaseModel):
         description="Current processing stage (e.g., 'extracting_frames', 'depth_estimation', 'stereo_generation', 'encoding').",
         examples=["depth_estimation"],
     )
-    created_at: datetime = Field(
-        ...,
+    created_at: datetime | None = Field(
+        None,
         description="UTC timestamp when the job was created.",
     )
     started_at: datetime | None = Field(
