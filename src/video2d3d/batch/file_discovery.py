@@ -73,6 +73,9 @@ class FileDiscovery:
                 root_path = Path(root)
 
                 depth = len(root_path.relative_to(directory).parts)
+                if not self.config.recursive and depth > 0:
+                    dirs.clear()
+                    continue
                 if depth > self.config.max_depth:
                     dirs.clear()
                     continue
@@ -153,7 +156,7 @@ class FileDiscovery:
         """
         pattern_path = Path(pattern)
 
-        if pattern.is_absolute() or base_dir is None:
+        if pattern_path.is_absolute() or base_dir is None:
             base = pattern_path.parent if pattern_path.parent.exists() else Path(".")
             glob_pattern = pattern_path.name
         else:

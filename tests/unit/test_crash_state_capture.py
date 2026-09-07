@@ -379,7 +379,7 @@ class TestCaptureSystemState:
 
         assert isinstance(state, SystemState)
         assert state.active_jobs == []
-        assert state.queue_stats == {}
+        assert state.queue_stats == {"total": 0}
 
     def test_capture_with_app_info(self) -> None:
         """Test system state capture with application info."""

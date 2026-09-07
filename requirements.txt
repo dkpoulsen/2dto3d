@@ -10,6 +10,7 @@ ffmpeg-python>=0.2.0
 # Deep Learning Frameworks
 torch>=1.9.0
 torchvision>=0.10.0
+onnxruntime>=1.14.0
 # tensorflow>=2.8.0  # Optional: uncomment if using TensorFlow models
 
 # Depth Estimation Models

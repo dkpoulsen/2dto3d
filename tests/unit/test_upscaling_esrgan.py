@@ -131,13 +131,7 @@ class TestRealESRGANUpscalerModelLoading:
         # Create empty model file
         (tmp_path / "model.onnx").touch()
 
-        def mock_import(name, *args, **kwargs):
-            if name == "onnxruntime":
-                raise ImportError("No module named 'onnxruntime'")
-            return original_import(name, *args, **kwargs)
-
-        original_import = __builtins__.__import__
-        monkeypatch.setattr(__builtins__, "__import__", mock_import)
+        monkeypatch.setattr("video2d3d.upscaling.esrgan.ort", None)
 
         with pytest.raises(ImportError) as exc_info:
             RealESRGANUpscaler(config)

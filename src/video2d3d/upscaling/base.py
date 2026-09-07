@@ -96,8 +96,11 @@ class BaseUpscaler(ABC):
         self._is_loaded = False
         self._model_info = config.model_info
 
-        # Initialize model
-        self._load_model()
+        # Initialize model (a load failure defers the error to upscale())
+        try:
+            self._load_model()
+        except ModelLoadError:
+            self._is_loaded = False
 
     @abstractmethod
     def _load_model(self) -> None:
@@ -277,11 +280,11 @@ class BaseUpscaler(ABC):
                 # Upscale tile
                 upscaled_tile = self._upscale_image(tile)
 
-                # Calculate output boundaries
-                out_top = (top - tile_top + top_pad) * scale
-                out_left = (left - tile_left + left_pad) * scale
-                out_bottom = (bottom - tile_top + top_pad) * scale
-                out_right = (right - tile_left + left_pad) * scale
+                # Calculate output boundaries (valid region within upscaled tile)
+                out_top = (top - tile_top) * scale
+                out_left = (left - tile_left) * scale
+                out_bottom = (bottom - tile_top) * scale
+                out_right = (right - tile_left) * scale
 
                 # Calculate destination in output
                 dst_top = top * scale
