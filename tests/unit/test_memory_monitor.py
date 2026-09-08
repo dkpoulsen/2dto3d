@@ -24,22 +24,23 @@ if TYPE_CHECKING:
 
 @pytest.fixture(autouse=True)
 def reset_memory_monitor_singleton() -> Generator[None, None, None]:
-    """Reset MemoryMonitor singleton before and after each test."""
-    # Reset before test
+    """Reset MemoryMonitor singleton before and after each test.
+
+    Only the singleton is reset. The module is deliberately NOT removed
+    from ``sys.modules``: purging it can race with ``patch()`` by string
+    target and yield an unpatched fresh module in the test body.
+    """
     if "video2d3d.utils.memory_monitor" in sys.modules:
         from video2d3d.utils.memory_monitor import MemoryMonitor
 
         MemoryMonitor.reset_instance()
-        del sys.modules["video2d3d.utils.memory_monitor"]
 
     yield
 
-    # Reset after test
     if "video2d3d.utils.memory_monitor" in sys.modules:
         from video2d3d.utils.memory_monitor import MemoryMonitor
 
         MemoryMonitor.reset_instance()
-        del sys.modules["video2d3d.utils.memory_monitor"]
 
 
 @pytest.fixture
