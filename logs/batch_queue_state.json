@@ -1,0 +1,57 @@
+{
+  "jobs": [],
+  "saved_at": "2026-09-08T11:09:10.446884",
+  "config": {
+    "max_concurrent_jobs": 1,
+    "default_priority": 5,
+    "auto_start": true,
+    "retry_failed": true,
+    "max_retries": 3,
+    "retry_delay_seconds": 5.0,
+    "job_timeout_seconds": 3600.0,
+    "output_directory": "outputs",
+    "output_naming_pattern": "{name}_3d{ext}",
+    "preserve_directory_structure": false,
+    "skip_existing": false,
+    "save_state": true,
+    "state_file": null,
+    "state_save_interval": 30.0,
+    "file_discovery": {
+      "patterns": [
+        "*.mp4",
+        "*.avi",
+        "*.mov",
+        "*.mkv",
+        "*.webm"
+      ],
+      "exclude_patterns": [],
+      "recursive": true,
+      "case_sensitive": false,
+      "max_depth": 10,
+      "follow_symlinks": false,
+      "min_file_size_mb": 0.0,
+      "max_file_size_mb": 0.0
+    },
+    "folder_watcher": {
+      "enabled": false,
+      "watch_paths": [],
+      "poll_interval_seconds": 2.0,
+      "use_inotify": true,
+      "stable_time_seconds": 5.0,
+      "process_existing": true,
+      "recursive": true
+    },
+    "progress_update_interval": 1.0,
+    "error_callback_url": null,
+    "completion_callback_url": null,
+    "checkpoint": {
+      "enabled": true,
+      "checkpoint_dir": "checkpoints",
+      "checkpoint_interval": 30,
+      "keep_intermediate": false,
+      "max_checkpoints": 10,
+      "cleanup_on_complete": true,
+      "resume_on_start": true
+    }
+  }
+}

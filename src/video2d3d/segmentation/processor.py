@@ -401,6 +401,13 @@ class SegmentationProcessor:
 
         return merged
 
+    def _get_morphology_kernel(self):
+        """Build the morphological kernel from the configured size."""
+        return cv2.getStructuringElement(
+            cv2.MORPH_ELLIPSE,
+            (self.config.morphology_kernel_size, self.config.morphology_kernel_size),
+        )
+
     def extract_boundaries(
         self,
         masks: list[dict[str, Any]],

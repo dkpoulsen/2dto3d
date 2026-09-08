@@ -29,6 +29,7 @@ if TYPE_CHECKING:
 # Import the module under test (mocks are set up in conftest.py)
 from video2d3d.stereo import (
     AnaglyphGenerator,
+    AnaglyphType,
     DIBRConfig,
     DIBREngine,
     DIBRError,
@@ -446,7 +447,7 @@ class TestAnaglyphGenerator:
         generator = AnaglyphGenerator()
 
         assert generator.format == "anaglyph"
-        assert generator.color_method == "dubois"
+        assert generator.anaglyph_type == AnaglyphType.RED_CYAN_DUBOIS
 
     def test_combine_to_anaglyph_dubois(
         self,
@@ -454,7 +455,7 @@ class TestAnaglyphGenerator:
         sample_image: np.ndarray,
     ) -> None:
         """Test anaglyph combination with Dubois method."""
-        generator = AnaglyphGenerator(color_method="dubois")
+        generator = AnaglyphGenerator(anaglyph_type="dubois")
 
         # Create left and right views (same image for simplicity)
         left = sample_image.copy()
@@ -471,7 +472,7 @@ class TestAnaglyphGenerator:
         sample_image: np.ndarray,
     ) -> None:
         """Test anaglyph combination with gray method."""
-        generator = AnaglyphGenerator(color_method="gray")
+        generator = AnaglyphGenerator(anaglyph_type="gray")
 
         left = sample_image.copy()
         right = sample_image.copy()
@@ -487,7 +488,7 @@ class TestAnaglyphGenerator:
         sample_image: np.ndarray,
     ) -> None:
         """Test anaglyph combination with color method."""
-        generator = AnaglyphGenerator(color_method="color")
+        generator = AnaglyphGenerator(anaglyph_type="color")
 
         left = sample_image.copy()
         right = sample_image.copy()
@@ -825,7 +826,7 @@ class TestAdditionalCoverage:
         mock_logger: MagicMock,
     ) -> None:
         """Test anaglyph combination with grayscale input."""
-        generator = AnaglyphGenerator(color_method="color")
+        generator = AnaglyphGenerator(anaglyph_type="color")
 
         # Create grayscale images
         left_gray = (np.random.random((50, 50)) * 255).astype(np.uint8)
@@ -841,7 +842,7 @@ class TestAdditionalCoverage:
         mock_logger: MagicMock,
     ) -> None:
         """Test anaglyph combination with float images."""
-        generator = AnaglyphGenerator(color_method="dubois")
+        generator = AnaglyphGenerator(anaglyph_type="dubois")
 
         # Create float images (normalized 0-1)
         left_float = np.random.random((50, 50, 3)).astype(np.float32)

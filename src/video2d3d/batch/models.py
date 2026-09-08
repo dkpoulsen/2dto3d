@@ -357,7 +357,9 @@ class BatchJob:
             output_path=Path(data["output_path"]) if data.get("output_path") else None,
             status=JobStatus(data["status"]),
             priority=JobPriority.from_value(data.get("priority", 5)),
-            created_at=datetime.fromisoformat(data["created_at"]),
+            created_at=(
+                datetime.fromisoformat(data["created_at"]) if data.get("created_at") else datetime.now()
+            ),
             started_at=(
                 datetime.fromisoformat(data["started_at"]) if data.get("started_at") else None
             ),

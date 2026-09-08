@@ -509,7 +509,9 @@ class AdaptiveBatchSizer:
 
         # GPU underutilized - scale up (GPU is the processing bottleneck)
         elif (
-            gpu_util < config.gpu_util_low_threshold and memory_usage < config.memory_high_threshold
+            gpu_info is not None
+            and gpu_util < config.gpu_util_low_threshold
+            and memory_usage < config.memory_high_threshold
         ):
             new_size = min(
                 config.max_batch_size,

@@ -154,7 +154,7 @@ class BatchVideoQueue:
             return True
 
         # Adding job_id -> dependency_id creates a cycle if following the
-        # chain of dependents starting at dependency_id leads back to job_id.
+        # chain of dependencies starting at dependency_id leads back to job_id.
         visited: set[str] = set()
         to_check = deque([dependency_id])
 
@@ -169,7 +169,7 @@ class BatchVideoQueue:
 
             current_job = self._jobs.get(current_id)
             if current_job:
-                to_check.extend(current_job.dependent_jobs)
+                to_check.extend(current_job.depends_on)
 
         return False
 

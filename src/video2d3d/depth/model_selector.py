@@ -617,7 +617,10 @@ class DepthModelSelector:
             True if switch was successful, False otherwise.
         """
         if isinstance(model_type, str):
-            model_type = DepthModelType.from_string(model_type)
+            try:
+                model_type = DepthModelType.from_string(model_type)
+            except ValueError:
+                return False
 
         try:
             self._get_estimator(model_type)
