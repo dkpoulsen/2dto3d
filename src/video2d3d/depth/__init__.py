@@ -314,12 +314,14 @@ class DepthEstimator:
         """Get the PyTorch Hub directory for model caching."""
         if self.config.cache_dir is not None:
             hub_dir = self.config.cache_dir
+            # Ensure a custom cache directory exists before use
+            hub_dir.mkdir(parents=True, exist_ok=True)
         else:
-            # Use default torch hub directory
+            # Use the default torch hub directory as-is; torch manages it
             hub_dir = Path(torch.hub.get_dir())
 
-        # Ensure directory exists
-        hub_dir.mkdir(parents=True, exist_ok=True)
+        # Point torch hub at the resolved directory
+        torch.hub.set_dir(str(hub_dir))
         return hub_dir
 
     def load_model(self) -> None:
@@ -590,7 +592,11 @@ class DepthEstimator:
 
         except RuntimeError as e:
             error_str = str(e).lower()
-            if "out of memory" in error_str and self.config.fallback_to_cpu:
+            if (
+                "out of memory" in error_str
+                and self.config.fallback_to_cpu
+                and self.config.device != "cpu"
+            ):
                 logger.warning("GPU out of memory, falling back to CPU")
                 self._fallback_to_cpu()
                 return self.estimate_depth(frame)

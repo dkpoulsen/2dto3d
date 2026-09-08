@@ -171,6 +171,17 @@ class ProfilerResult:
             reverse=True,
         )
 
+    def to_dict(self) -> dict[str, Any]:
+        """Serialize the profiling result to a dictionary."""
+        return {
+            "session_name": self.session_name,
+            "total_time_ms": self.total_time_ms,
+            "start_time": self.start_time,
+            "end_time": self.end_time,
+            "components": {name: stats.to_dict() for name, stats in self.components.items()},
+            "bottlenecks": [c.name for c in self.get_bottlenecks()],
+        }
+
     def get_bottlenecks(
         self, threshold_percent: float = DEFAULT_BOTTLENECK_THRESHOLD
     ) -> list[ComponentStats]:

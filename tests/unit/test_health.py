@@ -44,7 +44,7 @@ class TestGetSystemMemory:
 
     def test_get_system_memory_without_psutil(self) -> None:
         """Test system memory retrieval when psutil is not available."""
-        with patch("video2d3d.web.health.psutil", side_effect=ImportError):
+        with patch("video2d3d.web.health.psutil", None):
             result = get_system_memory()
 
             assert isinstance(result, SystemMemoryResponse)

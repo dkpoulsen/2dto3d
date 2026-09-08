@@ -55,6 +55,7 @@ from video2d3d.utils.logger import get_logger
 
 from .exceptions import (
     FFmpegProcessError,
+    InvalidVideoDimensionsError,
     VideoWriteError,
 )
 
@@ -527,6 +528,13 @@ class VideoOutputWriter:
         """
         self.output_path = Path(output_path).resolve()
         self.config = config or VideoWriterConfig()
+
+        # Validate dimensions and FPS before anything else
+        if width <= 0 or height <= 0:
+            raise InvalidVideoDimensionsError(width, height)
+        if fps <= 0:
+            raise ValueError(f"FPS must be positive, got {fps}")
+
         self.width = width
         self.height = height
         self.fps = fps

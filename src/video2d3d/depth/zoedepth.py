@@ -346,6 +346,7 @@ class ZoeDepthEstimator:
         model_variant: str | ZoeDepthModelVariant = "zoedepth_nk",
         device: str = "auto",
         depth_mode: str = "relative",
+        auto_batch_size: bool | None = None,
     ) -> None:
         """Initialize the ZoeDepth depth estimator.
 
@@ -355,6 +356,8 @@ class ZoeDepthEstimator:
             model_variant: Variant of ZoeDepth model (ignored if config is provided).
             device: Device for inference (ignored if config is provided).
             depth_mode: Depth estimation mode (ignored if config is provided).
+            auto_batch_size: Whether to automatically determine batch size
+                (ignored if config is provided; defaults to config value).
         """
         # Initialize configuration
         if config is not None:
@@ -367,6 +370,8 @@ class ZoeDepthEstimator:
                 device=device,
                 depth_mode=depth_mode,
             )
+            if auto_batch_size is not None:
+                self.config.auto_batch_size = auto_batch_size
 
         # Model components (lazy loaded)
         self._model: nn.Module | None = None

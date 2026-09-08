@@ -93,26 +93,30 @@ class TestAudioMetadata:
         assert metadata.tracks == []
 
     @patch("video2d3d.audio.metadata.subprocess.run")
-    def test_extract_from_video_no_audio(self, mock_run: MagicMock) -> None:
+    def test_extract_from_video_no_audio(self, mock_run: MagicMock, tmp_path) -> None:
         """Test extraction when video has no audio."""
+        video = tmp_path / "no_audio.mp4"
+        video.touch()
         mock_run.return_value = MagicMock(
             returncode=0,
             stdout='{"streams": []}',
         )
 
-        metadata = AudioMetadata.extract_from_video("test.mp4")
+        metadata = AudioMetadata.extract_from_video(video)
         assert metadata.has_audio is False
         assert metadata.track_count == 0
 
     @patch("video2d3d.audio.metadata.subprocess.run")
-    def test_extract_from_video_with_audio(self, mock_run: MagicMock) -> None:
+    def test_extract_from_video_with_audio(self, mock_run: MagicMock, tmp_path) -> None:
         """Test extraction with single audio track."""
+        video = tmp_path / "with_audio.mp4"
+        video.touch()
         mock_run.return_value = MagicMock(
             returncode=0,
             stdout='{"streams": [{"index": 1, "codec_name": "aac", "channels": 2, "sample_rate": "48000"}]}',
         )
 
-        metadata = AudioMetadata.extract_from_video("test.mp4")
+        metadata = AudioMetadata.extract_from_video(video)
         assert metadata.has_audio is True
         assert metadata.track_count == 1
 

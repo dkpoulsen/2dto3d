@@ -27,8 +27,9 @@ from video2d3d.utils.config import LoggingConfig, get_config
 logger.remove()
 
 # Global flag to track if logging has been configured (thread-safe)
+# RLock (reentrant) so get_logger() can call configure_logging() while holding it.
 _logging_configured: bool = False
-_logging_lock = threading.Lock()
+_logging_lock = threading.RLock()
 
 
 class LogLevel:

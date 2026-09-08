@@ -130,7 +130,6 @@ jobs:
             --durations=20 \
             -n 4 \
             --timeout=60 \
-
             -m "not slow and not gpu" \
             tests/
         env:

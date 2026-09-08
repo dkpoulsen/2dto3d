@@ -68,9 +68,9 @@ class TestCrashSeverityEnum:
 
     def test_severity_order(self) -> None:
         """Test severity levels are ordered correctly."""
-        assert CrashSeverity.LOW.value < CrashSeverity.MEDIUM.value
-        assert CrashSeverity.MEDIUM.value < CrashSeverity.HIGH.value
-        assert CrashSeverity.HIGH.value < CrashSeverity.CRITICAL.value
+        order = ["low", "medium", "high", "critical"]
+        values = [s.value for s in CrashSeverity]
+        assert values == order
 
 
 class TestActiveJobInfo:

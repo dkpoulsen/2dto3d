@@ -200,7 +200,7 @@ class UpscalerConfig:
         # Validate tile size
         if self.tile_size < 0:
             raise ValueError(f"Tile size must be >= 0, got {self.tile_size}")
-        if self.tile_size > 0 and self.tile_size < 64:
+        if 0 < self.tile_size < 64:
             raise ValueError(f"Tile size must be >= 64 or 0, got {self.tile_size}")
 
         # Set model path

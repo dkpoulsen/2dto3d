@@ -382,6 +382,11 @@ class AnaglyphGenerator(StereoGenerator):
         self._encoder = AnaglyphEncoder(default_type=anaglyph_type)
         _get_stereo_logger().debug(f"AnaglyphGenerator initialized: type={anaglyph_type}")
 
+    @property
+    def color_method(self) -> str:
+        """Human-readable name of the active anaglyph encoding method."""
+        return self.anaglyph_type.value
+
     def _parse_anaglyph_type(self, type_str: str) -> AnaglyphType:
         """Parse string to AnaglyphType enum.
 

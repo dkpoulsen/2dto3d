@@ -12,6 +12,7 @@ Tests cover:
 
 from __future__ import annotations
 
+import importlib
 import tempfile
 from collections.abc import Generator
 from pathlib import Path
@@ -356,24 +357,28 @@ class TestCrashReportWithoutReporter:
         # Ensure no reporter
         shutdown_crash_reporting()
 
-        with patch("video2d3d.web.health.is_cuda_available", return_value=False):
-            app = create_app()
-
-        with TestClient(app) as client:
+        with (
+            patch("video2d3d.web.health.is_cuda_available", return_value=False),
+            patch.object(importlib.import_module("video2d3d.web.app"), "init_crash_reporting"),
+            patch.object(importlib.import_module("video2d3d.web.app"), "shutdown_crash_reporting"),
+            TestClient(create_app()) as client,
+        ):
             response = client.get("/api/v1/crash-reports")
 
             assert response.status_code == status.HTTP_503_SERVICE_UNAVAILABLE
             data = response.json()
-            assert "not initialized" in data["detail"].lower()
+            assert "not initialized" in data.get("detail", data.get("message", "")).lower()
 
     def test_get_without_reporter(self) -> None:
         """Test getting report without initialized reporter."""
         shutdown_crash_reporting()
 
-        with patch("video2d3d.web.health.is_cuda_available", return_value=False):
-            app = create_app()
-
-        with TestClient(app) as client:
+        with (
+            patch("video2d3d.web.health.is_cuda_available", return_value=False),
+            patch.object(importlib.import_module("video2d3d.web.app"), "init_crash_reporting"),
+            patch.object(importlib.import_module("video2d3d.web.app"), "shutdown_crash_reporting"),
+            TestClient(create_app()) as client,
+        ):
             response = client.get("/api/v1/crash-reports/some-id")
 
             assert response.status_code == status.HTTP_503_SERVICE_UNAVAILABLE
@@ -382,10 +387,12 @@ class TestCrashReportWithoutReporter:
         """Test creating report without initialized reporter."""
         shutdown_crash_reporting()
 
-        with patch("video2d3d.web.health.is_cuda_available", return_value=False):
-            app = create_app()
-
-        with TestClient(app) as client:
+        with (
+            patch("video2d3d.web.health.is_cuda_available", return_value=False),
+            patch.object(importlib.import_module("video2d3d.web.app"), "init_crash_reporting"),
+            patch.object(importlib.import_module("video2d3d.web.app"), "shutdown_crash_reporting"),
+            TestClient(create_app()) as client,
+        ):
             response = client.post(
                 "/api/v1/crash-reports",
                 json={"message": "Test"},

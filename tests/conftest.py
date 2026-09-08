@@ -156,21 +156,32 @@ def _create_mock_loguru() -> MagicMock:
     return mock_loguru
 
 
-# Set up mocks before any test module is imported
-if "torch" not in sys.modules:
+# Set up mocks before any test module is imported.
+# Only fall back to mocks when the real package is unavailable; CI installs
+# the real dependencies, and tests that exercise real image/video paths
+# (Canny, Hough, GaussianBlur, ...) fail against unconditional mocks.
+try:
+    import torch  # noqa: F401
+except ImportError:
     sys.modules["torch"] = _create_mock_torch()
     sys.modules["torch.nn"] = MagicMock()
     sys.modules["torch.nn.functional"] = MagicMock()
     sys.modules["torchvision"] = MagicMock()
     sys.modules["torchvision.transforms"] = MagicMock()
 
-if "cv2" not in sys.modules:
+try:
+    import cv2  # noqa: F401
+except ImportError:
     sys.modules["cv2"] = _create_mock_cv2()
 
-if "loguru" not in sys.modules:
+try:
+    import loguru  # noqa: F401
+except ImportError:
     sys.modules["loguru"] = _create_mock_loguru()
 
-if "scipy" not in sys.modules:
+try:
+    import scipy  # noqa: F401
+except ImportError:
     mock_scipy = MagicMock()
     mock_scipy.ndimage = MagicMock()
     mock_scipy.ndimage.laplace = MagicMock(return_value=np.zeros((10, 10)))

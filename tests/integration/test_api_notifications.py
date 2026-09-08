@@ -25,6 +25,7 @@ from fastapi.testclient import TestClient
 if TYPE_CHECKING:
     from collections.abc import Generator
 
+from video2d3d.web.exceptions import register_exception_handlers
 from video2d3d.web.notification_manager import NotificationManager
 from video2d3d.web.notification_models import NotificationType, WebhookConfig
 from video2d3d.web.routers import notifications as notifications_router
@@ -51,6 +52,7 @@ def notification_manager(temp_storage_path: Path) -> Generator[NotificationManag
 def app(notification_manager: NotificationManager) -> Generator[FastAPI, None, None]:
     """Create test FastAPI app with notifications router."""
     app = FastAPI()
+    register_exception_handlers(app)
 
     with patch(
         "video2d3d.web.routers.notifications.get_notification_manager",

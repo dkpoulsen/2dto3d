@@ -11,6 +11,7 @@ from collections.abc import Generator
 from contextlib import contextmanager
 from datetime import datetime, timezone
 from pathlib import Path
+from typing import Any
 
 from sqlalchemy import Boolean, DateTime, String, create_engine
 from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column, sessionmaker
@@ -72,11 +73,25 @@ class UserModel(Base):
         nullable=True,
     )
 
+    def __init__(self, **kwargs: Any) -> None:
+        """Initialize with Python-level defaults for unsupplied fields."""
+        super().__init__(**kwargs)
+        if self.user_id is None:
+            self.user_id = str(uuid.uuid4())
+        if self.role is None:
+            self.role = "user"
+        if self.is_active is None:
+            self.is_active = True
+        if self.created_at is None:
+            self.created_at = datetime.now(timezone.utc)
+
     def __repr__(self) -> str:
         return f"<User(user_id={self.user_id}, username={self.username}, role={self.role})>"
 
 
 # Global database engine and session factory
+from video2d3d.web.state import app_state
+
 _engine = None
 _session_factory = None
 
@@ -84,8 +99,6 @@ _session_factory = None
 def get_database_path() -> Path:
     """Get the path to the SQLite database file."""
     # Store in the same directory as other app data
-    from video2d3d.web.state import app_state
-
     data_dir = app_state.upload_dir.parent / "data"
     data_dir.mkdir(parents=True, exist_ok=True)
     return data_dir / "auth.db"

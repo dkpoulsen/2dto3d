@@ -338,6 +338,9 @@ class FrameExtractor:
             self.config = config
         else:
             self.config = FrameExtractorConfig(
+                sampling_strategy=(
+                    SamplingStrategy.INTERVAL if sampling_interval > 1 else SamplingStrategy.ALL
+                ),
                 sampling_interval=sampling_interval,
                 target_frame_count=target_frame_count,
                 resize_width=resize_width,

@@ -117,8 +117,11 @@ class DepthCurveConfig:
         if len(self.control_points) < 2:
             raise ValueError(f"Must have at least 2 control points, got {len(self.control_points)}")
 
-        # Sort points by x coordinate
+        # Sort points by x coordinate, then ensure strictly increasing
         self.control_points = sorted(self.control_points, key=lambda p: p.x)
+        xs = [p.x for p in self.control_points]
+        if any(b <= a for a, b in zip(xs, xs[1:])):
+            raise ValueError("x values must be strictly increasing")
 
         # Ensure endpoints exist
         first_point = self.control_points[0]
@@ -229,13 +232,17 @@ def apply_depth_curve(
         # Get control point arrays
         x_vals, y_vals = config.get_xy_arrays()
 
+        depth_clipped = np.clip(depth_map, 0.0, 1.0)
+
+        # Two control points with equal slope is a straight line - use linear
+        # interpolation (a clamped cubic spline would bend the identity curve)
+        if len(x_vals) == 2:
+            result = np.interp(depth_clipped, x_vals, y_vals)
+            return result.astype(depth_map.dtype, copy=False)
+
         # Create cubic spline interpolator
         # Use 'clamped' boundary conditions (first derivative = slope at endpoints)
         spline = CubicSpline(x_vals, y_vals, bc_type="clamped")
-
-        # Apply curve to depth values
-        # Ensure input is in valid range
-        depth_clipped = np.clip(depth_map, 0.0, 1.0)
 
         # Apply spline interpolation
         result = spline(depth_clipped)

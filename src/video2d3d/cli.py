@@ -841,6 +841,8 @@ def gui() -> None:
 
         exit_code = run_gui()
         raise typer.Exit(code=exit_code)
+    except typer.Exit:
+        raise
     except ImportError as e:
         console.print("[red]Error: PyQt6 is not installed.[/red]")
         console.print("[yellow]Install with: pip install PyQt6[/yellow]")

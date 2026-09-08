@@ -16,6 +16,8 @@ import time
 from datetime import datetime, timezone
 from typing import TYPE_CHECKING, Any
 
+import psutil
+
 from video2d3d.crash.models import ActiveJobInfo, GPUInfo, MemoryInfo, ProcessInfo, SystemState
 
 if TYPE_CHECKING:
@@ -92,8 +94,8 @@ def get_memory_info() -> MemoryInfo:
         if swap.total > 0:
             memory_info.swap_utilization_percent = (swap.used / swap.total) * 100
 
-    except ImportError:
-        # Fallback to /proc/meminfo on Linux
+    except Exception:
+        # Fallback to /proc/meminfo on Linux (also covers psutil failures)
         try:
             if platform.system() == "Linux":
                 with open("/proc/meminfo") as f:
@@ -143,6 +145,7 @@ def get_process_info() -> ProcessInfo:
         with process.oneshot():
             # CPU and memory
             process_info.cpu_percent = process.cpu_percent(interval=None)  # Non-blocking
+            mem_info = process.memory_info()
             process_info.memory_rss_mb = mem_info.rss / (1024 * 1024)
             process_info.memory_vms_mb = mem_info.vms / (1024 * 1024)
 
@@ -155,8 +158,8 @@ def get_process_info() -> ProcessInfo:
             create_time = process.create_time()
             process_info.uptime_seconds = time.time() - create_time
 
-    except ImportError:
-        # Fallback for basic info
+    except Exception:
+        # Fallback for basic info (import failure, access denied, etc.)
         process_info.pid = os.getpid()
         process_info.uptime_seconds = time.time() - _app_start_time
         process_info.working_directory = os.getcwd()

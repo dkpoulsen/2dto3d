@@ -178,7 +178,7 @@ class TestBaseUpscaler:
         """Test upscaling with tile-based processing."""
         config = UpscalerConfig(
             model_type=ModelType.REAL_ESRGAN_X4PLUS,
-            tile_size=32,  # Small tiles for testing
+            tile_size=64,  # Small tiles for testing
             tile_pad=8,
         )
         upscaler = DummyUpscaler(config)

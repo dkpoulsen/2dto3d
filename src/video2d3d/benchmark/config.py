@@ -137,6 +137,14 @@ class BenchmarkConfig:
         if self.test_iterations < 1:
             raise ValueError("test_iterations must be >= 1")
 
+        # Validate models and report format
+        if not self.models:
+            raise ValueError("models list cannot be empty")
+        if self.report_format not in ("markdown", "json", "csv"):
+            raise ValueError(
+                f"report_format must be 'markdown', 'json', or 'csv', got {self.report_format!r}"
+            )
+
         # Validate timeout
         if self.timeout_seconds <= 0:
             raise ValueError("timeout_seconds must be positive")

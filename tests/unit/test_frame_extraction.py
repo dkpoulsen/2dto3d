@@ -1,10 +1,10 @@
-import pytest
-
-pytestmark = pytest.mark.slow
-
 """Unit tests for frame extraction system."""
 
 from __future__ import annotations
+
+import pytest
+
+pytestmark = pytest.mark.slow
 
 from collections.abc import Generator
 from pathlib import Path

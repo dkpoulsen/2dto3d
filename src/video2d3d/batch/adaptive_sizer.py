@@ -24,14 +24,14 @@ if TYPE_CHECKING:
     from collections.abc import Generator
 
 
-# BQ|from video2d3d.utils.gpu import (
-# QJ|    GPUConfig,
-# ZN|    GPUInfo,
-# RS|    compute_optimal_batch_size,
-# ZH|    get_gpu_info,
-# PJ|    get_memory_usage,
-# RK|    is_cuda_available,
-# RK|)
+from video2d3d.utils.gpu import (
+    GPUConfig,
+    GPUInfo,
+    compute_optimal_batch_size,
+    get_gpu_info,
+    get_memory_usage,
+    is_cuda_available,
+)
 from video2d3d.utils.logger import get_logger, log_exception
 from video2d3d.utils.memory_monitor import MemoryInfo, get_current_memory_info
 
@@ -498,27 +498,6 @@ class AdaptiveBatchSizer:
                 new_size = max(config.min_batch_size, new_size)
             reason = AdjustmentReason.MEMORY_PRESSURE
 
-        # Low memory usage and low GPU util - scale up
-        elif (
-            memory_usage <= config.memory_low_threshold and gpu_util < config.gpu_util_low_threshold
-        ):
-            new_size = min(
-                config.max_batch_size,
-                int(current_size * config.scale_up_factor),
-            )
-            # Ensure at least one step increase
-            new_size = max(new_size, current_size + config.min_scale_step)
-            reason = AdjustmentReason.MEMORY_AVAILABLE
-
-        # Low memory usage alone - try scaling up
-        elif memory_usage <= config.memory_low_threshold:
-            new_size = min(
-                config.max_batch_size,
-                int(current_size * config.scale_up_factor),
-            )
-            new_size = max(new_size, current_size + config.min_scale_step)
-            reason = AdjustmentReason.MEMORY_AVAILABLE
-
         # GPU overloaded - scale down slightly
         elif gpu_util >= config.gpu_util_high_threshold:
             # More conservative scale down for GPU overload
@@ -528,16 +507,28 @@ class AdaptiveBatchSizer:
             )
             reason = AdjustmentReason.GPU_OVERLOADED
 
-        # GPU underutilized but memory moderate - try small scale up
+        # GPU underutilized - scale up (GPU is the processing bottleneck)
         elif (
-            gpu_util < config.gpu_util_low_threshold
-            and memory_usage < config.memory_high_threshold * 0.9
+            gpu_info is not None
+            and gpu_util < config.gpu_util_low_threshold
+            and memory_usage < config.memory_high_threshold
         ):
             new_size = min(
                 config.max_batch_size,
-                current_size + config.min_scale_step,
+                int(current_size * config.scale_up_factor),
             )
+            # Ensure at least one step increase
+            new_size = max(new_size, current_size + config.min_scale_step)
             reason = AdjustmentReason.GPU_UNDERUTILIZED
+
+        # Low memory usage alone - try scaling up
+        elif memory_usage <= config.memory_low_threshold:
+            new_size = min(
+                config.max_batch_size,
+                int(current_size * config.scale_up_factor),
+            )
+            new_size = max(new_size, current_size + config.min_scale_step)
+            reason = AdjustmentReason.MEMORY_AVAILABLE
 
         # Clamp to bounds
         new_size = max(config.min_batch_size, min(config.max_batch_size, new_size))

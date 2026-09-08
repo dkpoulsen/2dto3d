@@ -178,13 +178,3 @@ class TestWorkflowUsesCorrectCoveragePath:
         run_cmd = pytest_step["run"]
         # Coverage path should reference the actual package
         assert "src/video2d3d" in run_cmd, "Coverage should use src/video2d3d path"
-        """Verify --cov path in workflow matches actual source structure."""
-        test_steps = workflow_yaml["jobs"]["test"]["steps"]
-        pytest_step = next(
-            (s for s in test_steps if "pytest" in str(s.get("run", "")).lower()),
-            None,
-        )
-        if pytest_step:
-            run_cmd = pytest_step["run"]
-            # Coverage path should reference the actual package
-            assert "src/video2d3d" in run_cmd, "Coverage should use src/video2d3d path"

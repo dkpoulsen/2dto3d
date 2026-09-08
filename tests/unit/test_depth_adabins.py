@@ -31,7 +31,9 @@ def _create_mock_torch() -> MagicMock:
     mock.hub.get_dir.return_value = "/tmp/torch_hub"
     mock.hub.set_dir = MagicMock()
     mock.hub.load = MagicMock()
-    mock.no_grad = MagicMock(return_value=MagicMock(__enter__=MagicMock(), __exit__=MagicMock()))
+    mock.no_grad = MagicMock(
+        return_value=MagicMock(__enter__=MagicMock(), __exit__=MagicMock(return_value=False))
+    )
     mock.backends.cudnn.benchmark = False
     mock.Tensor = MagicMock
 
@@ -93,6 +95,10 @@ def mock_torch_modules() -> Generator[None, None, None]:
         "torchvision",
         "torchvision.transforms",
         "huggingface_hub",
+        "loguru",
+        "video2d3d.utils",
+        "video2d3d.utils.logger",
+        "video2d3d.utils.gpu",
     ]
 
     for mod in modules_to_mock:

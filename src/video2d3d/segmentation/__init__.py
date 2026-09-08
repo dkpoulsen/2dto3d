@@ -47,6 +47,17 @@ _SAM_CHECKPOINT_URLS = {
 # Default input sizes for different model variants
 _SAM_DEFAULT_INPUT_SIZE = 1024
 
+# Edge detection thresholds (shared with the integrator module)
+_CANNY_LOW_THRESHOLD = 50
+_CANNY_HIGH_THRESHOLD = 150
+
+# Quality thresholds for mask filtering
+_HIGH_QUALITY_THRESHOLD = 0.9
+
+# Maximum number of masks to keep after filtering
+_MAX_EDGE_MASKS = 20
+_MAX_OBJECT_MASKS = 30
+
 
 class SAMModelType(Enum):
     """Available SAM model variants."""
@@ -126,6 +137,7 @@ class SAMConfig:
 
     model_type: SAMModelType = SAMModelType.VIT_B
     device: str = "auto"
+    resolved_device: str = "auto"
     checkpoint_path: Path | None = None
     auto_download: bool = True
     input_size: int = _SAM_DEFAULT_INPUT_SIZE
@@ -152,10 +164,11 @@ class SAMConfig:
                 fp16_enabled=self.use_fp16,
             )
 
-        # Auto-detect device
+        # Auto-detect device (store the resolved value separately so the
+        # original 'auto' setting is preserved for introspection)
         if self.device == "auto":
             selection = select_device(self.gpu_config)
-            self.device = selection.device
+            object.__setattr__(self, "resolved_device", selection.device)
 
         # Normalize checkpoint_path to Path
         if self.checkpoint_path is not None and isinstance(self.checkpoint_path, str):
@@ -253,7 +266,7 @@ class SemanticSegmenter:
         logger = _get_segmentation_logger()
         logger.info(
             f"SemanticSegmenter initialized: model={self.config.model_type.value}, "
-            f"device={self.config.device}"
+            f"device={self.config.resolved_device}"
         )
 
     @property
@@ -294,7 +307,7 @@ class SemanticSegmenter:
             raise ModelLoadError(
                 f"Failed to download SAM checkpoint: {e}",
                 model_type=self.config.model_type.value,
-                device=self.config.device,
+                device=self.config.resolved_device,
                 original_exception=e,
             ) from e
 
@@ -325,10 +338,10 @@ class SemanticSegmenter:
             )
 
             # Move to device
-            self._sam.to(device=self.config.device)
+            self._sam.to(device=self.config.resolved_device)
 
             # Apply FP16 if enabled
-            if self.config.use_fp16 and self.config.device == "cuda":
+            if self.config.use_fp16 and self.config.resolved_device == "cuda":
                 self._sam = self._sam.half()
 
             # Create mask generator
@@ -345,7 +358,7 @@ class SemanticSegmenter:
             elapsed_ms = (time.time() - start_time) * 1000
             logger.info(
                 f"SAM model loaded successfully in {elapsed_ms:.0f}ms: "
-                f"{self.config.model_type.value} on {self.config.device}"
+                f"{self.config.model_type.value} on {self.config.resolved_device}"
             )
 
             log_model_inference(
@@ -363,7 +376,7 @@ class SemanticSegmenter:
             raise ModelLoadError(
                 "segment_anything package not installed. Install with: pip install segment-anything",
                 model_type=self.config.model_type.value,
-                device=self.config.device,
+                device=self.config.resolved_device,
                 original_exception=e,
             ) from e
         except Exception as e:
@@ -371,12 +384,12 @@ class SemanticSegmenter:
                 "Failed to load SAM model",
                 exception=e,
                 model_type=self.config.model_type.value,
-                device=self.config.device,
+                device=self.config.resolved_device,
             )
             raise ModelLoadError(
                 f"Failed to load SAM model '{self.config.model_type.value}': {e}",
                 model_type=self.config.model_type.value,
-                device=self.config.device,
+                device=self.config.resolved_device,
                 original_exception=e,
             ) from e
 
@@ -410,13 +423,13 @@ class SemanticSegmenter:
             raise InferenceError(
                 f"Input must be a numpy array, got {type(image).__name__}",
                 model_type=self.config.model_type.value,
-                device=self.config.device,
+                device=self.config.resolved_device,
             )
         if image.ndim != 3:
             raise InferenceError(
                 f"Input must be 3D array (H, W, C), got {image.ndim}D",
                 model_type=self.config.model_type.value,
-                device=self.config.device,
+                device=self.config.resolved_device,
             )
 
         # Ensure model is loaded
@@ -427,7 +440,7 @@ class SemanticSegmenter:
             raise InferenceError(
                 "Model failed to load",
                 model_type=self.config.model_type.value,
-                device=self.config.device,
+                device=self.config.resolved_device,
             )
 
         logger.debug(f"Segmenting image: shape={image.shape}, dtype={image.dtype}")
@@ -466,7 +479,7 @@ class SemanticSegmenter:
             raise InferenceError(
                 f"Segmentation failed: {e}",
                 model_type=self.config.model_type.value,
-                device=self.config.device,
+                device=self.config.resolved_device,
                 original_exception=e,
             ) from e
         except Exception as e:
@@ -474,7 +487,7 @@ class SemanticSegmenter:
             raise InferenceError(
                 f"Segmentation failed: {e}",
                 model_type=self.config.model_type.value,
-                device=self.config.device,
+                device=self.config.resolved_device,
                 original_exception=e,
             ) from e
 
@@ -541,15 +554,6 @@ class SemanticSegmenter:
         # Sort by area (larger objects first)
         filtered.sort(key=lambda m: m["area"], reverse=True)
         return filtered[:_MAX_OBJECT_MASKS]
-        # Filter by stability score and predicted IoU
-        filtered = [
-            m
-            for m in masks
-            if m.get("stability_score", 0) > 0.9 and m.get("predicted_iou", 0) > 0.9
-        ]
-        # Sort by area (larger objects first)
-        filtered.sort(key=lambda m: m["area"], reverse=True)
-        return filtered[:30]  # Return top 30
 
     def extract_boundaries(
         self,
@@ -571,7 +575,8 @@ class SemanticSegmenter:
         boundaries = np.zeros((h, w), dtype=np.uint8)
 
         for mask in masks:
-            segmentation = mask["segmentation"].astype(np.uint8)
+            # Convert boolean mask to 0/255 uint8 as required by findContours
+            segmentation = mask["segmentation"].astype(np.uint8) * 255
 
             # Find contours
             contours, _ = cv2.findContours(segmentation, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
@@ -610,7 +615,7 @@ class SemanticSegmenter:
         """Fall back to CPU processing when GPU fails."""
         logger = _get_segmentation_logger()
 
-        if self.config.device == "cpu":
+        if self.config.resolved_device == "cpu":
             logger.debug("Already on CPU, skipping fallback")
             return
 
@@ -618,8 +623,9 @@ class SemanticSegmenter:
 
         if self._sam is not None:
             self._sam.to(device="cpu")
-            self.config.device = "cpu"
+            self.config.resolved_device = "cpu"
             clear_gpu_memory()
+        self.config.device = "cpu"
 
     def close(self) -> None:
         """Release model resources."""
@@ -633,8 +639,8 @@ class SemanticSegmenter:
         self._is_loaded = False
 
         # Clear GPU cache if using CUDA
-        if self.config.device.startswith("cuda") or self.config.device == "auto":
-            clear_gpu_memory(self.config.device)
+        if self.config.resolved_device.startswith("cuda") or self.config.resolved_device == "auto":
+            clear_gpu_memory(self.config.resolved_device)
         logger.debug("SemanticSegmenter resources released")
 
     def __enter__(self) -> SemanticSegmenter:

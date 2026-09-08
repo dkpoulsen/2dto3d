@@ -23,7 +23,12 @@ from fastapi.staticfiles import StaticFiles
 
 from video2d3d import __version__
 from video2d3d.batch import BatchQueueConfig, BatchVideoQueue
-from video2d3d.crash import init_crash_reporting, set_crash_reporter_queue, shutdown_crash_reporting
+from video2d3d.crash import (
+    get_crash_reporter,
+    init_crash_reporting,
+    set_crash_reporter_queue,
+    shutdown_crash_reporting,
+)
 from video2d3d.utils.config import get_config
 from video2d3d.utils.logger import get_logger
 from video2d3d.web.exceptions import register_exception_handlers
@@ -110,14 +115,15 @@ async def lifespan(app: FastAPI):
     # Startup
     logger.info("Starting 2Dto3D API server...")
 
-    # Initialize crash reporting first
+    # Initialize crash reporting first (skip if already initialized, e.g. by tests)
     config = get_config()
     crash_dir = Path(config.web_api.upload_dir).parent / "crashes"
-    init_crash_reporting(
-        app_version=__version__,
-        app_start_time=app_state.start_time,
-    )
-    logger.info(f"Crash reporting initialized. Reports saved to {crash_dir}")
+    if get_crash_reporter() is None:
+        init_crash_reporting(
+            app_version=__version__,
+            app_start_time=app_state.start_time,
+        )
+        logger.info(f"Crash reporting initialized. Reports saved to {crash_dir}")
 
     # Create directories
     create_upload_dirs()

@@ -178,12 +178,6 @@ class DepthProcessorConfig:
         if self.edge_filter_type == EdgeAwareFilterType.GUIDED.value and not self.guided_filter:
             # Auto-enable guided_filter if edge_filter_type is guided
             object.__setattr__(self, "guided_filter", True)
-        elif (
-            self.edge_filter_type == EdgeAwareFilterType.BILATERAL.value
-            and not self.bilateral_filter
-        ):
-            # Auto-enable bilateral_filter if edge_filter_type is bilateral
-            object.__setattr__(self, "bilateral_filter", True)
 
 
 class DepthProcessingError(Exception):

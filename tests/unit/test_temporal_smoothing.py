@@ -84,7 +84,9 @@ def frame_sequence() -> list[np.ndarray]:
 @pytest.fixture
 def mock_logger() -> Generator[MagicMock, None, None]:
     """Mock the logger module."""
-    with patch("video2d3d.depth.temporal.get_logger") as mock_get_logger:
+    import video2d3d.depth.temporal as temporal_module
+
+    with patch.object(temporal_module, "get_logger") as mock_get_logger:
         mock_logger = MagicMock()
         mock_get_logger.return_value = mock_logger
         yield mock_logger

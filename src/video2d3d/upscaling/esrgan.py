@@ -20,6 +20,11 @@ from video2d3d.upscaling.base import (
 from video2d3d.upscaling.config import UpscalerConfig
 from video2d3d.utils.logger import get_logger
 
+try:
+    import onnxruntime as ort
+except ImportError:  # pragma: no cover - optional dependency
+    ort = None  # type: ignore[assignment]
+
 
 class RealESRGANUpscaler(BaseUpscaler):
     """Real-ESRGAN upscaler using ONNX Runtime.
@@ -56,9 +61,7 @@ class RealESRGANUpscaler(BaseUpscaler):
 
         Attempts to use GPU if available and configured, falls back to CPU.
         """
-        try:
-            import onnxruntime as ort
-        except ImportError:
+        if ort is None:
             raise ImportError(
                 "onnxruntime is required for Real-ESRGAN upscaling. "
                 "Install it with: pip install onnxruntime-gpu (for GPU) "

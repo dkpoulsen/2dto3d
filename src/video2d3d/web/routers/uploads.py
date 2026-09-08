@@ -103,9 +103,9 @@ async def upload_file(
     # Generate unique file ID
     file_id = str(uuid.uuid4())
 
-    # Create safe filename
+    # Create safe filename (keep original name for listings, prefixed by ID)
     safe_filename = sanitize_filename(file.filename or "video")
-    stored_filename = f"{file_id}{extension}"
+    stored_filename = f"{file_id}_{safe_filename}"
     file_path = app_state.upload_dir / stored_filename
 
     # Track file size

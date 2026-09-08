@@ -1,7 +1,3 @@
-import pytest
-
-pytestmark = pytest.mark.slow
-
 """Unit tests for depth map processor module.
 
 Tests cover:
@@ -16,6 +12,10 @@ Note: These tests rely on mocks set up in tests/conftest.py.
 """
 
 from __future__ import annotations
+
+import pytest
+
+pytestmark = pytest.mark.slow
 
 from typing import TYPE_CHECKING
 from unittest.mock import MagicMock, patch
@@ -72,7 +72,9 @@ def constant_depth_map() -> np.ndarray:
 @pytest.fixture
 def mock_logger() -> Generator[MagicMock, None, None]:
     """Mock the logger module."""
-    with patch("video2d3d.depth.processor.get_logger") as mock_get_logger:
+    import video2d3d.depth.processor as processor_module
+
+    with patch.object(processor_module, "get_logger") as mock_get_logger:
         mock_logger = MagicMock()
         mock_get_logger.return_value = mock_logger
         yield mock_logger
@@ -197,13 +199,13 @@ class TestDepthProcessorConfig:
         assert config.guided_filter is True
         assert config.edge_filter_type == "guided"
 
-    def test_bilateral_filter_auto_enabled(self, mock_logger: MagicMock) -> None:
-        """Test that bilateral_filter is auto-enabled when edge_filter_type is 'bilateral'."""
+    def test_bilateral_filter_explicit_config_respected(self, mock_logger: MagicMock) -> None:
+        """Test that an explicit bilateral_filter=False is respected."""
         config = DepthProcessorConfig(
             edge_filter_type="bilateral",
-            bilateral_filter=False,  # Explicitly False, should be auto-enabled
+            bilateral_filter=False,
         )
-        assert config.bilateral_filter is True
+        assert config.bilateral_filter is False
         assert config.edge_filter_type == "bilateral"
 
 

@@ -9,6 +9,7 @@ Tests cover:
 
 from __future__ import annotations
 
+import importlib
 from typing import TYPE_CHECKING
 from unittest.mock import MagicMock, patch
 
@@ -47,7 +48,7 @@ def mock_queue() -> MagicMock:
 def mock_app_state(mock_queue: MagicMock) -> Generator[MagicMock, None, None]:
     """Create mock app state with queue."""
     with (
-        patch("video2d3d.web.app.app_state") as mock_state,
+        patch.object(importlib.import_module("video2d3d.web.app"), "app_state") as mock_state,
         patch("video2d3d.web.state.app_state", new=mock_state),
     ):
         mock_state.queue = mock_queue

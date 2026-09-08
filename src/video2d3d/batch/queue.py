@@ -147,16 +147,16 @@ class BatchVideoQueue:
         Returns:
             True if adding this dependency would create a cycle.
         """
-        # Check if dependency_id directly depends on job_id
-        # (this can happen if we're re-adding a job)
+        # Check if dependency_id is transitively depended on by job_id.
+        # Direct case: dependency already depends on job_id
         dep_job = self._jobs.get(dependency_id)
         if dep_job and job_id in dep_job.depends_on:
             return True
 
-        # BFS to check if any of dependency_id's dependencies depend on job_id
-        # Using deque for O(1) popleft operation
+        # Adding job_id -> dependency_id creates a cycle if following the
+        # chain of dependencies starting at dependency_id leads back to job_id.
         visited: set[str] = set()
-        to_check = deque(dep_job.depends_on) if dep_job else deque()
+        to_check = deque([dependency_id])
 
         while to_check:
             current_id = to_check.popleft()
@@ -164,10 +164,10 @@ class BatchVideoQueue:
                 continue
             visited.add(current_id)
 
-            current_job = self._jobs.get(current_id)
             if current_id == job_id:
                 return True
 
+            current_job = self._jobs.get(current_id)
             if current_job:
                 to_check.extend(current_job.depends_on)
 
@@ -586,6 +586,10 @@ class BatchVideoQueue:
                 job = self._jobs.get(job_id)
 
                 if not job or not job.status.is_waiting:
+                    continue
+
+                # Skip jobs that have already completed
+                if job_id in self._completed_jobs:
                     continue
 
                 # Check scheduled time

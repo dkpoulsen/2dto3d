@@ -1,0 +1,79 @@
+{
+  "report_id": "ffe2bdf2-4e15-424e-8bee-8eac4b431206",
+  "created_at": "2026-09-07T16:47:36.451364+00:00",
+  "crash_type": "manual_report",
+  "severity": "medium",
+  "exception_type": "",
+  "exception_message": "",
+  "exception_traceback": "",
+  "exception_module": "",
+  "signal_number": null,
+  "signal_name": null,
+  "context": {},
+  "tags": [
+    "manual"
+  ],
+  "user_message": "Test",
+  "system_state": {
+    "timestamp": "2026-09-07T16:47:36.452273+00:00",
+    "uptime_seconds": 9.805296897888184,
+    "platform_system": "Linux",
+    "platform_node": "RAM-Monster",
+    "platform_release": "6.18.44",
+    "platform_version": "#1-NixOS SMP PREEMPT_DYNAMIC Sun Aug  9 18:25:30 UTC 2026",
+    "platform_machine": "x86_64",
+    "platform_python_version": "3.11.16",
+    "gpu": {
+      "available": false,
+      "device_name": null,
+      "device_count": 0,
+      "memory_used_mb": 0.0,
+      "memory_free_mb": 0.0,
+      "memory_total_mb": 0.0,
+      "memory_utilization_percent": 0.0,
+      "compute_capability": null,
+      "temperature_celsius": null,
+      "power_usage_watts": null
+    },
+    "memory": {
+      "total_mb": 257569.85546875,
+      "available_mb": 221870.1484375,
+      "used_mb": 35699.70703125,
+      "utilization_percent": 13.9,
+      "swap_total_mb": 0.0,
+      "swap_used_mb": 0.0,
+      "swap_utilization_percent": 0.0
+    },
+    "process": {
+      "pid": 39372,
+      "parent_pid": 39369,
+      "command_line": "/tmp/ci311/bin/python /tmp/ci311/bin/pytest tests/integration/test_api_crash.py -o addopts= -q --tb=line -p no:cov",
+      "working_directory": "/home/dkp/.ao/data/worktrees/2dto3d/2dto3d-3",
+      "cpu_percent": 0.0,
+      "memory_rss_mb": 652.73046875,
+      "memory_vms_mb": 9857.02734375,
+      "num_threads": 130,
+      "num_file_descriptors": 63,
+      "uptime_seconds": 12.9922456741333
+    },
+    "active_jobs": [],
+    "queue_stats": {
+      "total_jobs": 0,
+      "pending_jobs": 0,
+      "running_jobs": 0,
+      "completed_jobs": 0,
+      "failed_jobs": 0,
+      "cancelled_jobs": 0,
+      "skipped_jobs": 0,
+      "total_frames_processed": 0,
+      "total_processing_time": 0.0,
+      "average_processing_time": 0.0,
+      "success_rate": 0.0
+    },
+    "app_version": "0.1.0",
+    "app_config": {}
+  },
+  "log_excerpts": [],
+  "recovered": false,
+  "recovery_action": null
+}

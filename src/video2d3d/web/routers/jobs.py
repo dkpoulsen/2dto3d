@@ -41,6 +41,12 @@ from video2d3d.web.schemas import (
     ThumbnailFrameResponse,
     ThumbnailGridResponse,
 )
+from video2d3d.web.state import app_state
+from video2d3d.web.utils import (
+    SUPPORTED_VIDEO_EXTENSIONS,
+    find_file_by_id,
+    validate_file_id,
+)
 
 logger = get_logger("web.jobs")
 
@@ -130,8 +136,8 @@ def job_to_response(job) -> JobResponse:
         result=result_response,
         config=job.config,
         scheduled_at=job.scheduled_at,
-        depends_on=job.depends_on,
-        dependent_jobs=job.dependent_jobs,
+        depends_on=getattr(job, "depends_on", None),
+        dependent_jobs=getattr(job, "dependent_jobs", []),
     )
 
 
@@ -673,6 +679,8 @@ async def get_thumbnail_grid(
     step = frame_range / count if count > 0 else 1
     frame_indices = [int(effective_start + i * step) for i in range(count)]
     frame_indices = [idx for idx in frame_indices if idx < total_frames]
+    # Deduplicate while preserving order (can happen when count > frame_range)
+    frame_indices = list(dict.fromkeys(frame_indices))
 
     # Build thumbnail response
     thumbnails = []

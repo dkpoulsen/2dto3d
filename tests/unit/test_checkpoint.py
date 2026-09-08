@@ -1,7 +1,3 @@
-import pytest
-
-pytestmark = pytest.mark.slow
-
 """Unit tests for checkpoint and resume system.
 
 Tests cover:
@@ -14,6 +10,10 @@ Tests cover:
 """
 
 from __future__ import annotations
+
+import pytest
+
+pytestmark = pytest.mark.slow
 
 import tempfile
 from collections.abc import Generator
@@ -652,10 +652,11 @@ class TestBatchQueueConfigCheckpointIntegration:
         assert d["checkpoint"]["enabled"] is True
         assert d["checkpoint"]["checkpoint_interval"] == 50
 
-        config = BatchQueueConfig.from_dict(data)
-        assert config.checkpoint.enabled is False
-        assert str(config.checkpoint.checkpoint_dir) == "/restored/checkpoints"
-        assert config.checkpoint.checkpoint_interval == 100
+        # Round-trip: restored config matches the original values
+        config = BatchQueueConfig.from_dict(d)
+        assert config.checkpoint.enabled is True
+        assert str(config.checkpoint.checkpoint_dir) == "/custom/checkpoints"
+        assert config.checkpoint.checkpoint_interval == 50
         """Test BatchQueueConfig.from_dict() restores checkpoint config."""
         from video2d3d.batch.config import BatchQueueConfig
 

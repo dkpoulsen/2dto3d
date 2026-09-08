@@ -365,6 +365,7 @@ def upscale_frames(
     frames: list[np.ndarray],
     config: UpscalerConfig | None = None,
     progress_callback: Callable[[int, int], None] | None = None,
+    use_dummy: bool = False,
 ) -> list[np.ndarray]:
     """Convenience function to upscale a list of frames.
 
@@ -372,6 +373,7 @@ def upscale_frames(
         frames: List of input frames.
         config: Upscaler configuration. Uses defaults if None.
         progress_callback: Optional callback(completed, total).
+        use_dummy: If True, use a dummy upscaler for testing.
 
     Returns:
         List of upscaled frames.
@@ -379,7 +381,8 @@ def upscale_frames(
     if config is None:
         config = UpscalerConfig()
 
-    with VideoUpscaler(config) as upscaler:
+    kwargs = {"use_dummy": use_dummy} if use_dummy else {}
+    with VideoUpscaler(config, **kwargs) as upscaler:
         return upscaler.upscale_frames(frames, progress_callback)
 
 

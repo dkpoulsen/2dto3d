@@ -22,6 +22,7 @@ from fastapi.testclient import TestClient
 if TYPE_CHECKING:
     from collections.abc import Generator
 
+from video2d3d.web.exceptions import register_exception_handlers
 from video2d3d.web.routers import uploads
 from video2d3d.web.state import AppState
 
@@ -42,6 +43,7 @@ def mock_app_state(tmp_path: Path) -> Generator[AppState, None, None]:
 def app(mock_app_state: AppState) -> Generator[FastAPI, None, None]:
     """Create test FastAPI app with upload router."""
     app = FastAPI()
+    register_exception_handlers(app)
 
     # Mock get_config to return API prefix
     with patch("video2d3d.web.routers.uploads.get_config") as mock_config:
@@ -183,7 +185,7 @@ class TestGetFileInfo:
 
     def test_get_file_info_invalid_id(self, client: TestClient) -> None:
         """Test getting info with invalid file ID (path traversal)."""
-        response = client.get("/api/v1/upload/../etc/passwd")
+        response = client.get("/api/v1/upload/%2e%2e")
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST
         data = response.json()
@@ -218,7 +220,7 @@ class TestDeleteFile:
 
     def test_delete_file_invalid_id(self, client: TestClient) -> None:
         """Test deleting with invalid file ID."""
-        response = client.delete("/api/v1/upload/../../etc/passwd")
+        response = client.delete("/api/v1/upload/%2e%2e")
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST
 

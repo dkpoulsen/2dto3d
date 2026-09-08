@@ -217,10 +217,9 @@ class TestCircularDependencyDetection:
             depends_on=[job_b.job_id],
         )
 
-        # Try to add job D that creates cycle: D -> A -> B -> C -> D
-        # First update A to depend on D (which would make A depend on C indirectly)
-        # This is tested via would_create_cycle
-        assert temp_queue._would_create_cycle(job_c.job_id, job_a.job_id)
+        # An indirect cycle exists if making A depend on C, since C already
+        # transitively depends on A (C -> B -> A).
+        assert temp_queue._would_create_cycle(job_a.job_id, job_c.job_id)
 
 
 class TestDependencyFailedValidation:

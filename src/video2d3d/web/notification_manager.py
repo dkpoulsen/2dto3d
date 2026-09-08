@@ -12,7 +12,7 @@ import json
 import threading
 import uuid
 from concurrent.futures import ThreadPoolExecutor
-from datetime import UTC, datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
@@ -109,8 +109,11 @@ class NotificationManager:
         Returns:
             The created Notification instance.
         """
-        expiry_hours = expires_in_hours or self._default_expiry_hours
-        expires_at = datetime.now(UTC) + timedelta(hours=expiry_hours) if expiry_hours > 0 else None
+        if expires_in_hours is not None:
+            expiry_hours = expires_in_hours
+        else:
+            expiry_hours = self._default_expiry_hours
+        expires_at = datetime.utcnow() + timedelta(hours=expiry_hours) if expiry_hours > 0 else None
 
         notification = Notification(
             notification_id=str(uuid.uuid4()),
@@ -120,7 +123,7 @@ class NotificationManager:
             priority=priority,
             job_id=job_id,
             data=data or {},
-            created_at=datetime.now(UTC),
+            created_at=datetime.now(timezone.utc),
             expires_at=expires_at,
         )
 
@@ -416,7 +419,7 @@ class NotificationManager:
         self.create_notification(
             notification_type=NotificationType.JOB_RETRYING,
             title="Job Retrying",
-            message=f"Video conversion job '{job.input_path.name}' is being retried (attempt {job.retry_count}/{job.max_retries}).",
+            message=f"Video conversion job '{job.input_path.name}' retry (attempt {job.retry_count}/{job.max_retries}).",
             priority=NotificationPriority.NORMAL,
             job_id=job.job_id,
             data={
@@ -490,7 +493,7 @@ class NotificationManager:
 
         payload = WebhookPayload(
             event_type=event_type,
-            timestamp=datetime.now(UTC),
+            timestamp=datetime.now(timezone.utc),
             job_id=job_id,
             data=data,
         )
@@ -566,7 +569,7 @@ class NotificationManager:
                     ],
                     "webhook_configs": [c.model_dump() for c in self._webhook_configs],
                     "email_configs": [c.model_dump() for c in self._email_configs],
-                    "saved_at": datetime.now(UTC).isoformat(),
+                    "saved_at": datetime.now(timezone.utc).isoformat(),
                 }
 
             # Atomic write: write to temp file, then rename

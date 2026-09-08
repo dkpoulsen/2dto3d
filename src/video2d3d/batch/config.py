@@ -14,6 +14,7 @@ from typing import Any
 
 from video2d3d.batch.models import JobPriority
 from video2d3d.checkpoint.models import CheckpointConfig
+from video2d3d.utils.logger import get_logger  # noqa: F401 - patched in tests
 
 
 @dataclass

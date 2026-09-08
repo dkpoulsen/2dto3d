@@ -287,6 +287,14 @@ class DepthSegmentationIntegrator:
         for mask in masks:
             segmentation = mask["segmentation"].astype(np.uint8) * 255
 
+            # Resize the mask to match the target image shape when needed
+            if segmentation.shape[:2] != (h, w):
+                segmentation = cv2.resize(
+                    segmentation,
+                    (w, h),
+                    interpolation=cv2.INTER_NEAREST,
+                )
+
             # Dilate to get boundary region
             dilated = cv2.dilate(segmentation, kernel, iterations=1)
             boundary = dilated - segmentation
@@ -366,6 +374,12 @@ class DepthSegmentationIntegrator:
         combined_mask = np.zeros((h, w), dtype=np.int32)
         for idx, mask in enumerate(masks, start=1):
             segmentation = mask["segmentation"]
+            if segmentation.shape[:2] != (h, w):
+                segmentation = cv2.resize(
+                    segmentation.astype(np.uint8),
+                    (w, h),
+                    interpolation=cv2.INTER_NEAREST,
+                ).astype(bool)
             unassigned = combined_mask == 0
             combined_mask[unassigned & segmentation] = idx
 

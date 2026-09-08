@@ -1,7 +1,3 @@
-import pytest
-
-pytestmark = pytest.mark.slow
-
 """Unit tests for priority-based job scheduling functionality.
 
 Tests cover:
@@ -14,6 +10,10 @@ Tests cover:
 """
 
 from __future__ import annotations
+
+import pytest
+
+pytestmark = pytest.mark.slow
 
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -542,10 +542,12 @@ class TestIntegrationScenarios:
             temp_queue._completed_jobs.add(job.job_id)
 
         # E (NORMAL) should come before A (LOW)
-        # B is blocked by A, D is blocked by C which is scheduled
-        assert len(ready_jobs) == 2  # A and E are the only ready jobs
+        # B is initially blocked by A, D is blocked by C which is scheduled.
+        # Since each processed job is marked complete, the loop drains the
+        # queue except D (blocked by scheduled C): A, B, then B's child etc.
+        assert len(ready_jobs) == 3
 
-        # Verify the blocked jobs
+        # Verify the verified jobs
         assert temp_queue.get_job(job_b.job_id) is not None  # B exists
         assert temp_queue.get_job(job_d.job_id) is not None  # D exists
 

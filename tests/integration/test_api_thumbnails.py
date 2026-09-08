@@ -21,6 +21,7 @@ if TYPE_CHECKING:
     from collections.abc import Generator
 
 from video2d3d.batch.models import BatchJob, BatchQueueStats, JobPriority, JobStatus
+from video2d3d.web.exceptions import register_exception_handlers
 from video2d3d.web.routers import jobs
 from video2d3d.web.state import AppState
 
@@ -65,6 +66,7 @@ def mock_app_state(tmp_path: Path, mock_queue: MagicMock) -> Generator[AppState,
 def app(mock_app_state: AppState) -> Generator[FastAPI, None, None]:
     """Create test FastAPI app with jobs router."""
     app = FastAPI()
+    register_exception_handlers(app)
 
     # Mock get_config
     with patch("video2d3d.web.routers.jobs.get_config") as mock_config:

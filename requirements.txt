@@ -10,6 +10,7 @@ ffmpeg-python>=0.2.0
 # Deep Learning Frameworks
 torch>=1.9.0
 torchvision>=0.10.0
+onnxruntime>=1.14.0
 # tensorflow>=2.8.0  # Optional: uncomment if using TensorFlow models
 
 # Depth Estimation Models
@@ -35,6 +36,7 @@ fastapi>=0.75.0
 uvicorn>=0.17.0
 python-multipart>=0.0.5
 slowapi>=0.1.9
+email-validator>=2.0.0
 # flask>=2.0.0
 
 # Logging
@@ -57,6 +59,7 @@ segment-anything>=1.0  # Meta SAM model for object segmentation
 # Authentication
 python-jose[cryptography]>=3.3.0
 passlib[bcrypt]>=1.7.4
+bcrypt==4.0.1  # passlib 1.7.4 incompatible with bcrypt>=4.1/5.x
 
 # Database
 sqlalchemy>=2.0.0

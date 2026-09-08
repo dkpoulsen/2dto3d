@@ -24,27 +24,33 @@ if TYPE_CHECKING:
 
 @pytest.fixture(autouse=True)
 def reset_memory_monitor_singleton() -> Generator[None, None, None]:
-    """Reset MemoryMonitor singleton before and after each test."""
-    # Reset before test
+    """Reset MemoryMonitor singleton before and after each test.
+
+    Only the singleton is reset. The module is deliberately NOT removed
+    from ``sys.modules``: purging it can race with ``patch()`` by string
+    target and yield an unpatched fresh module in the test body.
+    """
     if "video2d3d.utils.memory_monitor" in sys.modules:
         from video2d3d.utils.memory_monitor import MemoryMonitor
 
         MemoryMonitor.reset_instance()
-        del sys.modules["video2d3d.utils.memory_monitor"]
 
     yield
 
-    # Reset after test
     if "video2d3d.utils.memory_monitor" in sys.modules:
         from video2d3d.utils.memory_monitor import MemoryMonitor
 
         MemoryMonitor.reset_instance()
-        del sys.modules["video2d3d.utils.memory_monitor"]
 
 
 @pytest.fixture
-def mock_psutil() -> Generator[MagicMock, None, None]:
-    """Mock psutil for controlled testing."""
+def mock_psutil(reset_memory_monitor_singleton) -> Generator[MagicMock, None, None]:
+    """Mock psutil for controlled testing.
+
+    Depends on the reset fixture so the module is purged from
+    ``sys.modules`` *before* this patch is applied; otherwise the test's
+    import could re-load an unpatched module.
+    """
     with patch("video2d3d.utils.memory_monitor.psutil") as mock:
         # Mock virtual_memory
         mock_mem = MagicMock()
@@ -65,8 +71,8 @@ def mock_psutil() -> Generator[MagicMock, None, None]:
 
 
 @pytest.fixture
-def mock_logger() -> Generator[MagicMock, None, None]:
-    """Mock logger module."""
+def mock_logger(reset_memory_monitor_singleton) -> Generator[MagicMock, None, None]:
+    """Mock logger module (runs after the singleton/module reset fixture)."""
     with patch("video2d3d.utils.memory_monitor.get_logger") as mock_get_logger:
         mock_log = MagicMock()
         mock_get_logger.return_value = mock_log
@@ -659,6 +665,13 @@ class TestIntegration:
         time.sleep(0.1)
 
         # Increase to warning
+        mock_mem.available = 4.5 * 1024**3
+        mock_mem.used = 11.5 * 1024**3
+        mock_mem.percent = 72.0
+        mock_psutil.virtual_memory.return_value = mock_mem
+        time.sleep(0.15)
+
+        # Increase to critical
         mock_mem.available = 3.2 * 1024**3
         mock_mem.used = 12.8 * 1024**3
         mock_mem.percent = 80.0

@@ -9,6 +9,7 @@ This module provides functions for:
 from __future__ import annotations
 
 import os
+import uuid
 from datetime import datetime, timedelta, timezone
 
 from jose import JWTError, jwt
@@ -67,7 +68,12 @@ def hash_password(password: str) -> str:
     Returns:
         Hashed password string.
     """
-    return _pwd_context.hash(password)
+    return _pwd_context.hash(_truncate_for_bcrypt(password))
+
+
+def _truncate_for_bcrypt(password: str) -> str:
+    """Truncate a password to bcrypt's 72-byte limit."""
+    return password.encode("utf-8")[:72].decode("utf-8", errors="ignore")
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
@@ -80,7 +86,7 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
     Returns:
         True if password matches, False otherwise.
     """
-    return _pwd_context.verify(plain_password, hashed_password)
+    return _pwd_context.verify(_truncate_for_bcrypt(plain_password), hashed_password)
 
 
 def create_access_token(
@@ -115,6 +121,7 @@ def create_access_token(
         "type": "access",
         "exp": expire,
         "iat": now,
+        "jti": uuid.uuid4().hex,
     }
 
     return jwt.encode(payload, config.secret_key, algorithm=config.algorithm)
@@ -152,6 +159,7 @@ def create_refresh_token(
         "type": "refresh",
         "exp": expire,
         "iat": now,
+        "jti": uuid.uuid4().hex,
     }
 
     return jwt.encode(payload, config.secret_key, algorithm=config.algorithm)
@@ -233,6 +241,8 @@ def authenticate_user(username_or_email: str, password: str) -> UserModel | None
         # Update last login
         user.last_login = datetime.now(timezone.utc)
         session.commit()
+        # Reload attributes so the instance stays usable after the session closes
+        session.refresh(user)
 
         return user
 

@@ -28,6 +28,7 @@ from __future__ import annotations
 
 import contextlib
 import os
+import signal
 import sys
 import threading
 import traceback
@@ -620,6 +621,13 @@ class CrashReporter:
         filepath = self.save_report(report)
         self._logger.info(f"Manual crash report saved to: {filepath}")
 
+        # Call callback if set
+        if self.config.callback:
+            try:
+                self.config.callback(report)
+            except Exception as e:
+                self._logger.error(f"Crash callback failed: {e}")
+
         return report
 
     def set_queue(self, queue: BatchVideoQueue | None) -> None:
@@ -696,10 +704,25 @@ def set_crash_reporter_queue(queue: BatchVideoQueue | None) -> None:
         _crash_reporter.set_queue(queue)
 
 
+def shutdown_crash_reporting() -> None:
+    """Shutdown global crash reporting.
+
+    Uninstalls exception hooks and signal handlers and clears the global
+    CrashReporter instance. Safe to call even if crash reporting was
+    never initialized.
+    """
+    global _crash_reporter
+
+    if _crash_reporter is not None:
+        _crash_reporter.uninstall_handlers()
+        _crash_reporter = None
+
+
 __all__ = [
     "CrashReporter",
     "CrashReporterConfig",
     "init_crash_reporting",
     "get_crash_reporter",
     "set_crash_reporter_queue",
+    "shutdown_crash_reporting",
 ]

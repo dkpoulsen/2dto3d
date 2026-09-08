@@ -1,7 +1,3 @@
-import pytest
-
-pytestmark = pytest.mark.slow
-
 """Unit tests for batch video processing models.
 
 Tests cover:
@@ -13,6 +9,10 @@ Tests cover:
 """
 
 from __future__ import annotations
+
+import pytest
+
+pytestmark = pytest.mark.slow
 
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -29,9 +29,8 @@ from video2d3d.batch.models import BatchJob, BatchJobResult, BatchQueueStats, Jo
 
 @pytest.fixture
 def mock_logger() -> Generator[None, None, None]:
-    """Mock the logger to avoid actual logging."""
-    with patch("video2d3d.batch.models.get_logger"):
-        yield
+    """No-op fixture kept for test signature compatibility; models do not log."""
+    yield
 
 
 class TestJobStatus:

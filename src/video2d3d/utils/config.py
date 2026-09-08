@@ -480,8 +480,31 @@ class Config:
 
         Returns:
             Instantiated configuration object.
+
+        Raises:
+            ValueError: If a value does not match the field type.
         """
-        filtered_data = {k: v for k, v in section_data.items() if hasattr(config_class, k)}
+        import dataclasses
+        import typing
+
+        field_types = {f.name: f.type for f in dataclasses.fields(config_class)}
+        try:
+            hints = typing.get_type_hints(config_class)
+        except Exception:
+            hints = {}
+
+        filtered_data = {}
+        for key, value in section_data.items():
+            if not hasattr(config_class, key):
+                continue
+            expected = hints.get(key, field_types.get(key))
+            if expected is not None:
+                if isinstance(expected, type) and not isinstance(value, expected):
+                    raise ValueError(
+                        f"Invalid value for '{key}': expected {expected.__name__}, "
+                        f"got {type(value).__name__}"
+                    )
+            filtered_data[key] = value
         return config_class(**filtered_data)
 
     @staticmethod
@@ -566,14 +589,19 @@ def load_config(
         environment = get_environment()
 
     # Load default configuration
-    default_config = load_yaml_file(config_path / "default.yaml")
+    if config_path.is_file():
+        # A single file was passed: use it as the entire configuration
+        merged_config = load_yaml_file(config_path)
+        env_config_path = None
+    else:
+        default_config = load_yaml_file(config_path / "default.yaml")
 
-    # Load environment-specific configuration
-    env_config_path = config_path / f"{environment}.yaml"
-    env_config = load_yaml_file(env_config_path)
+        # Load environment-specific configuration
+        env_config_path = config_path / f"{environment}.yaml"
+        env_config = load_yaml_file(env_config_path)
 
-    # Merge configurations (environment overrides default)
-    merged_config = deep_update(default_config, env_config)
+        # Merge configurations (environment overrides default)
+        merged_config = deep_update(default_config, env_config)
 
     # Parse into Config object
     config = Config()
@@ -678,6 +706,7 @@ def export_config(
         ValueError: If format is not 'json' or 'yaml'.
     """
     output_path = Path(output_path)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
     config_dict = config.to_dict()
 
     format_lower = format.lower()
