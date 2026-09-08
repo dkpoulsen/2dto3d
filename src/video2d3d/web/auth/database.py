@@ -7,11 +7,11 @@ and database initialization functions.
 from __future__ import annotations
 
 import uuid
-from typing import Any
 from collections.abc import Generator
 from contextlib import contextmanager
 from datetime import datetime, timezone
 from pathlib import Path
+from typing import Any
 
 from sqlalchemy import Boolean, DateTime, String, create_engine
 from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column, sessionmaker
