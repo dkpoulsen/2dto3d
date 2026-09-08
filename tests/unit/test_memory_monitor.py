@@ -43,8 +43,13 @@ def reset_memory_monitor_singleton() -> Generator[None, None, None]:
 
 
 @pytest.fixture
-def mock_psutil() -> Generator[MagicMock, None, None]:
-    """Mock psutil for controlled testing."""
+def mock_psutil(reset_memory_monitor_singleton) -> Generator[MagicMock, None, None]:
+    """Mock psutil for controlled testing.
+
+    Depends on the reset fixture so the module is purged from
+    ``sys.modules`` *before* this patch is applied; otherwise the test's
+    import could re-load an unpatched module.
+    """
     with patch("video2d3d.utils.memory_monitor.psutil") as mock:
         # Mock virtual_memory
         mock_mem = MagicMock()
@@ -65,8 +70,8 @@ def mock_psutil() -> Generator[MagicMock, None, None]:
 
 
 @pytest.fixture
-def mock_logger() -> Generator[MagicMock, None, None]:
-    """Mock logger module."""
+def mock_logger(reset_memory_monitor_singleton) -> Generator[MagicMock, None, None]:
+    """Mock logger module (runs after the singleton/module reset fixture)."""
     with patch("video2d3d.utils.memory_monitor.get_logger") as mock_get_logger:
         mock_log = MagicMock()
         mock_get_logger.return_value = mock_log
