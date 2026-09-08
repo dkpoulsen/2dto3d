@@ -472,11 +472,11 @@ class SkyDetector:
         else:
             final_horizon = self._find_horizon_simple(sky_mask)
 
-        # Combine method results
+        # Combine method results (inner keys already carry their method prefix)
         method_results = {
-            **{f"color_{k}": v for k, v in color_results.items()},
-            **{f"position_{k}": v for k, v in position_results.items()},
-            **{f"edge_{k}": v for k, v in edge_results.items()},
+            **color_results,
+            **position_results,
+            **edge_results,
             "combined_final_confidence": confidence,
         }
 

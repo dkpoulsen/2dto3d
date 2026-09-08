@@ -659,6 +659,13 @@ class TestIntegration:
         time.sleep(0.1)
 
         # Increase to warning
+        mock_mem.available = 4.5 * 1024**3
+        mock_mem.used = 11.5 * 1024**3
+        mock_mem.percent = 72.0
+        mock_psutil.virtual_memory.return_value = mock_mem
+        time.sleep(0.15)
+
+        # Increase to critical
         mock_mem.available = 3.2 * 1024**3
         mock_mem.used = 12.8 * 1024**3
         mock_mem.percent = 80.0

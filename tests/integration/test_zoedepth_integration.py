@@ -308,7 +308,9 @@ class TestZoeDepthBatchProcessingIntegration:
         mock_prediction.dim.return_value = 3
         mock_prediction.squeeze.return_value = MagicMock(
             cpu=MagicMock(
-                return_value=MagicMock(numpy=MagicMock(return_value=np.zeros((100, 100), dtype=np.float32)))
+                return_value=MagicMock(
+                    numpy=MagicMock(return_value=np.zeros((100, 100), dtype=np.float32))
+                )
             )
         )
         batch_sizes = iter([4, 1])
@@ -342,7 +344,9 @@ class TestZoeDepthBatchProcessingIntegration:
         mock_prediction.dim.return_value = 3
         mock_prediction.squeeze.return_value = MagicMock(
             cpu=MagicMock(
-                return_value=MagicMock(numpy=MagicMock(return_value=np.zeros((100, 100), dtype=np.float32)))
+                return_value=MagicMock(
+                    numpy=MagicMock(return_value=np.zeros((100, 100), dtype=np.float32))
+                )
             )
         )
         batch_sizes = iter([3, 3, 3, 1])

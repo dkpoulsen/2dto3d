@@ -93,6 +93,7 @@ def mock_torch_modules() -> Generator[None, None, None]:
         "loguru",
         "video2d3d.utils",
         "video2d3d.utils.logger",
+        "video2d3d.utils.gpu",
     ]
 
     for mod in modules_to_mock:
@@ -114,8 +115,21 @@ def mock_torch_modules() -> Generator[None, None, None]:
     # Mock loguru
     sys.modules["loguru"] = MagicMock()
 
-    # Mock video2d3d.utils modules
-    sys.modules["video2d3d.utils"] = MagicMock()
+    # Mock video2d3d.utils modules (package-like so submodule imports work)
+    mock_utils = MagicMock()
+    mock_utils.__path__ = []
+    mock_gpu = MagicMock()
+    mock_gpu.GPUConfig = MagicMock
+    mock_gpu.select_device = MagicMock(return_value=MagicMock(device="cpu"))
+    mock_gpu.clear_gpu_memory = MagicMock()
+    mock_gpu.compute_optimal_batch_size = MagicMock(return_value=4)
+    mock_gpu.get_memory_usage = MagicMock(return_value={})
+    mock_gpu.setup_device = MagicMock(return_value=MagicMock(device="cpu"))
+    mock_gpu.with_oom_retry = MagicMock()
+    mock_gpu.GPUError = Exception
+    mock_gpu.OutOfMemoryError = Exception
+    sys.modules["video2d3d.utils"] = mock_utils
+    sys.modules["video2d3d.utils.gpu"] = mock_gpu
     sys.modules["video2d3d.utils.logger"] = _create_mock_logger_module()
     if "video2d3d.depth" in sys.modules:
         del sys.modules["video2d3d.depth"]

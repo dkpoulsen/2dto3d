@@ -70,6 +70,14 @@ def get_system_memory() -> SystemMemoryResponse:
             used_mb=round(used_mb, 2),
             utilization_percent=round(utilization, 2),
         )
+    except ImportError:
+        logger.debug("psutil not available, returning default memory stats")
+        return SystemMemoryResponse(
+            total_mb=0.0,
+            available_mb=0.0,
+            used_mb=0.0,
+            utilization_percent=0.0,
+        )
     except Exception as e:
         logger.warning(f"Failed to get system memory: {e}")
         return SystemMemoryResponse(

@@ -592,7 +592,11 @@ class DepthEstimator:
 
         except RuntimeError as e:
             error_str = str(e).lower()
-            if "out of memory" in error_str and self.config.fallback_to_cpu:
+            if (
+                "out of memory" in error_str
+                and self.config.fallback_to_cpu
+                and self.config.device != "cpu"
+            ):
                 logger.warning("GPU out of memory, falling back to CPU")
                 self._fallback_to_cpu()
                 return self.estimate_depth(frame)

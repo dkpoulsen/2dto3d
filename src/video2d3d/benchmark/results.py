@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import json
 import statistics
-from dataclasses import asdict, dataclass, field
+from dataclasses import asdict, dataclass, field, fields
 from datetime import datetime
 from pathlib import Path
 from typing import Any
@@ -144,13 +144,20 @@ class BenchmarkResult:
             width, height = map(int, data["resolution"].split("x"))
             data["resolution"] = (width, height)
 
-        # Parse nested dataclasses
+        # Parse nested dataclasses (ignoring unknown fields)
         if "timing" in data and isinstance(data["timing"], dict):
-            data["timing"] = TimingMetrics(**data["timing"])
+            valid = {f.name for f in fields(TimingMetrics)}
+            data["timing"] = TimingMetrics(
+                **{k: v for k, v in data["timing"].items() if k in valid}
+            )
         if "memory" in data and isinstance(data["memory"], dict):
-            data["memory"] = MemoryMetrics(**data["memory"])
+            valid = {f.name for f in fields(MemoryMetrics)}
+            data["memory"] = MemoryMetrics(
+                **{k: v for k, v in data["memory"].items() if k in valid}
+            )
         if "gpu" in data and isinstance(data["gpu"], dict):
-            data["gpu"] = GPUMetrics(**data["gpu"])
+            valid = {f.name for f in fields(GPUMetrics)}
+            data["gpu"] = GPUMetrics(**{k: v for k, v in data["gpu"].items() if k in valid})
 
         return cls(**data)
 

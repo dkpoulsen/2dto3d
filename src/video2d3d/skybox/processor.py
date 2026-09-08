@@ -397,7 +397,7 @@ def create_sky_depth_mask(
         y_coords = np.arange(h).reshape(-1, 1)
         normalized_y = np.clip(y_coords / horizon_y, 0, 1)
         gradient_depth = max_depth * (1 - gradient_strength * normalized_y)
-        depth_mask = np.where(sky_mask, gradient_depth, max_depth)
+        depth_mask = np.where(sky_mask, gradient_depth, max_depth).astype(np.float32)
 
     return depth_mask
 

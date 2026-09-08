@@ -120,7 +120,7 @@ class PreviewWindow:
         # State
         self._is_created = False
         self._is_closed = False
-        self._lock = threading.Lock()
+        self._lock = threading.RLock()
         self._last_update_time: float = 0.0
 
         # FPS calculation
@@ -338,6 +338,8 @@ class PreviewWindow:
         if not frames:
             return frames
 
+        _ensure_cv2()
+
         # Find target height (use the first frame's height)
         target_height = frames[0].shape[0]
 
@@ -384,19 +386,15 @@ class PreviewWindow:
             depth_bgr = self._apply_scale(depth_bgr)
             stereo_bgr = self._apply_scale(stereo_bgr)
 
-        # Ensure same height
-        frames = self._ensure_same_height([original_bgr, depth_bgr, stereo_bgr])
-        original_bgr, depth_bgr, stereo_bgr = frames
-
         # Add labels
         if self._config.show_frame_info:
             original_bgr = self._add_label(original_bgr, "Original")
             depth_bgr = self._add_label(depth_bgr, "Depth Map")
-            stereo_bgr = self._add_label(
-                stereo_result if stereo_result.shape == stereo_bgr.shape else stereo_bgr,
-                "3D Result",
-            )
             stereo_bgr = self._add_label(stereo_bgr, "3D Result")
+
+        # Ensure same height (after labels, which may alter heights)
+        frames = self._ensure_same_height([original_bgr, depth_bgr, stereo_bgr])
+        original_bgr, depth_bgr, stereo_bgr = frames
 
         # Combine based on layout
         if self._config.layout == PreviewLayout.HORIZONTAL:

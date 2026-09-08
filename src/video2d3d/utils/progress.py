@@ -287,7 +287,7 @@ class VideoConversionProgress:
         self._overall_task: TaskID | None = None
 
         # Thread safety
-        self._lock = threading.Lock()
+        self._lock = threading.RLock()
         self._is_active = False
         self._start_time: float | None = None
 

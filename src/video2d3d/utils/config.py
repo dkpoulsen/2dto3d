@@ -589,14 +589,19 @@ def load_config(
         environment = get_environment()
 
     # Load default configuration
-    default_config = load_yaml_file(config_path / "default.yaml")
+    if config_path.is_file():
+        # A single file was passed: use it as the entire configuration
+        merged_config = load_yaml_file(config_path)
+        env_config_path = None
+    else:
+        default_config = load_yaml_file(config_path / "default.yaml")
 
-    # Load environment-specific configuration
-    env_config_path = config_path / f"{environment}.yaml"
-    env_config = load_yaml_file(env_config_path)
+        # Load environment-specific configuration
+        env_config_path = config_path / f"{environment}.yaml"
+        env_config = load_yaml_file(env_config_path)
 
-    # Merge configurations (environment overrides default)
-    merged_config = deep_update(default_config, env_config)
+        # Merge configurations (environment overrides default)
+        merged_config = deep_update(default_config, env_config)
 
     # Parse into Config object
     config = Config()

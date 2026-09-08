@@ -92,7 +92,6 @@ class UserModel(Base):
 # Global database engine and session factory
 from video2d3d.web.state import app_state
 
-
 _engine = None
 _session_factory = None
 

@@ -428,10 +428,12 @@ REST API server built with FastAPI.
 
 #### Starting the Server
 
-```python
+```bash
 # Command line
 video2d3d serve --host 0.0.0.0 --port 8000
+```
 
+```python
 # Programmatically
 from video2d3d.web.app import create_app
 import uvicorn
@@ -971,6 +973,277 @@ batch_size = sizer.get_optimal_batch_size(frame_resolution=(1920, 1080))
 | `SEQUENTIAL` | Debugging, single-threaded environments | Low |
 
 ---
+
+## Development Workflow
+
+### Setting Up a Development Environment
+
+Before contributing to the project, set up a local development environment with all required tooling. The project uses Python 3.9 or later, and all development dependencies are listed in `requirements-dev.txt`.
+
+```bash
+# Clone the repository
+git clone https://github.com/automaker/2dto3d.git
+cd 2dto3d
+
+# Create and activate a virtual environment
+python -m venv .venv
+source .venv/bin/activate
+
+# Install runtime and development dependencies
+pip install -r requirements-dev.txt
+
+# Install the package in editable mode
+pip install -e .
+```
+
+After installation, verify that the core dependencies import correctly and that FFmpeg is available on your `PATH`. FFmpeg is required for all video encoding and decoding operations, and the converter will refuse to start without it.
+
+```bash
+# Verify FFmpeg availability
+ffmpeg -version
+ffprobe -version
+
+# Run a quick smoke test
+video2d3d --help
+```
+
+### Running the Test Suite
+
+The test suite is organized into unit, integration, and contract tests. Unit tests are fast and run on every commit; integration tests exercise real video files and may download model weights on first run.
+
+```bash
+# Run the full test suite with coverage
+pytest --cov=src/video2d3d --cov-report=term-missing tests/
+
+# Run only unit tests
+pytest tests/unit/ -m "not slow and not gpu"
+
+# Run tests in parallel with pytest-xdist
+pytest tests/ -n 4
+
+# Run a single test file
+pytest tests/unit/test_depth_curve.py -v
+```
+
+Tests marked with the `slow` marker are excluded from the default CI run because they download large model weights or take several minutes to complete. Tests marked with `gpu` require a CUDA-capable device.
+
+### Code Style and Linting
+
+The project enforces formatting with Black, import ordering with isort, and general linting with Ruff. All three tools run in the CI pipeline, and a pull request will fail if formatting does not match.
+
+```bash
+# Format code
+black src/ tests/
+
+# Sort imports
+isort src/ tests/
+
+# Run the linter
+ruff check src/ tests/
+
+# Run all checks exactly as CI does
+black --check src/ tests/ && ruff check src/ tests/
+```
+
+Type hints are required for all public functions. The codebase is fully annotated, and MyPy verifies internal consistency. Run MyPy locally before pushing:
+
+```bash
+mypy src/video2d3d
+```
+
+## Error Handling Patterns
+
+The codebase follows a layered error handling pattern. Each module defines its own exception hierarchy rooted at a module-specific base class, which in turn derives from a common application error. This allows callers to catch errors at whatever granularity they need.
+
+### Exception Hierarchy
+
+Every module exposes exceptions such as `VideoFileNotFoundError`, `VideoCorruptedError`, and `FrameExtractionError`. All of these derive from the module base, so `except VideoError` catches anything raised by the video pipeline. When writing new code, always raise the most specific exception available and include a human-readable message plus any relevant context.
+
+### Crash Reporting
+
+The crash reporting subsystem captures system state, active jobs, and log excerpts when an unhandled exception occurs. Reports are written as JSON files into a configurable crash directory and can be disabled entirely for embedded deployments.
+
+```bash
+# Run the server with crash reporting to a custom directory
+VIDEO2D3D_CRASH_DIR=/var/crashes video2d3d serve
+```
+
+Callbacks can be registered to receive crash reports programmatically, which is useful for shipping reports to a monitoring service. Callback exceptions are caught and logged so they never interfere with the crash handler itself.
+
+## Configuration Reference
+
+Configuration is loaded from YAML files in the `config/` directory, with environment-specific overrides layered on top of `default.yaml`. The `VIDEO2D3D_ENV` environment variable selects which override file is used.
+
+```bash
+# Run with production configuration
+VIDEO2D3D_ENV=production video2d3d serve
+
+# Run with development configuration (default)
+VIDEO2D3D_ENV=development video2d3d serve
+```
+
+Every configuration section maps to a dataclass in `video2d3d.utils.config`. Unknown keys are ignored with a warning, and type mismatches raise a `ValueError` at load time rather than failing silently during processing. When adding a new configuration option, add the field to the dataclass, document it, and add a default so existing configuration files continue to work unchanged.
+
+## Performance Tuning
+
+### Batch Size Selection
+
+The adaptive batch sizer monitors GPU utilization and system memory to adjust batch sizes at runtime. When the GPU is underutilized, the batch size scales up; when memory pressure rises or the GPU is saturated, it scales down. The stability window prevents oscillation by requiring consistent readings before making adjustments.
+
+For dedicated GPU servers, start with the default configuration and observe the logs during a representative workload. If the batch size rarely reaches the maximum, the GPU is not the bottleneck and increasing `max_batch_size` will not help.
+
+### Video Memory Management
+
+Large 4K videos can exhaust GPU memory during stereo generation. The tiling system splits frames into overlapping tiles processed independently, which bounds peak memory at the cost of some duplication at tile boundaries.
+
+```bash
+# Process a large video with tiling enabled
+video2d3d convert large_video.mp4 --tile-size 512
+```
+
+### Profiling
+
+The built-in profiler records per-component timing and can identify bottlenecks. Results include sorted component timings and automatic bottleneck detection based on a configurable threshold percentage of total time.
+
+## Troubleshooting
+
+### Common Issues
+
+Most startup failures are environmental rather than logical. The following checklist covers the majority of reported problems:
+
+```bash
+# FFmpeg missing from PATH
+which ffmpeg || echo "Install FFmpeg first"
+
+# GPU not visible to PyTorch
+python -c "import torch; print(torch.cuda.is_available())"
+
+# Model weights not downloaded
+ls ~/.cache/torch/hub/checkpoints/
+
+# Database locked by another process
+ls uploads/data/auth.db*
+```
+
+### Reading the Logs
+
+Logs are written to the `logs/` directory with daily rotation and gzip compression. Debug-level logging can be enabled through the configuration file or the `VIDEO2D3D_LOG_LEVEL` environment variable. The web API also emits structured request logs with request IDs that correlate API calls with internal processing stages, which is essential when diagnosing slow or failed jobs.
+
+### Getting Help
+
+When filing an issue, include the crash report JSON if one was generated, the relevant log excerpt, and the exact command that was run. Reproduction steps with a small input video dramatically reduce diagnosis time.
+
+## Continuous Integration Pipeline
+
+The CI pipeline runs on every pull request and consists of a linting stage followed by a test matrix. The lint stage is intentionally fast — it completes in under thirty seconds — so formatting mistakes are caught before expensive test jobs start. The test matrix runs the full suite on multiple Python versions in parallel, each with a thirty-minute timeout and a sixty-second per-test timeout to prevent hangs.
+
+Test jobs publish a JUnit XML report and a coverage profile. The coverage profile is checked against a minimum threshold, so new code that ships without tests will fail the build even when all tests pass. Integration tests run in a separate job that is triggered manually or by schedule, since they depend on network access for model downloads.
+
+### Writing Good Tests
+
+Tests in this repository follow several conventions. Each test file mirrors a source file and lives under the same relative path in `tests/`. Fixtures are preferred over setup methods, and shared fixtures live in `tests/conftest.py`. Tests that exercise real image or video code paths should use the real OpenCV rather than mocks — the conftest falls back to mock modules only when the real package is unavailable.
+
+When a test needs a video file, generate it programmatically with `cv2.VideoWriter` into a `tmp_path` fixture rather than committing binary fixtures to the repository. This keeps the checkout small and makes the test's assumptions explicit.
+
+### Dependency Management
+
+Runtime dependencies are pinned to major ranges in `requirements.txt`. Development-only tooling lives in `requirements-dev.txt`, which includes the runtime file. When upgrading a dependency, run the full test suite locally and watch for deprecation warnings — several libraries in the computer vision ecosystem change behavior in minor releases.
+
+Optional heavy dependencies such as `onnxruntime` are required for specific features like Real-ESRGAN upscaling. The code imports them lazily and raises a helpful error message describing the installation command when they are missing.
+
+## Concurrency Model
+
+The converter supports three processing modes selected per workload. Multiprocessing sidesteps the Python GIL for CPU-bound work such as depth estimation on large frames. Threading is appropriate for I/O-bound stages like video writing where the underlying library releases the GIL. Sequential mode exists for debugging and for constrained environments where process spawning is unavailable.
+
+Shared state is protected by locks in the components that accept work from multiple threads — the batch queue, the notification manager, and the preview window. These locks are reentrant so that public methods can safely compose other public methods on the same object. When adding new mutable state to these components, extend the existing lock rather than introducing a second one, as nested acquisitions of independent locks are a common source of deadlocks.
+
+Background threads are daemonized so that a crashed main thread does not hang the process. Long-running loops check a stop event each iteration and exit promptly when shutdown is requested. The web application's lifespan handler stops the batch queue and shuts down crash reporting and notification managers in the reverse order of their initialization.
+
+## Security Considerations
+
+The web API performs authentication with JWTs. A default development secret is built in for local experimentation, but production deployments must set the `JWT_SECRET_KEY` environment variable — the server logs a prominent security warning when the default is in use. Access tokens are short-lived and refresh tokens are long-lived; both include a unique `jti` claim so that repeated logins always produce distinct tokens.
+
+Uploaded files are stored under an ID-prefixed filename to prevent path traversal. File IDs are validated before any filesystem access, and requests containing traversal sequences are rejected with a validation error. Uploads are size-limited, and partial uploads are cleaned up when the limit is exceeded.
+
+The SQLite database used for authentication is created with directory creation on first run. Back up the database alongside the uploads directory when migrating deployments.
+
+## Deployment Notes
+
+The repository includes Docker images for GPU and CPU deployments. The GPU image builds on a CUDA base and expects the NVIDIA container runtime; the CPU image is substantially smaller and suits evaluation deployments.
+
+```bash
+# Build the CPU image
+docker build -f Dockerfile.cpu -t 2dto3d:cpu .
+
+# Run with mounted volumes for inputs and outputs
+docker run --rm -p 8000:8000 \
+  -v $(pwd)/uploads:/app/uploads \
+  -v $(pwd)/outputs:/app/outputs \
+  2dto3d:cpu
+
+# Follow the logs
+docker logs -f $(docker ps -q --filter ancestor=2dto3d:cpu)
+```
+
+For Kubernetes deployments, the `k8s/` directory contains manifests with health probes wired to the `/health` endpoint. Configure resource requests conservatively: depth estimation is GPU-bound, and oversubscribing CPU limits causes more context switching than throughput gain.
+
+## Release Process
+
+Releases cut from `main` after CI passes. The version string lives in the package `__init__` and is surfaced in the CLI banner, the API health endpoint, and the documentation footer — update all occurrences in the same commit. Release notes should list user-visible changes, known issues, and any configuration migrations required.
+
+## Module Deep Dives
+
+### Video Module Internals
+
+The video module wraps FFmpeg and OpenCV behind a consistent Python interface. `FrameExtractor` implements the iterator protocol, yielding `(frame_number, frame)` tuples so callers can process frames lazily without loading an entire video into memory. It supports three sampling strategies: extracting every frame, extracting at a fixed interval, or uniform sampling to a target count. Frame indices are computed once and cached, and a bounded frame buffer smooths out bursts of downstream demand.
+
+`VideoWriter` manages the FFmpeg subprocess lifecycle. It builds the encoder command from a `VideoWriterConfig`, validates dimensions and FPS before starting the process, and streams frames to the process's stdin. Progress callbacks fire per frame, and statistics such as elapsed time and frames per second are accumulated in a `WriterStats` object. Audio from an optional source video can be copied onto the output without re-encoding.
+
+### Depth Module Internals
+
+`DepthMapProcessor` composes individual operations — normalization, smoothing, hole filling, and edge enhancement — into a pipeline. Each operation is a small, independently testable function; the pipeline applies them in a documented order and validates the value range between stages. The `TemporalSmoother` operates across frames rather than within one, implementing exponential moving average, sliding window, and optical-flow-guided variants. Its state carries the previous depth map and a bounded history deque, and `reset()` clears it between video sequences.
+
+Model selection is handled by `DepthModelSelector`, which maps scene classifications to a primary model and an ordered fallback chain. When a model fails to load or produces an inference error, the selector advances through the chain before giving up. Callers that explicitly select a model bypass automatic selection entirely.
+
+### Stereo Generation Internals
+
+The `DIBREngine` performs depth-image-based rendering: it warps the source frame using the depth map, synthesizes the left and right views, and fills disocclusion holes using a background-extension strategy. The configuration controls convergence distance, field of view, and hole-filling aggressiveness. Disparity maps can be exported alongside the stereo pair for debugging, and the anaglyph and side-by-side encoders share the same intermediate views.
+
+### Web API Design
+
+The API follows resource-oriented conventions with a versioned prefix. Routers are registered per resource and include explicit response models, so the generated OpenAPI document is accurate. Exception handlers translate internal errors into a consistent JSON error envelope containing an error code, a human-readable message, and a request ID. Rate limiting is applied per endpoint category through decorators backed by `slowapi`, and the limiter instance lives in application state.
+
+## Extending the System
+
+### Adding a Depth Model
+
+New depth models implement the estimator interface: `load_model`, `estimate_depth`, and the context-manager protocol for cleanup. Register the model in the `DepthModelType` enum and add a branch in the selector's estimator factory. Add an integration test that exercises the model with a mocked torch backend so the CI matrix does not require GPU hardware.
+
+### Adding a CLI Command
+
+Commands are plain functions decorated with `@app.command` on the Typer application in `cli.py`. Prefer composing existing service functions over embedding logic in the command body, and return a non-zero exit code through `typer.Exit` on failure. Console output uses Rich markup for consistent color and alignment across commands.
+
+### Adding a Configuration Option
+
+Add the field to the relevant dataclass with a sensible default, surface it in `default.yaml`, and validate it in `__post_init__` if it has invariants. Export and import round-trip through `to_dict` and `from_dict`, so no extra work is needed for persistence — but do add a test covering the new field's parsing.
+
+## Coding Guidelines
+
+### Naming Conventions
+
+Classes use PascalCase, modules use lowercase with underscores, and constants use uppercase with underscores. Private methods are prefixed with a single underscore. Enum members use uppercase and their values are lowercase strings, which keeps log output readable. When a class has both a configuration dataclass and an implementation class, name them `ThingConfig` and `Thing` respectively so the pairing is obvious in imports.
+
+### Documentation Style
+
+Every module starts with a docstring describing its purpose and its role in the larger pipeline. Public functions include Google-style docstrings covering arguments, return values, and raised exceptions. Inline comments explain *why*, not *what* — the code already says what it does. When a workaround for a third-party library is required, link the relevant issue or changelog entry so future maintainers can evaluate removing it.
+
+### Commit Discipline
+
+Commits follow the conventional commit format: a type prefix such as `fix`, `feat`, or `ci`, a short imperative summary, and a body explaining the motivation when the summary is insufficient. Each commit should leave the tree in a state where the test suite passes. Rebase onto the latest `main` before opening a pull request rather than merging, which keeps the history linear and bisectable.
+
+### Review Expectations
+
+Pull requests should be scoped to a single concern. A change that fixes a bug and refactors the surrounding module is harder to review and revert than two separate changes. Reviewers look for correctness first, then test coverage, then readability. Disagreements about style are resolved by the configured tooling rather than in review comments.
 
 ## Additional Resources
 

@@ -317,8 +317,10 @@ class TemporalSmoother:
                 self.state.previous_frame = frame.copy()
             self.state.frame_count += 1
 
-            # Clamp output to [0, 1] range to prevent drift
-            result = np.clip(result, 0.0, 1.0).astype(np.float32)
+            # Clamp blended output to [0, 1] range to prevent drift
+            # (only when smoothing actually blended frames)
+            if self.config.smoothing_factor < 1.0:
+                result = np.clip(result, 0.0, 1.0).astype(np.float32)
 
             elapsed_ms = (time.time() - start_time) * 1000
             log_performance(

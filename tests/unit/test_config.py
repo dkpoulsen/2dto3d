@@ -10,6 +10,7 @@ from video2d3d.utils.config import (
     RateLimitConfig,
     StereoGenerationConfig,
     VideoInputConfig,
+    VideoOutputConfig,
     WebApiConfig,
     deep_update,
     get_config_path,

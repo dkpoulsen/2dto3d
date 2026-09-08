@@ -314,8 +314,8 @@ class TestExceptionHandlers:
 
     @pytest.fixture
     def client(self, app: FastAPI) -> Generator[TestClient, None, None]:
-        """Create a test client."""
-        with TestClient(app) as client:
+        """Create a test client that does not re-raise server exceptions."""
+        with TestClient(app, raise_server_exceptions=False) as client:
             yield client
 
     def test_api_error_handler(self, client: TestClient) -> None:
@@ -377,8 +377,10 @@ class TestExceptionChaining:
         """Test that our FileNotFoundError is distinct from builtin."""
         from video2d3d.web.exceptions import FileNotFoundError as APIFileNotFoundError
 
+        import builtins
+
         # Our error should not be the builtin
-        assert APIFileNotFoundError is not FileNotFoundError  # type: ignore
+        assert APIFileNotFoundError is not builtins.FileNotFoundError  # type: ignore
 
         # Our error should be an APIError
         error = APIFileNotFoundError(file_id="test")

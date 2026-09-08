@@ -96,8 +96,9 @@ class TestConfigExportCLI:
         result = runner.invoke(app, ["config-export", str(output_file), "--format", "xml"])
 
         assert result.exit_code == 1
-        assert "Invalid format" in result.stdout
-        assert "Supported formats" in result.stdout
+        assert "Unsupported format" in result.stdout
+        assert "json" in result.stdout
+        assert "yaml" in result.stdout
 
     def test_export_creates_parent_directories(self, tmp_path: Path):
         """Test that export creates parent directories if they don't exist."""

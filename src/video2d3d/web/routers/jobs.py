@@ -679,6 +679,8 @@ async def get_thumbnail_grid(
     step = frame_range / count if count > 0 else 1
     frame_indices = [int(effective_start + i * step) for i in range(count)]
     frame_indices = [idx for idx in frame_indices if idx < total_frames]
+    # Deduplicate while preserving order (can happen when count > frame_range)
+    frame_indices = list(dict.fromkeys(frame_indices))
 
     # Build thumbnail response
     thumbnails = []

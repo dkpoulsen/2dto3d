@@ -151,6 +151,8 @@ async def remove_webhook(url: str = Query(..., description="Webhook URL to remov
 
 
 __all__ = ["router"]
+
+
 @router.get(
     "/{notification_id}",
     response_model=NotificationResponse,
@@ -250,5 +252,3 @@ async def clear_all_notifications() -> None:
     """Clear all notifications."""
     manager = get_notification_manager()
     manager.clear_all()
-
-

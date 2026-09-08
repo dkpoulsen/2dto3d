@@ -100,6 +100,11 @@ class SpatialAudioProcessor:
         """
         filters = []
 
+        # Use HRTF file via sofalizer when provided
+        if self.config.hrtf_file:
+            filters.append(f"sofalizer=source={self.config.hrtf_file}")
+            return filters
+
         # Get room preset
         self.ROOM_PRESETS.get(self.config.room_size, self.ROOM_PRESETS["medium"])
 

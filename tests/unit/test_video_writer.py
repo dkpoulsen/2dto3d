@@ -69,7 +69,7 @@ class TestVideoCodec:
         assert VideoCodec.H264.value == "libx264"
         assert VideoCodec.H265.value == "libx265"
         assert VideoCodec.VP9.value == "libvpx-vp9"
-        assert VideoCodec.AV1.value == "libaom-av1"
+        assert VideoCodec.AV1_AOM.value == "libaom-av1"
         assert VideoCodec.MPEG4.value == "mpeg4"
         assert VideoCodec.PRORES.value == "prores_ks"
         assert VideoCodec.MJPEG.value == "mjpeg"

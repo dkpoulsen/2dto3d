@@ -621,6 +621,13 @@ class CrashReporter:
         filepath = self.save_report(report)
         self._logger.info(f"Manual crash report saved to: {filepath}")
 
+        # Call callback if set
+        if self.config.callback:
+            try:
+                self.config.callback(report)
+            except Exception as e:
+                self._logger.error(f"Crash callback failed: {e}")
+
         return report
 
     def set_queue(self, queue: BatchVideoQueue | None) -> None:

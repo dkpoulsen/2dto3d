@@ -557,7 +557,7 @@ class TestPreviewWindowWithMockedCV2:
         from video2d3d.preview.preview_window import _ensure_cv2
 
         with patch.dict("sys.modules", {"cv2": None}):
-            with patch("builtins.__import__", side_effect=ImportError("No module named 'cv2'")):
+            with patch("video2d3d.preview.preview_window.cv2", None):
                 with pytest.raises(PreviewWindowError) as exc_info:
                     _ensure_cv2()
 

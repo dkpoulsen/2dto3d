@@ -141,7 +141,9 @@ class BenchmarkConfig:
         if not self.models:
             raise ValueError("models list cannot be empty")
         if self.report_format not in ("markdown", "json", "csv"):
-            raise ValueError(f"report_format must be 'markdown', 'json', or 'csv', got {self.report_format!r}")
+            raise ValueError(
+                f"report_format must be 'markdown', 'json', or 'csv', got {self.report_format!r}"
+            )
 
         # Validate timeout
         if self.timeout_seconds <= 0:

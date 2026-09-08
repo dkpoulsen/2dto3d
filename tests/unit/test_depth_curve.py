@@ -118,7 +118,7 @@ class TestDepthCurveConfig:
         points = [
             CurveControlPoint(0.0, 0.0),
             CurveControlPoint(0.5, 0.5),
-            CurveControlPoint(0.3, 0.3),  # Out of order
+            CurveControlPoint(0.5, 0.3),  # Duplicate x
             CurveControlPoint(1.0, 1.0),
         ]
         with pytest.raises(ValueError, match="x values must be strictly increasing"):

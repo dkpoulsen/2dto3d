@@ -136,7 +136,6 @@ class AudioMetadata:
         if not self.track_count:
             self.track_count = len(self.tracks)
 
-
     @classmethod
     def extract_from_video(cls, video_path: Path | str) -> AudioMetadata:
         """Extract audio metadata from a video file using FFprobe.

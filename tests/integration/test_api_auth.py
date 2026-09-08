@@ -116,7 +116,9 @@ class TestRegisterEndpoint:
             },
         )
         assert response.status_code == status.HTTP_400_BAD_REQUEST
-        assert "username" in response.json().get("detail", response.json().get("message", "")).lower()
+        assert (
+            "username" in response.json().get("detail", response.json().get("message", "")).lower()
+        )
 
     def test_register_duplicate_email(self, client: TestClient) -> None:
         """Test registration with duplicate email fails."""
