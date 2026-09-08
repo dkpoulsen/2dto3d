@@ -145,10 +145,8 @@ def mock_torch_modules() -> Generator[None, None, None]:
     sys.modules["video2d3d.utils.gpu"] = mock_gpu
     sys.modules["video2d3d.utils.logger"] = _create_mock_logger_module()
     # Clear any cached imports of the depth module
-    if "video2d3d.depth" in sys.modules:
-        del sys.modules["video2d3d.depth"]
-    if "video2d3d.depth.__init__" in sys.modules:
-        del sys.modules["video2d3d.depth.__init__"]
+    for mod_name in [m for m in sys.modules if m == "video2d3d.depth" or m.startswith("video2d3d.depth.")]:
+        del sys.modules[mod_name]
 
     yield
 
@@ -159,9 +157,9 @@ def mock_torch_modules() -> Generator[None, None, None]:
         elif mod in sys.modules:
             del sys.modules[mod]
 
-    # Clear depth module cache
-    if "video2d3d.depth" in sys.modules:
-        del sys.modules["video2d3d.depth"]
+    # Clear depth module cache (including submodules) so later imports start fresh
+    for mod_name in [m for m in sys.modules if m == "video2d3d.depth" or m.startswith("video2d3d.depth.")]:
+        del sys.modules[mod_name]
 
 
 @pytest.fixture

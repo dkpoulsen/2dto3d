@@ -197,13 +197,13 @@ class TestDepthProcessorConfig:
         assert config.guided_filter is True
         assert config.edge_filter_type == "guided"
 
-    def test_bilateral_filter_auto_enabled(self, mock_logger: MagicMock) -> None:
-        """Test that bilateral_filter is auto-enabled when edge_filter_type is 'bilateral'."""
+    def test_bilateral_filter_explicit_config_respected(self, mock_logger: MagicMock) -> None:
+        """Test that an explicit bilateral_filter=False is respected."""
         config = DepthProcessorConfig(
             edge_filter_type="bilateral",
-            bilateral_filter=False,  # Explicitly False, should be auto-enabled
+            bilateral_filter=False,
         )
-        assert config.bilateral_filter is True
+        assert config.bilateral_filter is False
         assert config.edge_filter_type == "bilateral"
 
 
