@@ -1,6 +1,7 @@
 """Tests for CLI configuration import/export commands."""
 
 import json
+import re
 from pathlib import Path
 
 import yaml
@@ -9,6 +10,13 @@ from typer.testing import CliRunner
 from video2d3d.cli import app
 
 runner = CliRunner()
+
+_ANSI_RE = re.compile(r"\x1b\[[0-9;]*m")
+
+
+def _plain(text: str) -> str:
+    """Strip ANSI escape codes so assertions survive colored output."""
+    return _ANSI_RE.sub("", text)
 
 
 class TestConfigExportCLI:
@@ -284,18 +292,20 @@ class TestCLIHelpAndUsage:
         result = runner.invoke(app, ["config-export", "--help"])
 
         assert result.exit_code == 0
-        assert "Export the current configuration" in result.stdout
-        assert "OUTPUT_FILE" in result.stdout
-        assert "--format" in result.stdout
+        plain = _plain(result.stdout)
+        assert "Export the current configuration" in plain
+        assert "OUTPUT_FILE" in plain
+        assert "--format" in plain
 
     def test_config_import_help(self):
         """Test config-import help message."""
         result = runner.invoke(app, ["config-import", "--help"])
 
         assert result.exit_code == 0
-        assert "Import configuration" in result.stdout
-        assert "INPUT_FILE" in result.stdout
-        assert "--apply" in result.stdout
+        plain = _plain(result.stdout)
+        assert "Import configuration" in plain
+        assert "INPUT_FILE" in plain
+        assert "--apply" in plain
 
     def test_main_help_shows_config_commands(self):
         """Test that main help shows config commands."""

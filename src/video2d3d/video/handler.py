@@ -161,6 +161,15 @@ class VideoInputHandler:
             with open(file_path, "rb") as f:
                 header = f.read(32)  # Read first 32 bytes
 
+            if not header:
+                # Empty (or truncated) file: no signature to compare against.
+                # Let the OpenCV readability check decide whether the video is
+                # usable instead of failing on the magic-byte check alone.
+                _get_video_logger().debug(
+                    f"Empty file header, skipping magic bytes check: {file_path}"
+                )
+                return True
+
             expected_signatures = MAGIC_BYTES[expected_format]
             for signature in expected_signatures:
                 if header.startswith(signature) or signature in header[:12]:

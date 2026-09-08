@@ -314,12 +314,12 @@ class DepthEstimator:
         """Get the PyTorch Hub directory for model caching."""
         if self.config.cache_dir is not None:
             hub_dir = self.config.cache_dir
+            # Ensure a custom cache directory exists before use
+            hub_dir.mkdir(parents=True, exist_ok=True)
         else:
-            # Use default torch hub directory
+            # Use the default torch hub directory as-is; torch manages it
             hub_dir = Path(torch.hub.get_dir())
 
-        # Ensure directory exists
-        hub_dir.mkdir(parents=True, exist_ok=True)
         # Point torch hub at the resolved directory
         torch.hub.set_dir(str(hub_dir))
         return hub_dir

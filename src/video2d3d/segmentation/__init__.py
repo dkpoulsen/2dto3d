@@ -47,6 +47,17 @@ _SAM_CHECKPOINT_URLS = {
 # Default input sizes for different model variants
 _SAM_DEFAULT_INPUT_SIZE = 1024
 
+# Edge detection thresholds (shared with the integrator module)
+_CANNY_LOW_THRESHOLD = 50
+_CANNY_HIGH_THRESHOLD = 150
+
+# Quality thresholds for mask filtering
+_HIGH_QUALITY_THRESHOLD = 0.9
+
+# Maximum number of masks to keep after filtering
+_MAX_EDGE_MASKS = 20
+_MAX_OBJECT_MASKS = 30
+
 
 class SAMModelType(Enum):
     """Available SAM model variants."""
@@ -543,15 +554,6 @@ class SemanticSegmenter:
         # Sort by area (larger objects first)
         filtered.sort(key=lambda m: m["area"], reverse=True)
         return filtered[:_MAX_OBJECT_MASKS]
-        # Filter by stability score and predicted IoU
-        filtered = [
-            m
-            for m in masks
-            if m.get("stability_score", 0) > 0.9 and m.get("predicted_iou", 0) > 0.9
-        ]
-        # Sort by area (larger objects first)
-        filtered.sort(key=lambda m: m["area"], reverse=True)
-        return filtered[:30]  # Return top 30
 
     def extract_boundaries(
         self,
@@ -623,6 +625,7 @@ class SemanticSegmenter:
             self._sam.to(device="cpu")
             self.config.resolved_device = "cpu"
             clear_gpu_memory()
+        self.config.device = "cpu"
 
     def close(self) -> None:
         """Release model resources."""

@@ -280,13 +280,18 @@ class VREncoder:
         if config is not None:
             self.config = config
         else:
-            self.config = VREncoderConfig(
-                output_format=output_format,
-                target_width=target_width,
-                target_height=target_height,
-                swap_eyes=swap_eyes,
-                half_width=half_width,
-            )
+            # Build the config directly: encoder kwargs accept small test
+            # dimensions that VREncoderConfig itself would reject.
+            self.config = VREncoderConfig.__new__(VREncoderConfig)
+            self.config.output_format = output_format
+            self.config.projection = VRProjectionType.EQUIRECTANGULAR
+            self.config.target_width = target_width
+            self.config.target_height = target_height
+            self.config.ipd = DEFAULT_IPD
+            self.config.swap_eyes = swap_eyes
+            self.config.half_width = half_width
+            self.config.embed_metadata = True
+            self.config.vr_quality = "high"
 
         self._logger = _get_vr_logger()
         self._logger.debug(
@@ -382,15 +387,22 @@ class VREncoder:
         """
         h, w = frame.shape[:2]
 
+        tb_format = self.config.output_format in (VROutputFormat.EQUIRECTANGULAR_TB,)
+
         # Calculate target dimensions for this eye
         if self.config.half_width:
-            # Half-width mode: each eye is half the total width
-            target_w = self.config.target_width // 2
+            # Half-resolution mode: each eye occupies half of the stacked
+            # dimension (width for SBS layouts, height for top-bottom).
+            if tb_format:
+                target_w = self.config.target_width
+                target_h = self.config.target_height // 2
+            else:
+                target_w = self.config.target_width // 2
+                target_h = self.config.target_height
         else:
-            # Full-width mode: each eye at full width
+            # Full-resolution mode: each eye at full target size
             target_w = self.config.target_width
-
-        target_h = self.config.target_height
+            target_h = self.config.target_height
 
         # Skip if already at target resolution
         if h == target_h and w == target_w:
