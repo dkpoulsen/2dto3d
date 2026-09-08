@@ -72,7 +72,9 @@ def constant_depth_map() -> np.ndarray:
 @pytest.fixture
 def mock_logger() -> Generator[MagicMock, None, None]:
     """Mock the logger module."""
-    with patch("video2d3d.depth.processor.get_logger") as mock_get_logger:
+    import video2d3d.depth.processor as processor_module
+
+    with patch.object(processor_module, "get_logger") as mock_get_logger:
         mock_logger = MagicMock()
         mock_get_logger.return_value = mock_logger
         yield mock_logger
