@@ -7,9 +7,9 @@ This module tests the PresetManager class including:
 - Config integration
 """
 
+import json
 from pathlib import Path
 
-import json
 import pytest
 
 from video2d3d.presets.manager import PresetManager, PresetManagerError, get_preset_manager

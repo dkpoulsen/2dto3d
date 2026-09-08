@@ -375,9 +375,9 @@ class TestExceptionChaining:
 
     def test_file_not_found_vs_builtin(self) -> None:
         """Test that our FileNotFoundError is distinct from builtin."""
-        from video2d3d.web.exceptions import FileNotFoundError as APIFileNotFoundError
-
         import builtins
+
+        from video2d3d.web.exceptions import FileNotFoundError as APIFileNotFoundError
 
         # Our error should not be the builtin
         assert APIFileNotFoundError is not builtins.FileNotFoundError  # type: ignore
