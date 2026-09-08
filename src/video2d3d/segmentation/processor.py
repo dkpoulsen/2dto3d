@@ -36,6 +36,8 @@ _DEFAULT_MAX_AREA: int = 10000000  # 10M pixels
 _DEFAULT_MORPHOLOGY_KERNEL_SIZE: int = 5
 _DEFAULT_EDGE_DILATION_ITERATIONS: int = 2
 _DEFAULT_BOUNDARY_WIDTH: int = 3
+_DEFAULT_GAUSSIAN_KERNEL_SIZE: int = 5
+_VALID_HOLE_FILLING_METHODS: tuple[str, ...] = ("morphology", "flood_fill")
 
 
 class MaskRefinementMethod(Enum):
@@ -103,6 +105,11 @@ class SegmentationProcessorConfig:
             raise ValueError(f"boundary_width must be >= 1, got {self.boundary_width}")
         if not 0.0 <= self.overlap_threshold <= 1.0:
             raise ValueError(f"overlap_threshold must be in [0, 1], got {self.overlap_threshold}")
+        if self.hole_filling_method not in _VALID_HOLE_FILLING_METHODS:
+            raise ValueError(
+                f"hole_filling_method must be one of {_VALID_HOLE_FILLING_METHODS}, "
+                f"got {self.hole_filling_method!r}"
+            )
 
 
 class SegmentationProcessorError(Exception):
