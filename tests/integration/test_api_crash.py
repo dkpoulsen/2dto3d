@@ -359,12 +359,8 @@ class TestCrashReportWithoutReporter:
 
         with (
             patch("video2d3d.web.health.is_cuda_available", return_value=False),
-            patch.object(
-                importlib.import_module("video2d3d.web.app"), "init_crash_reporting"
-            ),
-            patch.object(
-                importlib.import_module("video2d3d.web.app"), "shutdown_crash_reporting"
-            ),
+            patch.object(importlib.import_module("video2d3d.web.app"), "init_crash_reporting"),
+            patch.object(importlib.import_module("video2d3d.web.app"), "shutdown_crash_reporting"),
             TestClient(create_app()) as client,
         ):
             response = client.get("/api/v1/crash-reports")
@@ -379,12 +375,8 @@ class TestCrashReportWithoutReporter:
 
         with (
             patch("video2d3d.web.health.is_cuda_available", return_value=False),
-            patch.object(
-                importlib.import_module("video2d3d.web.app"), "init_crash_reporting"
-            ),
-            patch.object(
-                importlib.import_module("video2d3d.web.app"), "shutdown_crash_reporting"
-            ),
+            patch.object(importlib.import_module("video2d3d.web.app"), "init_crash_reporting"),
+            patch.object(importlib.import_module("video2d3d.web.app"), "shutdown_crash_reporting"),
             TestClient(create_app()) as client,
         ):
             response = client.get("/api/v1/crash-reports/some-id")
@@ -397,12 +389,8 @@ class TestCrashReportWithoutReporter:
 
         with (
             patch("video2d3d.web.health.is_cuda_available", return_value=False),
-            patch.object(
-                importlib.import_module("video2d3d.web.app"), "init_crash_reporting"
-            ),
-            patch.object(
-                importlib.import_module("video2d3d.web.app"), "shutdown_crash_reporting"
-            ),
+            patch.object(importlib.import_module("video2d3d.web.app"), "init_crash_reporting"),
+            patch.object(importlib.import_module("video2d3d.web.app"), "shutdown_crash_reporting"),
             TestClient(create_app()) as client,
         ):
             response = client.post(
