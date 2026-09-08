@@ -131,9 +131,11 @@ def verify_farneback_flow() -> bool:
         flow = engine.compute_flow(frame1, frame2)
 
         # Verify output shape and type
-        assert flow.shape == (frame1.shape[0], frame1.shape[1], 2), (
-            f"Expected shape {(frame1.shape[0], frame1.shape[1], 2)}, got {flow.shape}"
-        )
+        assert flow.shape == (
+            frame1.shape[0],
+            frame1.shape[1],
+            2,
+        ), f"Expected shape {(frame1.shape[0], frame1.shape[1], 2)}, got {flow.shape}"
         assert flow.dtype == np.float32, f"Expected dtype float32, got {flow.dtype}"
 
         print(f"   ✓ Flow computation successful (shape: {flow.shape})")
@@ -181,9 +183,11 @@ def verify_batch_processing() -> bool:
         assert len(flows) == len(frames1), f"Expected {len(frames1)} flows, got {len(flows)}"
 
         for i, flow in enumerate(flows):
-            assert flow.shape == (frames1[0].shape[0], frames1[0].shape[1], 2), (
-                f"Flow {i} has wrong shape: {flow.shape}"
-            )
+            assert flow.shape == (
+                frames1[0].shape[0],
+                frames1[0].shape[1],
+                2,
+            ), f"Flow {i} has wrong shape: {flow.shape}"
 
         print(f"   ✓ Batch processing successful ({len(flows)} frame pairs)")
 
